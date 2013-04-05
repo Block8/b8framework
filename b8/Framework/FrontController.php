@@ -4,25 +4,25 @@ namespace b8\Framework;
 
 class FrontController
 {
-	public $settings			= array();
+	public $settings = array();
 
 	// String request path:
-	protected $path				= '';
+	protected $path = '';
 
 	// Array of request path, split by /
-	protected $parts			= '';
+	protected $parts = '';
 
 	// Loaded controller class name:
-	protected $controller		= null;
+	protected $controller = null;
 
 	// Loaded controller object:
-	protected $controllerObject	= null;
+	protected $controllerObject = null;
 
 	// String action (method) name:
-	protected $action			= null;
+	protected $action = null;
 
 	// Parameters to be passed to action():
-	protected $params			= array();
+	protected $params = array();
 
 	public function __construct()
 	{
@@ -36,11 +36,11 @@ class FrontController
 			$path = explode('?', $_SERVER['REQUEST_URI']);
 		}
 
-		$this->path			= $path[0];
-		$this->parts		= explode('/', $this->path);
-		$this->parts		= array_values(array_filter($this->parts));
+		$this->path  = $path[0];
+		$this->parts = explode('/', $this->path);
+		$this->parts = array_values(array_filter($this->parts));
 
-		$this->controller	= $this->_getController();
+		$this->controller = $this->_getController();
 
 		$registry = \b8\Registry::getInstance();
 		$registry->set('requestPath', $this->path);
@@ -49,15 +49,15 @@ class FrontController
 
 		if(empty($this->controller) || !class_exists($this->controller))
 		{
-			throw new \b8\Framework\APIException\BadRequestException('Invalid controller: ' . $this->controller .' does not exist.');
+			throw new \b8\Framework\APIException\BadRequestException('Invalid controller: ' . $this->controller . ' does not exist.');
 		}
 
-		$controller				= $this->controller;
-		$this->controllerObject	= new $controller();
+		$controller             = $this->controller;
+		$this->controllerObject = new $controller();
 
-		list($action, $params)	= $this->_getAction();
-		$this->action			= $action;
-		$this->params			= $params;
+		list($action, $params) = $this->_getAction();
+		$this->action = $action;
+		$this->params = $params;
 
 		$this->_beforeControllerInit();
 		$this->controllerObject->init();
@@ -73,7 +73,7 @@ class FrontController
 	{
 		return call_user_func_array(array($this->controllerObject, $this->action), $this->params);
 	}
-	
+
 	protected function _getController()
 	{
 		if(empty($this->parts[0]))
@@ -88,17 +88,17 @@ class FrontController
 
 		$controller = str_replace('-', ' ', trim($this->parts[0]));
 		$controller = ucwords($controller);
-		$controller = str_replace(' ', '', $controller);		
-		$aliases	= \b8\Registry::getInstance()->get('ControllerAliases');
+		$controller = str_replace(' ', '', $controller);
+		$aliases    = \b8\Registry::getInstance()->get('ControllerAliases');
 
 		if(isset($aliases[$controller]))
 		{
-		    $controller = $aliases[$controller];
+			$controller = $aliases[$controller];
 		}
 
 		\b8\Registry::getInstance()->set('ControllerName', $controller);
-		
-		$controller = '\\'.\b8\Registry::getInstance()->get('app_namespace').'\\Controller\\' . $controller . 'Controller';
+
+		$controller = '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Controller\\' . $controller . 'Controller';
 
 		return $controller;
 	}
@@ -110,9 +110,9 @@ class FrontController
 
 		if(!empty($this->parts[1]))
 		{
-			$action	= str_replace('-', ' ', trim($this->parts[1]));
-			$action	= ucwords($action);
-			$action	= str_replace(' ', '', $action);
+			$action = str_replace('-', ' ', trim($this->parts[1]));
+			$action = ucwords($action);
+			$action = str_replace(' ', '', $action);
 			$action = lcfirst($action);
 		}
 		else
@@ -122,6 +122,6 @@ class FrontController
 
 		$params = array_slice($this->parts, 2);
 
-		return array($action, $params);		
+		return array($action, $params);
 	}
 }

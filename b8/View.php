@@ -4,8 +4,8 @@ namespace b8;
 
 class View
 {
-	protected $_vars			= array();
-	protected static $_helpers	= array();
+	protected $_vars = array();
+	protected static $_helpers = array();
 
 	public function __construct($file, $path = null)
 	{
@@ -34,19 +34,19 @@ class View
 	{
 		if(!isset(self::$_helpers[$method]))
 		{
-			$class						= '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
+			$class = '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
 
-            if(!class_exists($class))
-            {
-                $class = '\\b8\\View\\Helper\\' . $method;
-            }
+			if(!class_exists($class))
+			{
+				$class = '\\b8\\View\\Helper\\' . $method;
+			}
 
 			if(!class_exists($class))
 			{
 				throw new \b8\Framework\APIException\GeneralException('Helper class does not exist: ' . $class);
 			}
 
-			self::$_helpers[$method]	= new $class();
+			self::$_helpers[$method] = new $class();
 		}
 
 		return self::$_helpers[$method];
