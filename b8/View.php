@@ -36,6 +36,11 @@ class View
 		{
 			$class						= '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
 
+            if(!class_exists($class))
+            {
+                $class = '\\b8\\View\\Helper\\' . $method;
+            }
+
 			if(!class_exists($class))
 			{
 				throw new \b8\Framework\APIException\GeneralException('Helper class does not exist: ' . $class);

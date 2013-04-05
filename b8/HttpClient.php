@@ -140,7 +140,7 @@ class HttpClient
 
 			$length = hexdec(trim($line));
 
-			if(!is_int($length))
+			if(!is_int($length) || empty($response))
 			{
 				return $originalResponse;
 			}

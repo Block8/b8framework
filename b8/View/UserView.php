@@ -26,6 +26,12 @@ class UserView extends \b8\View
 		return $rtn;
 	}
 
+    protected function _parseLoops($rtn)
+    {
+        $rtn = preg_replace_callback('/\{loop ([a-zA-Z0-9\_]+)\}(.*?)\{\/loop\}/smu', array($this, '_doParseLoop'), $rtn);
+        return $rtn;
+    }
+
 	protected function _parseHelpers($rtn)
 	{
 		$rtn = preg_replace_callback('/\{@([a-zA-Z]+)\:([a-zA-Z0-9\_]+)\}/', array($this, '_doParseHelper'), $rtn);
@@ -43,6 +49,7 @@ class UserView extends \b8\View
 
 	protected function _parseVars($rtn)
 	{
+        $rtn = preg_replace_callback('/\{@([a-zA-Z]+)\.([a-zA-Z0-9\_]+)\}/', array($this, '_doParseArrayVar'), $rtn);
 		$rtn = preg_replace_callback('/\{@([a-zA-Z0-9\_]+)\}/', array($this, '_doParseVar'), $rtn);
 
 		return $rtn;
@@ -54,6 +61,11 @@ class UserView extends \b8\View
 		
 		return $this->{$var[1]};
 	}
+
+    protected function _doParseArrayVar($var)
+    {
+        return isset($this->{$var[1]}[$var[2]]) ? $this->{$var[1]}[$var[2]] : '';
+    }
 
 	protected function _doParseIf($var)
 	{
@@ -72,4 +84,23 @@ class UserView extends \b8\View
 
 		return !isset($this->{$helper}()->{$property}) || empty($this->{$helper}()->{$property}) ? $content : '';
 	}
+
+    protected function _doParseLoop($var)
+    {
+        if(!isset($this->{$var[1]}) || !is_array($this->{$var[1]}))
+        {
+            return '';
+        }
+
+        $rtn = '';
+        foreach($this->{$var[1]} as $item)
+        {
+            $contentView        = new self($var[2]);
+            $contentView->item  = $item;
+
+            $rtn .= $contentView->render();
+        }
+
+        return $rtn;
+    }
 }
