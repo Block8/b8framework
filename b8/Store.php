@@ -2,6 +2,7 @@
 
 namespace b8;
 use b8\Exception\HttpException;
+use b8\Database;
 
 class Store
 {
@@ -195,7 +196,7 @@ class Store
 			$query .= ' OFFSET ' . $offset;
 		}
 
-		$stmt = \b8\Database::getConnection('read')->prepare($countQuery);
+		$stmt = Database::getConnection('read')->prepare($countQuery);
 		if($stmt->execute($params))
 		{
 			$res   = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -206,7 +207,7 @@ class Store
 			$count = 0;
 		}
 
-		$stmt = \b8\Database::getConnection('read')->prepare($query);
+		$stmt = Database::getConnection('read')->prepare($query);
 
 		if($stmt->execute($params))
 		{
@@ -257,7 +258,7 @@ class Store
 				$qs = 'UPDATE ' . $this->tableName . '
 											SET ' . implode(', ', $updates) . ' 
 											WHERE ' . $this->primaryKeyColumn . ' = :primaryKey';
-				$q  = \b8\Database::getConnection('write')->prepare($qs);
+				$q  = Database::getConnection('write')->prepare($qs);
 
 				foreach($update_params as $update_param)
 				{
@@ -291,17 +292,17 @@ class Store
 			if(count($cols))
 			{
 				$qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
-				$q  = \b8\Database::getConnection('write')->prepare($qs);
+				$q  = Database::getConnection('write')->prepare($qs);
 
 				if($q->execute($qParams))
 				{
-					return $this->getByPrimaryKey(\b8\Database::getConnection('write')->lastInsertId(), 'write');
+					return $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
 				}
 			}
 		}
 	}
 
-	public function delete(\b8\Model\Base\AbstractBase $obj)
+	public function delete(Model $obj)
 	{
 	    if(!isset($this->primaryKeyColumn))
 	    {
@@ -315,7 +316,7 @@ class Store
 
 		$data = $obj->getDataArray();
 
-		$q = \b8\Database::getConnection('write')->prepare('DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKeyColumn . ' = :primaryKey');
+		$q = Database::getConnection('write')->prepare('DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKeyColumn . ' = :primaryKey');
 		$q->bindValue(':primaryKey', $data[$this->primaryKeyColumn]);
 		$q->execute();
 
