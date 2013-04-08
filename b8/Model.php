@@ -47,7 +47,7 @@ class Model
 
 				if(!method_exists($this, $method))
 				{
-					continue;
+					return null;
 				}
 
 				$obj = $this->$method();
