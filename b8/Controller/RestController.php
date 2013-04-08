@@ -1,8 +1,8 @@
 <?php
 
-namespace b8\Controller\Base;
+namespace b8\Controller;
 
-class RestController extends \b8\Controller\Base\AbstractController
+class RestController extends \b8\Controller
 {
 	const SEARCHTYPE_AND = 'AND';
 	const SEARCHTYPE_OR  = 'OR';
