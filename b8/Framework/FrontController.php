@@ -1,6 +1,7 @@
 <?php
 
 namespace b8\Framework;
+use b8\Exception\HttpException;
 
 class FrontController
 {
@@ -49,7 +50,7 @@ class FrontController
 
 		if(empty($this->controller) || !class_exists($this->controller))
 		{
-			throw new \b8\Framework\APIException\BadRequestException('Invalid controller: ' . $this->controller .' does not exist.');
+			throw new HttpException\BadRequestException('Invalid controller: ' . $this->controller .' does not exist.');
 		}
 
 		$controller				= $this->controller;
@@ -65,7 +66,7 @@ class FrontController
 
 		if(!isset($this->action) || (!method_exists($this->controllerObject, $this->action) && !method_exists($this->controllerObject, '__call')))
 		{
-			throw new \b8\Framework\APIException\BadRequestException('Invalid action: ' . $this->action . ' does not exist.');
+			throw new HttpException\BadRequestException('Invalid action: ' . $this->action . ' does not exist.');
 		}
 	}
 
@@ -83,7 +84,7 @@ class FrontController
 
 		if(empty($this->parts[0]))
 		{
-			throw new \b8\Framework\APIException\BadRequestException('All requests must pass a controller.');
+			throw new HttpException\BadRequestException('All requests must pass a controller.');
 		}
 
 		$controller = str_replace('-', ' ', trim($this->parts[0]));
@@ -106,7 +107,6 @@ class FrontController
 	protected function _getAction()
 	{
 		$action = null;
-		$params = array();
 
 		if(!empty($this->parts[1]))
 		{

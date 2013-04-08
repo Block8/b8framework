@@ -1,6 +1,7 @@
 <?php
 
 namespace b8;
+use b8\Exception\HttpException;
 
 class View
 {
@@ -43,7 +44,7 @@ class View
 
 			if(!class_exists($class))
 			{
-				throw new \b8\Framework\APIException\GeneralException('Helper class does not exist: ' . $class);
+				throw new HttpException\GeneralException('Helper class does not exist: ' . $class);
 			}
 
 			self::$_helpers[$method]	= new $class();

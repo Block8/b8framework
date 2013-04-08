@@ -1,6 +1,7 @@
 <?php
 
 namespace b8\Store\Base;
+use b8\Exception\HttpException;
 
 class AbstractBase
 {	
@@ -228,12 +229,12 @@ class AbstractBase
 	{		
 	    if(!isset($this->primaryKeyColumn))
 	    {
-			throw new \b8\Framework\APIException\BadRequestException('Save not implemented for this store.');
+			throw new HttpException\BadRequestException('Save not implemented for this store.');
 	    }
 	    
 	    if(!($obj instanceof $this->modelName))
 	    {
-			throw new \b8\Framework\APIException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
+			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
 	    }
 	    
 	    $data = $obj->getDataArray();
@@ -303,12 +304,12 @@ class AbstractBase
 	{
 	    if(!isset($this->primaryKeyColumn))
 	    {
-			throw new \b8\Framework\APIException\BadRequestException('Delete not implemented for this store.');
+			throw new HttpException\BadRequestException('Delete not implemented for this store.');
 	    }
 	    
 	    if(!($obj instanceof $this->modelName))
 	    {
-			throw new \b8\Framework\APIException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
+			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
 	    }
 		
 		$data = $obj->getDataArray();
@@ -327,7 +328,7 @@ class AbstractBase
 	{
 		if(is_null($field))
 		{
-			throw new \b8\Framework\APIException\GeneralException('You cannot have null field');
+			throw new HttpException\GeneralException('You cannot have null field');
 		}
 		
 		if(strpos($field, '.') === false) 

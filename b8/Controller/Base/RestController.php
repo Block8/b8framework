@@ -41,7 +41,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(!$this->activeUser->checkPermission('canRead', $this->resourceName))
 		{
-			throw new \b8\Framework\APIException\ForbiddenException('You do not have permission do this.');
+			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 		
 		$this->where		= $this->_parseWhere();
@@ -143,7 +143,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(empty($obj))
 		{
-			throw new \b8\Framework\APIException\NotFoundException('The ' . strtolower($this->modelName) . ' you are trying to access does not exist.');
+			throw new HttpException\NotFoundException('The ' . strtolower($this->modelName) . ' you are trying to access does not exist.');
 		}
 		
 		if($deed && method_exists($this, $deed. 'Deed'))
@@ -158,7 +158,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(!$this->activeUser->checkPermission('canRead', $this->resourceName))
 		{
-			throw new \b8\Framework\APIException\ForbiddenException('You do not have permission do this.');
+			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 		
 		$rtn = \b8\Store\Factory::getStore($this->modelName)->getByPrimaryKey($key);
@@ -175,7 +175,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(!$this->activeUser->checkPermission('canEdit', $this->resourceName))
 		{
-			throw new \b8\Framework\APIException\ForbiddenException('You do not have permission do this.');
+			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 		
 		$store = \b8\Store\Factory::getStore($this->modelName);
@@ -197,7 +197,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(!$this->activeUser->checkPermission('canCreate', $this->resourceName))
 		{
-			throw new \b8\Framework\APIException\ForbiddenException('You do not have permission do this.');
+			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 		
 		$store = \b8\Store\Factory::getStore($this->modelName);
@@ -214,7 +214,7 @@ class RestController extends \b8\Controller\Base\AbstractController
 	{
 		if(!$this->activeUser->checkPermission('canDelete', $this->resourceName))
 		{
-			throw new \b8\Framework\APIException\ForbiddenException('You do not have permission do this.');
+			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 		
 		$store = \b8\Store\Factory::getStore($this->modelName);
