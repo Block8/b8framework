@@ -1,8 +1,8 @@
 <?php
 
-namespace b8\Model\Base;
+namespace b8;
 
-class AbstractBase
+class Model
 {
 	protected $data = array();
 	protected $modified = array();

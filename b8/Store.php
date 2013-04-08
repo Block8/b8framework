@@ -1,9 +1,9 @@
 <?php
 
-namespace b8\Store\Base;
+namespace b8;
 use b8\Exception\HttpException;
 
-class AbstractBase
+class Store
 {
 	public function getWhere($where = array(), $limit = 25, $offset = 0, $joins = array(), $order = array(), $manualJoins = array(), $group = null, $manualWheres = array(), $whereType = 'AND')
 	{
@@ -329,7 +329,7 @@ class AbstractBase
 	{
 		if(is_null($field))
 		{
-			throw new HttpException\GeneralException('You cannot have null field');
+			throw new HttpException('You cannot have null field');
 		}
 
 		if(strpos($field, '.') === false)

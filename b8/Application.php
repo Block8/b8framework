@@ -1,9 +1,9 @@
 <?php
 
-namespace b8\Framework;
+namespace b8;
 use b8\Exception\HttpException;
 
-class FrontController
+class Application
 {
 	public $settings = array();
 
