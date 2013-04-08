@@ -226,7 +226,7 @@ class Store
 		}
 	}
 
-	public function save(\b8\Model\Base\AbstractBase $obj, $saveAllColumns = false)
+	public function save(Model $obj, $saveAllColumns = false)
 	{
 	    if(!isset($this->primaryKeyColumn))
 	    {
