@@ -14,12 +14,12 @@ class AbstractController
 	{
 	    return Registry::getInstance()->getParam($key, $default);
 	}
-	
+
 	public function setParam($key, $value)
 	{
 		return Registry::getInstance()->setParam($key, $value);
 	}
-	
+
 	public function unsetParam($key)
 	{
 		return Registry::getInstance()->unsetParam($key);

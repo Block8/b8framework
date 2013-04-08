@@ -2,11 +2,16 @@
 
 namespace b8;
 
+if(!defined('B8_PATH'))
+{
+	define('B8_PATH', dirname(__FILE__) . '/');
+}
+
 class Registry
 {
-	protected static $instance	= null;
-	protected $data				= array();
-	protected $params			= null;
+	protected static $instance = null;
+	protected $data = array();
+	protected $params = null;
 
 	public static function getInstance()
 	{
@@ -45,21 +50,21 @@ class Registry
 
 	public function getParams()
 	{
-	    if(is_null($this->params))
-	    {
+		if(is_null($this->params))
+		{
 			$this->parseInput();
-	    }
-	    
-	    return $this->params;
+		}
+
+		return $this->params;
 	}
 
 	public function getParam($key, $default)
 	{
-	    if(is_null($this->params))
-	    {
+		if(is_null($this->params))
+		{
 			$this->parseInput();
-	    }
-	    
+		}
+
 		if(isset($this->params[$key]))
 		{
 			return $this->params[$key];
@@ -69,23 +74,23 @@ class Registry
 			return $default;
 		}
 	}
-	
+
 	public function setParam($key, $value)
 	{
 		$this->params[$key] = $value;
 	}
-	
+
 	public function unsetParam($key)
 	{
 		unset($this->params[$key]);
 	}
-	
+
 	public function parseInput()
 	{
-	    $params = $_REQUEST;
-	    
-	    if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE')
-	    {
+		$params = $_REQUEST;
+
+		if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE')
+		{
 			$vars = '';
 			if(strlen(trim($vars = file_get_contents('php://input'))) === 0)
 			{
@@ -94,10 +99,10 @@ class Registry
 
 			$inputData = array();
 			parse_str($vars, $inputData);
-			
+
 			$params = array_merge($params, $inputData);
-	    }
-	    
-	    $this->params = $params;
+		}
+
+		$this->params = $params;
 	}
 }
