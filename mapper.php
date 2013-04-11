@@ -15,12 +15,14 @@ $rtn = $map->generate();
 
 foreach($rtn as $table => $t)
 {
+	/*
 	$modelTemplate = new b8\View\UserView(file_get_contents(B8_PATH . 'Database/Generator/ModelTemplate.phtml'));
 	$modelTemplate->appNamespace    = 'Api';
 	$modelTemplate->name            = $table;
 	$modelTemplate->table           = $t;
 
 	$model = $modelTemplate->render();
+	*/
 
 	$baseModelTemplate = new b8\View\UserView(file_get_contents(B8_PATH . 'Database/Generator/BaseModelTemplate.phtml'));
 	$baseModelTemplate->appNamespace    = 'Api';
@@ -29,5 +31,5 @@ foreach($rtn as $table => $t)
 
 	$baseModel = $baseModelTemplate->render();
 
-	print $baseModel . PHP_EOL;
+	file_put_contents('/www/b8/Api/Model/Base/' . $t['php_name'] . 'Base.php', $baseModel);
 }

@@ -4,27 +4,26 @@ namespace b8;
 
 class Model
 {
-	protected $data = array();
-	protected $modified = array();
+	protected $_data        = array();
+	protected $_modified    = array();
 
 	public function __construct($initialData = array())
 	{
 		if(is_array($initialData))
 		{
-			// Merge in the passed data:
-			$this->data = array_merge($this->data, $initialData);
+			$this->_data = array_merge($this->_data, $initialData);
 		}
 	}
 
 	public function toArray($depth = 2, $currentDepth = 0)
 	{
-		if(isset(static::$sleepable) && is_array(static::$sleepable))
+		if(isset(static::$sleepable) && is_array(static::$sleepable) && count(static::$sleepable))
 		{
 			$sleepable = static::$sleepable;
 		}
 		else
 		{
-			$sleepable = array_merge(array_keys($this->data), array_keys($this->sleep));
+			$sleepable = array_keys($this->_getters);
 		}
 
 		$rtn = array();
@@ -39,31 +38,16 @@ class Model
 	protected function _propertyToArray($property, $currentDepth, $depth)
 	{
 		$rtn = null;
-		if(array_key_exists($property, $this->sleep))
+
+		if(array_key_exists($property, $this->_getters))
 		{
-			if($depth > $currentDepth)
+			$method = $this->_getters[$property];
+			$rtn    = $this->{$method}();
+
+			if(is_object($rtn) || is_array($rtn))
 			{
-				$method = $this->sleep[$property];
-
-				if(!method_exists($this, $method))
-				{
-					return null;
-				}
-
-				$obj = $this->$method();
-				$rtn = $this->_valueToArray($obj, $currentDepth, $depth);
+				$rtn = ($depth > $currentDepth) ? $this->_valueToArray($rtn, $currentDepth, $depth) : null;
 			}
-		}
-		elseif(array_key_exists($property, $this->data))
-		{
-			$value = $this->data[$property];
-
-			if(is_string($value) && !mb_check_encoding($value, 'UTF-8'))
-			{
-				$value = mb_convert_encoding($value, 'UTF-8');
-			}
-
-			$rtn = $value;
 		}
 
 		return $rtn;
@@ -122,7 +106,7 @@ class Model
 	{
 		foreach($values as $key => $value)
 		{
-			if(isset($this->setters[$key]))
+			if(isset($this->_setters[$key]))
 			{
 				$func = $this->setters[$key];
 

@@ -45,30 +45,63 @@ class Map
 
 	protected function _getRelationships()
 	{
-		$keyRes = $this->_db->query('SELECT
-											TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME
-										FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-										WHERE REFERENCED_TABLE_NAME IS NOT NULL')->fetchAll(\PDO::FETCH_ASSOC);
-
-		$keys = array();
-		foreach($keyRes as $keyData)
+		foreach($this->_tables as $table => $t)
 		{
-			$fromTable  = $keyData['TABLE_NAME'];
-			$fromCol    = $keyData['COLUMN_NAME'];
-			$toTable    = $keyData['REFERENCED_TABLE_NAME'];
-			$toCol      = $keyData['REFERENCED_COLUMN_NAME'];
+			$res = $this->_db->query('SHOW CREATE TABLE '.$table)->fetchAll(\PDO::FETCH_ASSOC);
 
-			if(isset($this->_tables[$fromTable]) && isset($this->_tables[$toTable]))
+			foreach($res as $r)
 			{
-				$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']);
-				$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
+				$str = $r['Create Table'];
 
-				$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']) . $this->_tables[$fromTable]['php_name'].'s';
-				$this->_tables[$toTable]['relationships']['toMany'][] = array('from_col_php' => $this->_generatePhpName($fromCol), 'php_name' => $phpName, 'thisCol' => $toCol, 'table' => $fromTable, 'table_php' => $this->_generatePhpName($fromTable), 'fromCol' => $fromCol, 'col_php' => $this->_generatePhpName($toCol));
+				$matches = array();
+				if(preg_match_all('/CONSTRAINT\s+\`([a-zA-Z0-9_]+)\`\s+FOREIGN\s+KEY\s+\(\`([a-zA-Z0-9_]+)\`\)\s+REFERENCES\s+\`([a-zA-Z0-9_]+)\`\s+\(\`([a-zA-Z0-9_]+)\`\)(\s+ON (DELETE|UPDATE) (NO ACTION|CASCADE|RESTRICT))?(\s+ON (DELETE|UPDATE) (NO ACTION|CASCADE|RESTRICT))?/', $str, $matches))
+				{
+					for($i = 0; $i < count($matches[0]); $i++)
+					{
+						$fromTable  = $table;
+						$fromCol    = $matches[2][$i];
+						$toTable    = $matches[3][$i];
+						$toCol      = $matches[4][$i];
+						$fkName     = $matches[1][$i];
+
+						if(isset($matches[6][$i]))
+						{
+							if($matches[6][$i] == 'DELETE')
+							{
+								$fkDelete = $matches[7][$i];
+							}
+
+							if($matches[6][$i] == 'UPDATE')
+							{
+								$fkUpdate = $matches[7][$i];
+							}
+						}
+
+						if(isset($matches[9][$i]))
+						{
+							if($matches[9][$i] == 'DELETE')
+							{
+								$fkDelete = $matches[10][$i];
+							}
+
+							if($matches[9][$i] == 'UPDATE')
+							{
+								$fkUpdate = $matches[10][$i];
+							}
+						}
+
+						if(isset($this->_tables[$fromTable]) && isset($this->_tables[$toTable]))
+						{
+							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']);
+							$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('fk_name' => $fkName, 'fk_delete' => $fkDelete, 'fk_update' => $fkUpdate, 'from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
+
+							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']) . $this->_tables[$fromTable]['php_name'].'s';
+							$this->_tables[$toTable]['relationships']['toMany'][] = array('from_col_php' => $this->_generatePhpName($fromCol), 'php_name' => $phpName, 'thisCol' => $toCol, 'table' => $fromTable, 'table_php' => $this->_generatePhpName($fromTable), 'fromCol' => $fromCol, 'col_php' => $this->_generatePhpName($toCol));
+						}
+					}
+				}
 			}
 		}
-
-		return $keys;
 	}
 
 	protected function _getColumns()

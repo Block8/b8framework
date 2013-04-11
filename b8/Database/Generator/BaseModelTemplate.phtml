@@ -10,13 +10,34 @@ use b8\Model;
 /**
  * {@table.php_name} Model
  */
-class {@table.php_name} extends Model
+class {@table.php_name}Base extends Model
 {
+	public static $sleepable= array();
 	protected $_tableName   = '{@name}';
 	protected $_modelName   = '{@table.php_name}';
+	protected $_data        = array(
+{loop table.columns}
+					'{@item.name}'    =>    null,
+
+{/loop}                                  );
+	protected $_getters     = array(
+{loop table.columns}
+					'{@item.name}'    =>    'get{@item.php_name}',
+
+{/loop}                                  );
 	protected $_setters     = array(
 {loop table.columns}
 					'{@item.name}'    =>    'set{@item.php_name}',
+
+{/loop}                                  );
+	public $columns         = array(
+{loop table.columns}
+					'{@item.name}'    =>    array('type' => '{@item.type}', 'length' => {@item.length}),
+
+{/loop}                                  );
+	public $foreignKeys     = array(
+{loop table.relationships.toOne}
+					'{@item.fk_name}'    =>    array('local_col' => '{@item.from_col}', 'update' => '{@item.fk_update}', 'delete' => '{@item.fk_delete}', 'table' => '{@item.table}', 'col' => '{@item.col}'),
 
 {/loop}                                  );
 
@@ -57,6 +78,13 @@ class {@table.php_name} extends Model
 
 {loop table.relationships.toOne}
 
+	/**
+	 * Get the {@item.php_name} model for this {@parent.table.php_name} by {@item.col_php}.
+	 *
+	 * @uses \{@parent.appNamespace}\Store\{@item.php_name}Store::getBy{@item.col_php}()
+	 * @uses \{@parent.appNamespace}\Model\{@item.php_name}
+	 * @return \{@parent.appNamespace}\Model\{@item.php_name}
+	 */
 	public function get{@item.php_name}()
 	{
 		return \b8\Store\Factory::getStore('{@item.php_name}')->getBy{@item.col_php}($this->get{@item.from_col_php}());
