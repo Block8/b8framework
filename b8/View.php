@@ -21,6 +21,11 @@ class View
 		$this->viewFile = $viewFile;
 	}
 
+	public function __isset($var)
+	{
+		return isset($this->_vars[$var]);
+	}
+
 	public function __get($var)
 	{
 		return $this->_vars[$var];

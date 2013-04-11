@@ -12,6 +12,7 @@ class UserView extends \b8\View
 	public function render()
 	{
 		$rtn = $this->viewCode;
+		$rtn = $this->_parseLoops($rtn);
 		$rtn = $this->_parseIfs($rtn);
 		$rtn = $this->_parseVars($rtn);
 		$rtn = $this->_parseHelpers($rtn);
@@ -21,15 +22,17 @@ class UserView extends \b8\View
 
 	protected function _parseIfs($rtn)
 	{
-		$rtn = preg_replace_callback('/\{if ([a-zA-Z]+):([a-zA-Z0-9_]+)\}(.*?)\{\/if\}/smu', array($this, '_doParseIf'), $rtn);
-		$rtn = preg_replace_callback('/\{ifnot ([a-zA-Z]+):([a-zA-Z0-9_]+)\}(.*?)\{\/ifnot\}/smu', array($this, '_doParseIfNot'), $rtn);
+		$rtn = preg_replace_callback('/\{if ([a-zA-Z]+):([a-zA-Z0-9_]+)\}\r?\n?(.*?)\r?\n?\{\/if\}\r?\n?/smu', array($this, '_doParseHelperIf'), $rtn);
+		$rtn = preg_replace_callback('/\{ifnot ([a-zA-Z]+):([a-zA-Z0-9_]+)\}\r?\n?(.*?)\r?\n?\{\/ifnot\}\r?\n?/smu', array($this, '_doParseHelperIfNot'), $rtn);
+		$rtn = preg_replace_callback('/\{if ([a-zA-Z0-9_\.]+)\}\r?\n?(.*?)\r?\n?\{\/if\}\r?\n?/smu', array($this, '_doParseIf'), $rtn);
+		$rtn = preg_replace_callback('/\{ifnot ([a-zA-Z0-9_\.]+)\}\r?\n?(.*?)\r?\n?\{\/ifnot\}\r?\n?/smu', array($this, '_doParseIfNot'), $rtn);
 
 		return $rtn;
 	}
 
 	protected function _parseLoops($rtn)
 	{
-		$rtn = preg_replace_callback('/\{loop ([a-zA-Z0-9\_]+)\}(.*?)\{\/loop\}/smu', array($this, '_doParseLoop'), $rtn);
+		$rtn = preg_replace_callback('/\{loop ([a-zA-Z0-9\_\.]+)\}\r?\n?(.*?)\r?\n?\{\/loop\}/smu', array($this, '_doParseLoop'), $rtn);
 
 		return $rtn;
 	}
@@ -51,8 +54,7 @@ class UserView extends \b8\View
 
 	protected function _parseVars($rtn)
 	{
-		$rtn = preg_replace_callback('/\{@([a-zA-Z]+)\.([a-zA-Z0-9\_]+)\}/', array($this, '_doParseArrayVar'), $rtn);
-		$rtn = preg_replace_callback('/\{@([a-zA-Z0-9\_]+)\}/', array($this, '_doParseVar'), $rtn);
+		$rtn = preg_replace_callback('/\{@([a-zA-Z0-9\_\.]+)\}/', array($this, '_doParseVar'), $rtn);
 
 		return $rtn;
 	}
@@ -64,15 +66,26 @@ class UserView extends \b8\View
 			return date('Y');
 		}
 
-		return $this->{$var[1]};
-	}
-
-	protected function _doParseArrayVar($var)
-	{
-		return isset($this->{$var[1]}[$var[2]]) ? $this->{$var[1]}[$var[2]] : '';
+		return $this->_processVariableName($var[1]);
 	}
 
 	protected function _doParseIf($var)
+	{
+		$working  = $this->_processVariableName($var[1]);
+		$content  = $var[2];
+
+		return $working ? $content : '';
+	}
+
+	protected function _doParseIfNot($var)
+	{
+		$working  = $this->_processVariableName($var[1]);
+		$content  = $var[2];
+
+		return $working ? '' : $content;
+	}
+
+	protected function _doParseHelperIf($var)
 	{
 		$helper   = $var[1];
 		$property = $var[2];
@@ -81,7 +94,7 @@ class UserView extends \b8\View
 		return isset($this->{$helper}()->{$property}) && !empty($this->{$helper}()->{$property}) ? $content : '';
 	}
 
-	protected function _doParseIfNot($var)
+	protected function _doParseHelperIfNot($var)
 	{
 		$helper   = $var[1];
 		$property = $var[2];
@@ -92,20 +105,62 @@ class UserView extends \b8\View
 
 	protected function _doParseLoop($var)
 	{
-		if(!isset($this->{$var[1]}) || !is_array($this->{$var[1]}))
+		$working    = $this->_processVariableName($var[1]);
+
+		if(is_null($working))
 		{
 			return '';
 		}
 
+		if(!is_array($working))
+		{
+			$working = array($working);
+		}
+
 		$rtn = '';
-		foreach($this->{$var[1]} as $item)
+		foreach($working as $item)
 		{
 			$contentView       = new self($var[2]);
+			$contentView->parent = $this;
 			$contentView->item = $item;
 
 			$rtn .= $contentView->render();
 		}
 
 		return $rtn;
+	}
+
+	protected function _processVariableName($varName)
+	{
+		$varPart    = explode('.', $varName);
+		$thisPart   = array_shift($varPart);
+
+		if(!isset($this->{$thisPart}))
+		{
+			return null;
+		}
+
+		$working    = $this->{$thisPart};
+
+		while(count($varPart))
+		{
+			$thisPart   = array_shift($varPart);
+
+			if(is_object($working) && isset($working->{$thisPart}))
+			{
+				$working = $working->{$thisPart};
+				continue;
+			}
+
+			if(is_array($working) && isset($working[$thisPart]))
+			{
+				$working = $working[$thisPart];
+				continue;
+			}
+
+			return null;
+		}
+
+		return $working;
 	}
 }

@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * {@table.php_name} model for table: {@name}
+ */
+
+namespace {@appNamespace}\Model\Base;
+use b8\Model;
+
+/**
+ * {@table.php_name} Model
+ */
+class {@table.php_name} extends Model
+{
+	protected $_tableName   = '{@name}';
+	protected $_modelName   = '{@table.php_name}';
+	protected $_setters     = array(
+{loop table.columns}
+					'{@item.name}'    =>    'set{@item.php_name}',
+
+{/loop}                                  );
+
+
+{loop table.columns}
+
+	public function get{@item.php_name}()
+	{
+		return $this->_data['{@item.name}'];
+	}
+
+{/loop}
+
+{loop table.columns}
+
+	public function set{@item.php_name}($value)
+	{
+{if item.validate_null}
+		$this->_validateNotNull($value);
+{/if}
+
+{if item.validate_int}
+		$this->_validateInt($value);
+{/if}{if item.validate_string}
+		$this->_validateString($value);
+{/if}{if item.validate_float}
+		$this->_validateFloat($value);
+{/if}{if item.validate_date}
+		$this->_validateDate($value);
+{/if}
+
+		$this->_data['{@item.name}'] = $value;
+
+		$this->_setModified('{@item.name}');
+	}
+
+{/loop}
+
+{loop table.relationships.toOne}
+
+	public function get{@item.php_name}()
+	{
+		return \b8\Store\Factory::getStore('{@item.php_name}')->getBy{@item.col_php}($this->get{@item.from_col_php}());
+	}
+
+	public function set{@item.php_name}($value)
+	{
+		// Is this an instance of {$fkMethod}?
+		if($value instanceof \{@parent.appNamespace}\Model\{@item.php_name})
+		{
+			return $this->set{@item.php_name}Object($value);
+		}
+
+		// Is this an array representing a {$fkMethod}?
+		if(is_array($value) && !empty($value['{@item.from_col}']))
+		{
+			return $this->set{@item.from_col_php}($value['{@item.from_col}']);
+		}
+
+		// Is this a scalar value representing the ID of this foreign key?
+		return $this->set{@item.from_col_php}($value);
+	}
+
+	public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.php_name} $value)
+	{
+		$this->_data['{@item.from_col}'] = $value->get{@item.col_php}();
+	}
+
+{/loop}
+
+{loop table.relationships.toMany}
+
+	/**
+	 * Get {@item.table_php} models by {@item.from_col_php} for this {@parent.table.php_name}.
+	 *
+	 * @uses \{@parent.appNamespace}\Store\{@item.table_php}Store::getBy{@item.from_col_php}()
+	 * @uses \{@parent.appNamespace}\Model\{@item.table_php}
+	 * @return \{@parent.appNamespace}\Model\{@item.table_php}[]
+	 */
+	public function get{@item.php_name}()
+	{
+		return \b8\Store\Factory::getStore('{@item.table_php}')->getBy{@item.from_col_php}($this->get{@item.col_php}());
+	}
+
+{/loop}
+}

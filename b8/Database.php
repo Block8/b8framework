@@ -2,11 +2,11 @@
 
 namespace b8;
 
-class Database
+class Database extends \PDO
 {
-	protected static $servers = array('read' => array(), 'write' => array());
-	protected static $connections = array('read' => null, 'write' => null);
-	protected static $details = array();
+	protected static $servers       = array('read' => array(), 'write' => array());
+	protected static $connections   = array('read' => null, 'write' => null);
+	protected static $details       = array();
 
 	public static function setReadServers($read)
 	{
@@ -37,10 +37,9 @@ class Database
 				$server = array_shift(self::$servers[$type]);
 
 				// Try to connect:
-				$connection = false;
 				try
 				{
-					$connection = @new \PDO('mysql:host=' . $server . ';dbname=' . self::$details['db'],
+					$connection = @new self('mysql:host=' . $server . ';dbname=' . self::$details['db'],
 						self::$details['user'],
 						self::$details['pass'],
 						array(
@@ -52,6 +51,7 @@ class Database
 				}
 				catch(\PDOException $ex)
 				{
+					$connection = false;
 				}
 
 				// Opened a connection? Break the loop:
@@ -71,5 +71,10 @@ class Database
 		}
 
 		return self::$connections[$type];
+	}
+
+	public function getDetails()
+	{
+		return self::$details;
 	}
 }
