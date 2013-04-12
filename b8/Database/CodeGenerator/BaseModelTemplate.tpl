@@ -53,7 +53,7 @@ class {@table.php_name}Base extends Model
 													'auto_increment' => true,
 {/if}
 
-{if item.auto}
+{if item.default}
 													'default' => '{@item.default}',
 {/if}
 
