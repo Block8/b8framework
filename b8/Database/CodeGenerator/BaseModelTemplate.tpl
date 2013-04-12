@@ -47,6 +47,9 @@ class {@table.php_name}Base extends Model
 {if item.is_primary_key}
 													'primary_key' => true,
 {/if}
+{if item.auto}
+													'auto_increment' => true,
+{/if}
 
 												),
 
