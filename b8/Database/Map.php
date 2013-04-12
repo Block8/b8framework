@@ -167,6 +167,7 @@ class Map
 		$col['length']  = isset($matches[3]) ? $matches[3] : 255;
 		$col['null']    = strtolower($column['Null']) == 'yes' ? true : false;
 		$col['auto']    = strtolower($column['Extra']) == 'auto_increment' ? true : false;
+		$col['default'] = $column['Default'] == 'NULL' || empty($column['Default']) ? null : $column['Default'];
 
 		if(!empty($column['Key']))
 		{

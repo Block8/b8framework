@@ -44,11 +44,17 @@ class {@table.php_name}Base extends Model
 {if item.null}
 													'nullable' => true,
 {/if}
+
 {if item.is_primary_key}
 													'primary_key' => true,
 {/if}
+
 {if item.auto}
 													'auto_increment' => true,
+{/if}
+
+{if item.auto}
+													'default' => '{@item.default}',
 {/if}
 
 												),
