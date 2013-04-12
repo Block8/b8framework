@@ -40,7 +40,7 @@ class {@table.php_name}Base extends Model
 {loop table.columns}
 					'{@item.name}'    =>    array(
 													'type' => '{@item.type}',
-													'length' => {@item.length},
+													'length' => '{@item.length}',
 {if item.null}
 													'nullable' => true,
 {/if}

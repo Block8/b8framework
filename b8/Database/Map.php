@@ -161,7 +161,7 @@ class Map
 		$col['php_name']= $this->_generatePhpName($col['name']);
 		$matches        = array();
 
-		preg_match('/^([a-zA-Z]+)(\()?([0-9]+)?(\))?/', $column['Type'], $matches);
+		preg_match('/^([a-zA-Z]+)(\()?([0-9\,]+)?(\))?/', $column['Type'], $matches);
 
 		$col['type']    = strtolower($matches[1]);
 		$col['length']  = isset($matches[3]) ? $matches[3] : 255;
