@@ -10,6 +10,7 @@ class Model
 	protected $_setters         = array();
 	protected $_data            = array();
 	protected $_modified        = array();
+	protected $_tableName;
 
 	public function __construct($initialData = array())
 	{
@@ -17,6 +18,11 @@ class Model
 		{
 			$this->_data = array_merge($this->_data, $initialData);
 		}
+	}
+
+	public function getTableName()
+	{
+		return $this->_tableName;
 	}
 
 	public function toArray($depth = 2, $currentDepth = 0)
