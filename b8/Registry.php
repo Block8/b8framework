@@ -9,10 +9,16 @@ if(!defined('B8_PATH'))
 
 class Registry
 {
-	protected static $instance = null;
+	/**
+	 * @var \b8\Registry
+	 */
+	protected static $instance;
 	protected $data = array();
 	protected $params = null;
 
+	/**
+	 * @return Registry
+	 */
 	public static function getInstance()
 	{
 		if(is_null(self::$instance))
@@ -91,8 +97,9 @@ class Registry
 
 		if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE')
 		{
-			$vars = '';
-			if(strlen(trim($vars = file_get_contents('php://input'))) === 0)
+			$vars = file_get_contents('php://input');
+
+			if(!is_string($vars) || strlen(trim($vars)) === 0)
 			{
 				$vars = '';
 			}

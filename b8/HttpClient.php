@@ -9,7 +9,7 @@ class HttpClient
 
 	public function __construct($base = null)
 	{
-		$settings      = \b8\Registry::getInstance()->get('HttpClient');
+		$settings      = Registry::getInstance()->get('HttpClient');
 		$this->_base   = $settings['base'];
 		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
 

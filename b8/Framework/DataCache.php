@@ -1,5 +1,6 @@
 <?php
 namespace b8\Framework;
+use b8\Registry;
 
 /**
  * Allows caching of data throughout the system to improve performance. Currently uses APC only.
@@ -31,7 +32,7 @@ class DataCache
 	 */
 	protected function __construct()
 	{
-		$this->useCache = !(\b8\Registry::getInstance()->get('DisableCaching', false));
+		$this->useCache = !(Registry::getInstance()->get('DisableCaching', false));
 	}
 
 	/**

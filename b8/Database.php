@@ -23,12 +23,20 @@ class Database extends \PDO
 		self::$details = array('db' => $database, 'user' => $username, 'pass' => $password);
 	}
 
+	/**
+	 * @param string $type
+	 *
+	 * @return \b8\Database
+	 * @throws \Exception
+	 */
 	public static function getConnection($type = 'read')
 	{
 		if(is_null(self::$connections[$type]))
 		{
 			// Shuffle, so we pick a random server:
 			shuffle(self::$servers[$type]);
+
+			$connection = null;
 
 			// Loop until we get a working connection:
 			while(count(self::$servers[$type]))

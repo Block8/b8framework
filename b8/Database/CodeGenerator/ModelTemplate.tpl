@@ -5,6 +5,9 @@
  */
 
 namespace {@appNamespace}\Model;
+
+require_once(APPLICATION_PATH . '{@appNamespace}/Model/Base/{@table.php_name}Base.php');
+
 use {@appNamespace}\Model\Base\{@table.php_name}Base;
 
 /**

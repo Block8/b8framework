@@ -10,7 +10,7 @@ class View
 
 	public function __construct($file, $path = null)
 	{
-		$viewPath = is_null($path) ? \b8\Registry::getInstance()->get('ViewPath') : $path;
+		$viewPath = is_null($path) ? Registry::getInstance()->get('ViewPath') : $path;
 		$viewFile = $viewPath . $file . '.phtml';
 
 		if(!file_exists($viewFile))
@@ -40,7 +40,7 @@ class View
 	{
 		if(!isset(self::$_helpers[$method]))
 		{
-			$class = '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
+			$class = '\\' . Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
 
 			if(!class_exists($class))
 			{
@@ -49,7 +49,7 @@ class View
 
 			if(!class_exists($class))
 			{
-				throw new HttpException\GeneralException('Helper class does not exist: ' . $class);
+				throw new HttpException('Helper class does not exist: ' . $class);
 			}
 
 			self::$_helpers[$method] = new $class();

@@ -1,7 +1,8 @@
 <?php
 
 namespace b8;
-use b8\Exception\HttpException;
+use b8\Exception\HttpException,
+	b8\Registry;
 
 class Application
 {
@@ -16,8 +17,10 @@ class Application
 	// Loaded controller class name:
 	protected $controller = null;
 
-	// Loaded controller object:
-	protected $controllerObject = null;
+	/**
+	 * @var \b8\Controller
+	 */
+	protected $controllerObject;
 
 	// String action (method) name:
 	protected $action = null;
@@ -27,6 +30,8 @@ class Application
 
 	public function __construct()
 	{
+		$path = array();
+
 		if(isset($_SERVER['PATH_INFO']))
 		{
 			$path = explode('?', $_SERVER['PATH_INFO']);
@@ -43,7 +48,7 @@ class Application
 
 		$this->controller = $this->_getController();
 
-		$registry = \b8\Registry::getInstance();
+		$registry = Registry::getInstance();
 		$registry->set('requestPath', $this->path);
 		$registry->set('requestParts', $this->parts);
 		$registry->set('requestMethod', strtoupper($_SERVER['REQUEST_METHOD']));
@@ -70,6 +75,9 @@ class Application
 		}
 	}
 
+	protected function _beforeControllerInit() {}
+	protected function _onControllerInit() {}
+
 	public function handleRequest()
 	{
 		return call_user_func_array(array($this->controllerObject, $this->action), $this->params);
@@ -79,7 +87,7 @@ class Application
 	{
 		if(empty($this->parts[0]))
 		{
-			$this->parts[0] = \b8\Registry::getInstance()->get('DefaultController');
+			$this->parts[0] = Registry::getInstance()->get('DefaultController');
 		}
 
 		if(empty($this->parts[0]))
@@ -90,16 +98,16 @@ class Application
 		$controller = str_replace('-', ' ', trim($this->parts[0]));
 		$controller = ucwords($controller);
 		$controller = str_replace(' ', '', $controller);
-		$aliases    = \b8\Registry::getInstance()->get('ControllerAliases');
+		$aliases    = Registry::getInstance()->get('ControllerAliases');
 
 		if(isset($aliases[$controller]))
 		{
 			$controller = $aliases[$controller];
 		}
 
-		\b8\Registry::getInstance()->set('ControllerName', $controller);
+		Registry::getInstance()->set('ControllerName', $controller);
 
-		$controller = '\\' . \b8\Registry::getInstance()->get('app_namespace') . '\\Controller\\' . $controller . 'Controller';
+		$controller = '\\' . Registry::getInstance()->get('app_namespace') . '\\Controller\\' . $controller . 'Controller';
 
 		return $controller;
 	}

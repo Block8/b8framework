@@ -1,13 +1,14 @@
 <?php
 
 namespace b8\Database;
+use b8\Database;
 
 class Map
 {
 	protected $_db = null;
 	protected $_tables = array();
 
-	public function __construct(\b8\Database $db)
+	public function __construct(Database $db)
 	{
 		$this->_db = $db;
 	}
@@ -25,6 +26,7 @@ class Map
 
 		$this->_getRelationships();
 		$this->_getColumns();
+		$this->_getIndexes();
 
 		return $this->_tables;
 	}
@@ -63,6 +65,8 @@ class Map
 						$toTable    = $matches[3][$i];
 						$toCol      = $matches[4][$i];
 						$fkName     = $matches[1][$i];
+						$fkDelete   = false;
+						$fkUpdate   = false;
 
 						if(isset($matches[6][$i]))
 						{
@@ -93,7 +97,7 @@ class Map
 						if(isset($this->_tables[$fromTable]) && isset($this->_tables[$toTable]))
 						{
 							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']);
-							$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('fk_name' => $fkName, 'fk_delete' => $fkDelete, 'fk_update' => $fkUpdate, 'from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
+							$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('fk_name' => $fkName, 'fk_delete' => $fkDelete, 'fk_update' => $fkUpdate, 'table_php_name' => $this->_tables[$toTable]['php_name'], 'from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
 
 							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']) . $this->_tables[$fromTable]['php_name'].'s';
 							$this->_tables[$toTable]['relationships']['toMany'][] = array('from_col_php' => $this->_generatePhpName($fromCol), 'php_name' => $phpName, 'thisCol' => $toCol, 'table' => $fromTable, 'table_php' => $this->_generatePhpName($fromTable), 'fromCol' => $fromCol, 'col_php' => $this->_generatePhpName($toCol));
@@ -111,7 +115,7 @@ class Map
 			$cols = array();
 			foreach($this->_db->query('DESCRIBE ' . $key)->fetchAll(\PDO::FETCH_ASSOC) as $column)
 			{
-				$col                = $this->_processColumn(array(), $column);
+				$col                = $this->_processColumn(array(), $column, $val);
 				$cols[$col['name']] = $col;
 			}
 
@@ -120,7 +124,38 @@ class Map
 
 	}
 
-	protected function _processColumn($col, $column)
+	protected function _getIndexes()
+	{
+		foreach($this->_tables as $key => &$val)
+		{
+			$indexes = array();
+
+			foreach($this->_db->query('SHOW INDEXES FROM ' . $key)->fetchAll(\PDO::FETCH_ASSOC) as $idx)
+			{
+				if(!isset($indexes[$idx['Key_name']]))
+				{
+					$indexes[$idx['Key_name']]              = array();
+					$indexes[$idx['Key_name']]['name']      = $idx['Key_name'];
+					$indexes[$idx['Key_name']]['unique']    = ($idx['Non_unique'] == '0') ? true : false;
+					$indexes[$idx['Key_name']]['columns']   = array();
+				}
+
+				$indexes[$idx['Key_name']]['columns'][$idx['Seq_in_index']] = $idx['Column_name'];
+			}
+
+			$indexes = array_map(function($idx)
+			{
+				ksort($idx['columns']);
+				$idx['columns'] = implode(', ', $idx['columns']);
+
+				return $idx;
+			}, $indexes);
+
+			$val['indexes'] = $indexes;
+		}
+	}
+
+	protected function _processColumn($col, $column, &$table)
 	{
 		$col['name']    = $column['Field'];
 		$col['php_name']= $this->_generatePhpName($col['name']);
@@ -131,6 +166,25 @@ class Map
 		$col['type']    = strtolower($matches[1]);
 		$col['length']  = isset($matches[3]) ? $matches[3] : 255;
 		$col['null']    = strtolower($column['Null']) == 'yes' ? true : false;
+
+		if(!empty($column['Key']))
+		{
+			if($column['Key'] == 'PRI')
+			{
+				$col['is_primary_key']  = true;
+				$table['primary_key']   = array('column' => $col['name'], 'php_name' => $col['php_name']);
+			}
+
+			if($column['Key'] == 'PRI' || $column['Key'] == 'UNI')
+			{
+				$col['unique_indexed']  = true;
+			}
+			else
+			{
+				$col['many_indexed']    = true;
+			}
+		}
+
 		$col['validate']= array();
 
 		if(!$col['null'])

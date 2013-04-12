@@ -1,11 +1,15 @@
 <?php
 
 namespace b8;
+use b8\Exception\HttpException;
 
 class Model
 {
-	protected $_data        = array();
-	protected $_modified    = array();
+	public static $sleepable    = array();
+	protected $_getters         = array();
+	protected $_setters         = array();
+	protected $_data            = array();
+	protected $_modified        = array();
 
 	public function __construct($initialData = array())
 	{
@@ -62,17 +66,13 @@ class Model
 			{
 				$rtn = $value->toArray($depth, $currentDepth + 1);
 			}
-			elseif($value instanceof DateTime)
-			{
-				$rtn = array('date' => (string)$value);
-			}
 			elseif(is_array($value))
 			{
 				$childArray = array();
 
-				foreach($value as $key => $value)
+				foreach($value as $k => $v)
 				{
-					$childArray[$key] = $this->_valueToArray($value, $currentDepth + 1, $depth);
+					$childArray[$k] = $this->_valueToArray($v, $currentDepth + 1, $depth);
 				}
 
 				$rtn = $childArray;
@@ -94,12 +94,12 @@ class Model
 
 	public function getDataArray()
 	{
-		return $this->data;
+		return $this->_data;
 	}
 
 	public function getModified()
 	{
-		return $this->modified;
+		return $this->_modified;
 	}
 
 	public function setValues(array $values)
@@ -108,7 +108,7 @@ class Model
 		{
 			if(isset($this->_setters[$key]))
 			{
-				$func = $this->setters[$key];
+				$func = $this->_setters[$key];
 
 				if($value === 'null')
 				{
@@ -125,6 +125,77 @@ class Model
 
 				$this->{$func}($value);
 			}
+		}
+	}
+
+	protected function _setModified($column)
+	{
+		$this->_modified[$column] = $column;
+	}
+
+	//----------------
+	// Validation
+	//----------------
+	protected function _validateString($name, $value)
+	{
+		if(!is_string($value) && !is_null($value))
+		{
+			throw new HttpException\ValidationException($name . ' must be a string.');
+		}
+	}
+
+	protected function _validateInt($name, &$value)
+	{
+		if(is_bool($value))
+		{
+			$value = $value ? 1 : 0;
+		}
+
+		if(!is_numeric($value) && !is_null($value))
+		{
+			throw new HttpException\ValidationException($name . ' must be an integer.');
+		}
+
+		if(!is_int($value) && !is_null($value))
+		{
+			$value = (int)$value;
+		}
+	}
+
+	protected function _validateFloat($name, &$value)
+	{
+		if(!is_numeric($value) && !is_null($value))
+		{
+			throw new HttpException\ValidationException($name . ' must be a float.');
+		}
+
+		if(!is_float($value) && !is_null($value))
+		{
+			$value = (float)$value;
+		}
+	}
+
+	protected function _validateDate($name, &$value)
+	{
+		if(is_string($value))
+		{
+			$value = empty($value) ? null : new \DateTime($value);
+		}
+
+		if((!is_object($value) || !($value instanceof \DateTime)) && !is_null($value))
+		{
+			throw new HttpException\ValidationException($name . ' must be a date object.');
+		}
+
+
+		$value = empty($value) ? null : $value->format('Y-m-d H:i:s');
+	}
+
+	protected function _validateNotNull($name, &$value)
+	{
+		if(is_null($value))
+		{
+			throw new HttpException\ValidationException($name . ' must not be null.');
 		}
 	}
 }

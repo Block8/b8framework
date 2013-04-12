@@ -1,8 +1,9 @@
 <?php
 
 namespace b8\View;
+use b8\View;
 
-class UserView extends \b8\View
+class UserView extends View
 {
 	public function __construct($viewCode)
 	{
@@ -155,6 +156,18 @@ class UserView extends \b8\View
 			if(is_array($working) && isset($working[$thisPart]))
 			{
 				$working = $working[$thisPart];
+				continue;
+			}
+
+			if($thisPart == 'toLowerCase')
+			{
+				$working = strtolower($working);
+				continue;
+			}
+
+			if($thisPart == 'toUpperCase')
+			{
+				$working = strtoupper($working);
 				continue;
 			}
 

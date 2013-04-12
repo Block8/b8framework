@@ -10,6 +10,13 @@ use b8\Registry;
 class Controller
 {
 	/**
+	 * Initialise the controller.
+	 */
+	public function init()
+	{
+	}
+
+	/**
 	 * Get a hash of incoming request parameters ($_GET, $_POST)
 	 *
 	 * @return array
@@ -39,7 +46,7 @@ class Controller
 	 */
 	public function setParam($key, $value)
 	{
-		return Registry::getInstance()->setParam($key, $value);
+		Registry::getInstance()->setParam($key, $value);
 	}
 
 	/**
@@ -48,6 +55,6 @@ class Controller
 	 */
 	public function unsetParam($key)
 	{
-		return Registry::getInstance()->unsetParam($key);
+		Registry::getInstance()->unsetParam($key);
 	}
 }

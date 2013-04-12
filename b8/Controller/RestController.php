@@ -1,8 +1,12 @@
 <?php
 
 namespace b8\Controller;
+use b8\Controller,
+	b8\Type\RestUser,
+	b8\Store\Factory,
+	b8\Exception\HttpException;
 
-class RestController extends \b8\Controller
+class RestController extends Controller
 {
 	const SEARCHTYPE_AND = 'AND';
 	const SEARCHTYPE_OR  = 'OR';
@@ -10,7 +14,10 @@ class RestController extends \b8\Controller
 	public $requiresAuthentication = true;
 	public $updateLastAction = true;
 
-	protected $activeUser = null;
+	/**
+	 * @var \b8\Type\RestUser
+	 */
+	protected $activeUser;
 	protected $where = array();
 	protected $limit = null;
 	protected $offset = null;
@@ -22,12 +29,16 @@ class RestController extends \b8\Controller
 	protected $manualJoins = array();
 	protected $manualWheres = array();
 	protected $searchType = self::SEARCHTYPE_AND;
+	protected $_resourceName    = null;
+	protected $_modelName       = null;
+	protected $_tableName       = null;
+	protected $_modelClass      = null;
 
 	public function init()
 	{
 	}
 
-	public function setActiveUser(\b8\Type\RestUser $user)
+	public function setActiveUser(RestUser $user)
 	{
 		$this->activeUser = $user;
 	}
@@ -39,7 +50,7 @@ class RestController extends \b8\Controller
 
 	public function index()
 	{
-		if(!$this->activeUser->checkPermission('canRead', $this->resourceName))
+		if(!$this->activeUser->checkPermission('canRead', $this->_resourceName))
 		{
 			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
@@ -51,7 +62,7 @@ class RestController extends \b8\Controller
 		$this->group      = is_null($this->group) || !count($this->group) ? $this->getParam('group', null) : $this->group;
 		$this->searchType = $this->getParam('searchType', self::SEARCHTYPE_AND);
 
-		$store = \b8\Store\Factory::getStore($this->modelName);
+		$store = Factory::getStore($this->_modelName);
 		$data  = $store->getWhere($this->where, $this->limit, $this->offset, $this->joins, $this->order, $this->manualJoins, $this->group, $this->manualWheres, $this->searchType);
 
 		$rtn = array(
@@ -93,7 +104,7 @@ class RestController extends \b8\Controller
 
 		if(count($where))
 		{
-			foreach($where as $field => &$value)
+			foreach($where as &$value)
 			{
 				if(!is_array($value) || !isset($value['operator']))
 				{
@@ -144,7 +155,7 @@ class RestController extends \b8\Controller
 	{
 		if(empty($obj))
 		{
-			throw new HttpException\NotFoundException('The ' . strtolower($this->modelName) . ' you are trying to access does not exist.');
+			throw new HttpException\NotFoundException('The ' . strtolower($this->_modelName) . ' you are trying to access does not exist.');
 		}
 
 		if($deed && method_exists($this, $deed . 'Deed'))
@@ -155,38 +166,38 @@ class RestController extends \b8\Controller
 		return $obj;
 	}
 
-	public function get($key, $deed = null)
+	public function get($key)
 	{
-		if(!$this->activeUser->checkPermission('canRead', $this->resourceName))
+		if(!$this->activeUser->checkPermission('canRead', $this->_resourceName))
 		{
 			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 
-		$rtn = \b8\Store\Factory::getStore($this->modelName)->getByPrimaryKey($key);
+		$rtn = Factory::getStore($this->_modelName)->getByPrimaryKey($key);
 
 		if(is_object($rtn) && method_exists($rtn, 'toArray'))
 		{
 			$rtn = $rtn->toArray($this->arrayDepth);
 		}
 
-		return array(strtolower($this->modelName) => $rtn);
+		return array(strtolower($this->_modelName) => $rtn);
 	}
 
-	public function put($key, $deed = null)
+	public function put($key)
 	{
-		if(!$this->activeUser->checkPermission('canEdit', $this->resourceName))
+		if(!$this->activeUser->checkPermission('canEdit', $this->_resourceName))
 		{
 			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 
-		$store = \b8\Store\Factory::getStore($this->modelName);
+		$store = Factory::getStore($this->_modelName);
 
 		if($obj = $store->getByPrimaryKey($key))
 		{
 			$obj->setValues($this->getParams());
 			$rtn = $store->save($obj);
 
-			return array(strtolower($this->modelName) => $rtn->toArray($this->arrayDepth));
+			return array(strtolower($this->_modelName) => $rtn->toArray($this->arrayDepth));
 		}
 		else
 		{
@@ -194,31 +205,31 @@ class RestController extends \b8\Controller
 		}
 	}
 
-	public function post($deed = null)
+	public function post()
 	{
-		if(!$this->activeUser->checkPermission('canCreate', $this->resourceName))
+		if(!$this->activeUser->checkPermission('canCreate', $this->_resourceName))
 		{
 			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 
-		$store = \b8\Store\Factory::getStore($this->modelName);
+		$store = Factory::getStore($this->_modelName);
 
-		$modelClass = $this->modelClass;
+		$modelClass = $this->_modelClass;
 		$obj        = new $modelClass();
 		$obj->setValues($this->getParams());
 		$rtn = $store->save($obj);
 
-		return array(strtolower($this->modelName) => $rtn->toArray($this->arrayDepth));
+		return array(strtolower($this->_modelName) => $rtn->toArray($this->arrayDepth));
 	}
 
-	public function delete($key, $deed = null)
+	public function delete($key)
 	{
-		if(!$this->activeUser->checkPermission('canDelete', $this->resourceName))
+		if(!$this->activeUser->checkPermission('canDelete', $this->_resourceName))
 		{
 			throw new HttpException\ForbiddenException('You do not have permission do this.');
 		}
 
-		$store = \b8\Store\Factory::getStore($this->modelName);
+		$store = Factory::getStore($this->_modelName);
 
 		if($obj = $store->getByPrimaryKey($key))
 		{
@@ -227,9 +238,7 @@ class RestController extends \b8\Controller
 				return array('deleted' => true);
 			}
 		}
-		else
-		{
-			return null;
-		}
+
+		return array('deleted' => false);
 	}
 }

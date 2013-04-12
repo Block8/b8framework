@@ -1,14 +1,14 @@
 <?php
 
 /**
- * {@table.php_name} model for table: {@name}
+ * {@table.php_name} base model for table: {@name}
  */
 
 namespace {@appNamespace}\Model\Base;
 use b8\Model;
 
 /**
- * {@table.php_name} Model
+ * {@table.php_name} Base Model
  */
 class {@table.php_name}Base extends Model
 {
@@ -24,7 +24,13 @@ class {@table.php_name}Base extends Model
 {loop table.columns}
 					'{@item.name}'    =>    'get{@item.php_name}',
 
-{/loop}                                  );
+{/loop}
+{loop table.relationships.toOne}
+					'{@item.php_name}'  => 'get{@item.php_name}',
+
+{/loop}
+							);
+
 	protected $_setters     = array(
 {loop table.columns}
 					'{@item.name}'    =>    'set{@item.php_name}',
@@ -32,7 +38,22 @@ class {@table.php_name}Base extends Model
 {/loop}                                  );
 	public $columns         = array(
 {loop table.columns}
-					'{@item.name}'    =>    array('type' => '{@item.type}', 'length' => {@item.length}),
+					'{@item.name}'    =>    array(
+													'type' => '{@item.type}',
+													'length' => {@item.length},
+{if item.null}
+													'nullable' => true,
+{/if}
+{if item.is_primary_key}
+													'primary_key' => true,
+{/if}
+
+												),
+
+{/loop}                                  );
+	public $indexes         = array(
+{loop table.indexes}
+					'{@item.name}'    =>    array({if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'),
 
 {/loop}                                  );
 	public $foreignKeys     = array(
@@ -46,7 +67,18 @@ class {@table.php_name}Base extends Model
 
 	public function get{@item.php_name}()
 	{
-		return $this->_data['{@item.name}'];
+		$rtn    = $this->_data['{@item.name}'];
+
+		{if item.validate_date}
+
+		if(!empty($rtn))
+		{
+			$rtn    = new \DateTime($rtn);
+		}
+
+		{/if}
+
+		return $rtn;
 	}
 
 {/loop}
@@ -56,17 +88,17 @@ class {@table.php_name}Base extends Model
 	public function set{@item.php_name}($value)
 	{
 {if item.validate_null}
-		$this->_validateNotNull($value);
+		$this->_validateNotNull('{@item.php_name}', $value);
 {/if}
 
 {if item.validate_int}
-		$this->_validateInt($value);
+		$this->_validateInt('{@item.php_name}', $value);
 {/if}{if item.validate_string}
-		$this->_validateString($value);
+		$this->_validateString('{@item.php_name}', $value);
 {/if}{if item.validate_float}
-		$this->_validateFloat($value);
+		$this->_validateFloat('{@item.php_name}', $value);
 {/if}{if item.validate_date}
-		$this->_validateDate($value);
+		$this->_validateDate('{@item.php_name}', $value);
 {/if}
 
 		$this->_data['{@item.name}'] = $value;
@@ -79,36 +111,43 @@ class {@table.php_name}Base extends Model
 {loop table.relationships.toOne}
 
 	/**
-	 * Get the {@item.php_name} model for this {@parent.table.php_name} by {@item.col_php}.
+	 * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
 	 *
-	 * @uses \{@parent.appNamespace}\Store\{@item.php_name}Store::getBy{@item.col_php}()
-	 * @uses \{@parent.appNamespace}\Model\{@item.php_name}
-	 * @return \{@parent.appNamespace}\Model\{@item.php_name}
+	 * @uses \{@parent.appNamespace}\Store\{@item.table_php_name}Store::getBy{@item.col_php}()
+	 * @uses \{@parent.appNamespace}\Model\{@item.table_php_name}
+	 * @return \{@parent.appNamespace}\Model\{@item.table_php_name}
 	 */
 	public function get{@item.php_name}()
 	{
-		return \b8\Store\Factory::getStore('{@item.php_name}')->getBy{@item.col_php}($this->get{@item.from_col_php}());
+		$key = $this->get{@item.from_col_php}();
+
+		if(empty($key))
+		{
+			return null;
+		}
+
+		return \b8\Store\Factory::getStore('{@item.table_php_name}')->getBy{@item.col_php}($key);
 	}
 
 	public function set{@item.php_name}($value)
 	{
-		// Is this an instance of {$fkMethod}?
-		if($value instanceof \{@parent.appNamespace}\Model\{@item.php_name})
+		// Is this an instance of {@item.table_php_name}?
+		if($value instanceof \{@parent.appNamespace}\Model\{@item.table_php_name})
 		{
 			return $this->set{@item.php_name}Object($value);
 		}
 
-		// Is this an array representing a {$fkMethod}?
-		if(is_array($value) && !empty($value['{@item.from_col}']))
+		// Is this an array representing a {@item.table_php_name} item?
+		if(is_array($value) && !empty($value['{@item.col}']))
 		{
-			return $this->set{@item.from_col_php}($value['{@item.from_col}']);
+			return $this->set{@item.from_col_php}($value['{@item.col}']);
 		}
 
 		// Is this a scalar value representing the ID of this foreign key?
 		return $this->set{@item.from_col_php}($value);
 	}
 
-	public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.php_name} $value)
+	public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
 	{
 		$this->_data['{@item.from_col}'] = $value->get{@item.col_php}();
 	}
