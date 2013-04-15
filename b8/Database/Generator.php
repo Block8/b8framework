@@ -26,6 +26,7 @@ class Generator
 
 	public function generate()
 	{
+		error_reporting(0);
 		$di = new \DirectoryIterator($this->_path);
 
 		$this->_todo = array();
@@ -44,40 +45,56 @@ class Generator
 			$modelName = '\\' . $this->_ns . '\\Model\\Base\\' . str_replace('.php', '', $file->getFilename());
 
 			require_once($this->_path . $file->getFilename());
-			$cls    = new $modelName();
-			$cols   = $cls->columns;
-			$idxs   = $cls->indexes;
-			$fks    = $cls->foreignKeys;
-			$tbl    = $cls->getTableName();
-			$isNewTable = false;
+			$model          = new $modelName();
+			$columns        = $model->columns;
+			$indexes        = $model->indexes;
+			$foreignKeys    = $model->foreignKeys;
+			$tableName      = $model->getTableName();
 
-			if(!array_key_exists($tbl, $this->_tables))
+			if(!array_key_exists($tableName, $this->_tables))
 			{
-				$this->_createTable($tbl, $cols, $idxs, $fks);
+				$this->_createTable($tableName, $columns, $indexes, $foreignKeys);
 				continue;
 			}
 			else
 			{
-				$table = $this->_tables[$tbl];
-				//$this->_updateColumns($table, $cols);
-				//$this->_updateIndexes($table, $idxs);
-				//$this->_updateRelationships($table, $fks);
+				$table = $this->_tables[$tableName];
+				$this->_updateColumns($tableName, $table, $columns);
+				$this->_updateRelationships($tableName, $table, $foreignKeys);
+				$this->_updateIndexes($tableName, $table, $indexes);
 			}
 		}
 
-		foreach($this->_todo['create'] as $query)
-		{
-			$this->_db->query($query);
-		}
+		print 'DROP FK: ' . count($this->_todo['drop_fk']) . PHP_EOL;
+		print 'DROP INDEX: ' . count($this->_todo['drop_index']) . PHP_EOL;
+		print 'CREATE TABLE: ' . count($this->_todo['create']) . PHP_EOL;
+		print 'ALTER TABLE: ' . count($this->_todo['alter']) . PHP_EOL;
+		print 'ADD INDEX: ' . count($this->_todo['add_index']) . PHP_EOL;
+		print 'ADD FK: ' . count($this->_todo['add_fk']) . PHP_EOL;
 
-		foreach($this->_todo['index'] as $query)
-		{
-			$this->_db->query($query);
-		}
 
-		foreach($this->_todo['fk'] as $query)
+		$order = array('drop_fk', 'drop_index', 'create', 'alter', 'add_index', 'add_fk');
+
+		while($group = array_shift($order))
 		{
-			$this->_db->query($query);
+			if(!isset($this->_todo[$group]))
+			{
+				continue;
+			}
+
+			foreach($this->_todo[$group] as $query)
+			{
+				try
+				{
+					//print $query . PHP_EOL;
+					$this->_db->query($query);
+				}
+				catch(\Exception $ex)
+				{
+					print 'FAILED TO EXECUTE: ' . $query . PHP_EOL;
+					print $ex->getMessage().PHP_EOL.PHP_EOL;
+				}
+			}
 		}
 	}
 
@@ -156,7 +173,186 @@ class Generator
 		}
 	}
 
-	protected function _addIndex($table, $name, $idx)
+	protected function _updateColumns($tableName, $table, $columns)
+	{
+		$currentColumns = $table['columns'];
+
+		while($column = array_shift($currentColumns))
+		{
+			if(!array_key_exists($column['name'], $columns))
+			{
+				$this->_todo['alter'][$tableName.'.'.$column['name']] = 'ALTER TABLE `' . $tableName . '` DROP COLUMN `' . $column['name'] . '`';
+			}
+			else
+			{
+				$model = $columns[$column['name']];
+
+				$model['nullable'] = !isset($model['nullable']) ? false : $model['nullable'];
+				$model['default'] = !isset($model['default']) ? false : $model['default'];
+				$model['auto_increment'] = !isset($model['auto_increment']) ? false : $model['auto_increment'];
+				$model['primary_key'] = !isset($model['primary_key']) ? false : $model['primary_key'];
+				$column['is_primary_key'] = !isset($column['is_primary_key']) ? false : $column['is_primary_key'];
+
+				if( $column['type']             != $model['type'] ||
+					($column['length'] != $model['length'] && !in_array($model['type'], array('text', 'longtext', 'mediumtext', 'date', 'datetime', 'float')))  ||
+					$column['null']             != $model['nullable'] ||
+					$column['default']          != $model['default'] ||
+					$column['auto']             != $model['auto_increment'])
+				{
+					$this->_updateColumn($tableName, $column['name'], $column['name'], $model);
+				}
+			}
+
+			unset($columns[$column['name']]);
+		}
+
+		if(count($columns))
+		{
+			foreach($columns as $name => $model)
+			{
+				// Check if we're renaming a column:
+				if(isset($model['rename']))
+				{
+					unset($this->_todo['alter'][$tableName.'.'.$model['rename']]);
+					$this->_updateColumn($tableName, $model['rename'], $name, $model);
+					continue;
+				}
+
+				// New column
+				$add = '`' . $name . '` ' . $model['type'];;
+				switch($model['type'])
+				{
+					case 'text':
+					case 'longtext':
+					case 'mediumtext':
+					case 'date':
+					case 'datetime':
+					case 'float':
+						break;
+
+					default:
+						$add .= '(' . $model['length'] . ')';
+						break;
+				}
+
+				if(empty($model['nullable']) || !$model['nullable'])
+				{
+					$add .= ' NOT NULL ';
+				}
+
+				if(!empty($model['default']))
+				{
+					$add .= ' DEFAULT ' . (is_numeric($model['default']) ? $model['default'] : '\'' . $model['default'] . '\'');
+				}
+
+				if(!empty($model['auto_increment']) && $model['auto_increment'])
+				{
+					$add .= ' AUTO_INCREMENT ';
+				}
+
+				$this->_todo['alter'][] = 'ALTER TABLE `' . $tableName . '` ADD COLUMN ' . $add;
+			}
+		}
+	}
+
+	protected function _updateColumn($tableName, $prevName, $newName, $model)
+	{
+		$add = '`' . $newName . '` ' . $model['type'];;
+		switch($model['type'])
+		{
+			case 'text':
+			case 'longtext':
+			case 'mediumtext':
+			case 'date':
+			case 'datetime':
+			case 'float':
+				break;
+
+			default:
+				$add .= '(' . $model['length'] . ')';
+				break;
+		}
+
+		if(empty($model['nullable']) || !$model['nullable'])
+		{
+			$add .= ' NOT NULL ';
+		}
+
+		if(!empty($model['default']))
+		{
+			$add .= ' DEFAULT ' . (is_numeric($model['default']) ? $model['default'] : '\'' . $model['default'] . '\'');
+		}
+
+		if(!empty($model['auto_increment']) && $model['auto_increment'])
+		{
+			$add .= ' AUTO_INCREMENT ';
+		}
+
+		$this->_todo['alter'][] = 'ALTER TABLE `' . $tableName . '` CHANGE COLUMN `' . $prevName . '` ' . $add;
+	}
+
+	protected function _updateRelationships($tableName, $table, $foreignKeys)
+	{
+		$current = $table['relationships']['toOne'];
+
+		while($foreignKey = array_shift($current))
+		{
+			if(!array_key_exists($foreignKey['fk_name'], $foreignKeys))
+			{
+				$this->_dropFk($tableName, $foreignKey['fk_name']);
+			}
+			elseif( $foreignKey['from_col'] != $foreignKeys[$foreignKey['fk_name']]['local_col'] ||
+					$foreignKey['table'] != $foreignKeys[$foreignKey['fk_name']]['table'] ||
+					$foreignKey['col'] != $foreignKeys[$foreignKey['fk_name']]['col'] ||
+					$foreignKey['fk_update'] != $foreignKeys[$foreignKey['fk_name']]['update'] ||
+					$foreignKey['fk_delete'] != $foreignKeys[$foreignKey['fk_name']]['delete'])
+			{
+				$this->_alterFk($tableName, $foreignKey['fk_name'], $foreignKeys[$foreignKey['fk_name']]);
+			}
+
+			unset($foreignKeys[$foreignKey['fk_name']]);
+		}
+
+		if(count($foreignKeys))
+		{
+			foreach($foreignKeys as $name => $foreignKey)
+			{
+				// New column
+				$this->_addFk($tableName, $name, $foreignKey);
+			}
+		}
+	}
+
+	protected function _updateIndexes($tableName, $table, $indexes)
+	{
+		$current = $table['indexes'];
+
+		while($index = array_shift($current))
+		{
+			if(!array_key_exists($index['name'], $indexes))
+			{
+				$this->_dropIndex($tableName, $index['name']);
+			}
+			elseif( $index['unique'] != $indexes[$index['name']]['unique'] ||
+				$index['columns'] != $indexes[$index['name']]['columns'])
+			{
+				$this->_alterIndex($tableName, $index['name'], $index);
+			}
+
+			unset($indexes[$index['name']]);
+		}
+
+		if(count($indexes))
+		{
+			foreach($indexes as $name => $index)
+			{
+				// New column
+				$this->_addIndex($tableName, $name, $index);
+			}
+		}
+	}
+
+	protected function _addIndex($table, $name, $idx, $stage = 'add_index')
 	{
 		if($name == 'PRIMARY')
 		{
@@ -167,31 +363,31 @@ class Generator
 			$q = 'CREATE ' . ($idx['unique'] ? 'UNIQUE' : '') . ' INDEX `' . $name . '` ON `' . $table . '` (' . $idx['columns'] . ')';
 		}
 
-		$this->_todo['index'][] = $q;
+		$this->_todo[$stage][] = $q;
 	}
 
-	protected function _alterIndex($table, $name, $idx)
+	protected function _alterIndex($table, $name, $idx, $stage = 'index')
 	{
 		if($name == 'PRIMARY')
 		{
 			$q = 'ALTER TABLE `' . $table . '` DROP PRIMARY KEY, ADD PRIMARY KEY(' . $idx['columns'] . ')';
-			$this->_todo['index'][] = $q;
+			$this->_todo[$stage][] = $q;
 			return;
 		}
 
-		$this->_dropIndex($table, $name);
-		$this->_addIndex($table, $name, $idx);
+		$this->_dropIndex($table, $name, $stage);
+		$this->_addIndex($table, $name, $idx, $stage);
 	}
 
-	protected function _dropIndex($table, $idxName)
+	protected function _dropIndex($table, $idxName, $stage = 'drop_index')
 	{
 		$q = 'DROP INDEX `' . $idxName . '` ON `' . $table . '`';
-		$this->_todo['index'][] = $q;
+		$this->_todo[$stage][] = $q;
 	}
 
 	protected function _addFk($table, $name, $fk)
 	{
-		$q = 'ALTER TABLE `' . $table . '` ADD FOREIGN KEY `' . $name . '` (`' . $fk['local_col'] . '`) REFERENCES `'.$fk['table'].'` (`'.$fk['col'].'`)';
+		$q = 'ALTER TABLE `' . $table . '` ADD CONSTRAINT `' . $name . '` FOREIGN KEY (`' . $fk['local_col'] . '`) REFERENCES `'.$fk['table'].'` (`'.$fk['col'].'`)';
 
 		if(!empty($fk['delete']))
 		{
@@ -203,7 +399,7 @@ class Generator
 			$q .= ' ON UPDATE ' . $fk['update'] . ' ';
 		}
 
-		$this->_todo['fk'][] = $q;
+		$this->_todo['add_fk'][] = $q;
 	}
 
 	protected function _alterFk($table, $name, $fk)
@@ -215,7 +411,6 @@ class Generator
 	protected function _dropFk($table, $name)
 	{
 		$q = 'ALTER TABLE `'.$table.'` DROP FOREIGN KEY `' . $name . '`';
-		print $q . PHP_EOL;
-		$this->_todo['fk'][] = $q;
+		$this->_todo['drop_fk'][] = $q;
 	}
 }

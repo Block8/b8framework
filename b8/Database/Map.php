@@ -56,7 +56,7 @@ class Map
 				$str = $r['Create Table'];
 
 				$matches = array();
-				if(preg_match_all('/CONSTRAINT\s+\`([a-zA-Z0-9_]+)\`\s+FOREIGN\s+KEY\s+\(\`([a-zA-Z0-9_]+)\`\)\s+REFERENCES\s+\`([a-zA-Z0-9_]+)\`\s+\(\`([a-zA-Z0-9_]+)\`\)(\s+ON (DELETE|UPDATE) (NO ACTION|CASCADE|RESTRICT))?(\s+ON (DELETE|UPDATE) (NO ACTION|CASCADE|RESTRICT))?/', $str, $matches))
+				if(preg_match_all('/CONSTRAINT\s+\`([a-zA-Z0-9_]+)\`\s+FOREIGN\s+KEY\s+\(\`([a-zA-Z0-9_]+)\`\)\s+REFERENCES\s+\`([a-zA-Z0-9_]+)\`\s+\(\`([a-zA-Z0-9_]+)\`\)(\s+ON (DELETE|UPDATE) (SET NULL|NO ACTION|CASCADE|RESTRICT))?(\s+ON (DELETE|UPDATE) (SET NULL|NO ACTION|CASCADE|RESTRICT))?/', $str, $matches))
 				{
 					for($i = 0; $i < count($matches[0]); $i++)
 					{
@@ -164,7 +164,12 @@ class Map
 		preg_match('/^([a-zA-Z]+)(\()?([0-9\,]+)?(\))?/', $column['Type'], $matches);
 
 		$col['type']    = strtolower($matches[1]);
-		$col['length']  = isset($matches[3]) ? $matches[3] : 255;
+
+		if(isset($matches[3]))
+		{
+			$col['length'] = $matches[3];
+		}
+
 		$col['null']    = strtolower($column['Null']) == 'yes' ? true : false;
 		$col['auto']    = strtolower($column['Extra']) == 'auto_increment' ? true : false;
 		$col['default'] = $column['Default'] == 'NULL' || empty($column['Default']) ? null : $column['Default'];
