@@ -35,7 +35,11 @@ class {@table.php_name}Base extends Model
 {loop table.columns}
 					'{@item.name}'    =>    'set{@item.php_name}',
 
-{/loop}                                  );
+{/loop}
+{loop table.relationships.toOne}
+	'{@item.php_name}'  => 'set{@item.php_name}',
+
+{/loop}                                 );
 	public $columns         = array(
 {loop table.columns}
 					'{@item.name}'    =>    array(
