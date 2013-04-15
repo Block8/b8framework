@@ -2,3 +2,5 @@
 ._.DS_Store
 Thumbs.db
 .idea
+composer.lock
+vendor
