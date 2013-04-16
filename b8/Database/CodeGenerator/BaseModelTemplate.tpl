@@ -114,6 +114,11 @@ class {@table.php_name}Base extends Model
 		$this->_validateDate('{@item.php_name}', $value);
 {/if}
 
+		if($this->_data['{@item.name}'] == $value)
+		{
+			return;
+		}
+
 		$this->_data['{@item.name}'] = $value;
 
 		$this->_setModified('{@item.name}');
