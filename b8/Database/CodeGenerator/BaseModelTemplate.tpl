@@ -167,7 +167,7 @@ class {@table.php_name}Base extends Model
 
 	public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
 	{
-		$this->_data['{@item.from_col}'] = $value->get{@item.col_php}();
+		return $this->set{@item.from_col_php}($value->get{@item.col_php}());
 	}
 
 {/loop}
