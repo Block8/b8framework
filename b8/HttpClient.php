@@ -9,7 +9,7 @@ class HttpClient
 
 	public function __construct($base = null)
 	{
-		$settings      = Registry::getInstance()->get('HttpClient');
+		$settings      = Registry::getInstance()->get('HttpClient', array('base' => '', 'params' => array()));
 		$this->_base   = $settings['base'];
 		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
 
@@ -38,7 +38,7 @@ class HttpClient
 		$getParams  = http_build_query($getParams);
 		$bodyParams = http_build_query($bodyParams);
 
-		if(substr($uri, 0, 1) != '/')
+		if(substr($uri, 0, 1) != '/' && !empty($this->_base))
 		{
 			$uri = '/' . $uri;
 		}
@@ -49,6 +49,7 @@ class HttpClient
 		$context['http']['timeout']       = 30;
 		$context['http']['method']        = $method;
 		$context['http']['ignore_errors'] = true;
+		$context['http']['header']        = 'Content-Type: application/x-www-form-urlencoded';
 
 		if(in_array($method, array('PUT', 'POST')))
 		{
@@ -64,18 +65,7 @@ class HttpClient
 		$res['headers'] = $http_response_header;
 		$res['code']    = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $res['headers'][0]);
 		$res['success'] = false;
-
-		if(B8_DEBUG_MODE && isset($_GET['http']))
-		{
-			print $result . PHP_EOL;
-		}
-
-		$res['body'] = $this->_decodeResponse($result);
-
-		if(B8_DEBUG_MODE && isset($_GET['http']))
-		{
-			print $res['body'] . PHP_EOL;
-		}
+		$res['body']    = $this->_decodeResponse($result);
 
 		if($res['code'] >= 200 && $res['code'] < 300)
 		{
@@ -93,12 +83,6 @@ class HttpClient
 					$res['body']      = json_decode($res['body'], true);
 				}
 			}
-		}
-
-		if(B8_DEBUG_MODE && isset($_GET['http']))
-		{
-			print $res['body'] . PHP_EOL;
-			die;
 		}
 
 		return $res;

@@ -12,21 +12,26 @@ class Registry
 	/**
 	 * @var \b8\Registry
 	 */
-	protected static $instance;
-	protected $data = array();
-	protected $params = null;
+	protected static $_instance;
+	protected $_data    = array();
+	protected $_params  = null;
 
 	/**
 	 * @return Registry
 	 */
 	public static function getInstance()
 	{
-		if(is_null(self::$instance))
+		if(is_null(self::$_instance))
 		{
-			self::$instance = new self();
+			self::$_instance = new self();
 		}
 
-		return self::$instance;
+		return self::$_instance;
+	}
+
+	public static function forceReset()
+	{
+		self::$_instance = null;
 	}
 
 	protected function __construct()
@@ -35,9 +40,9 @@ class Registry
 
 	public function get($key, $default = null)
 	{
-		if(isset($this->data[$key]))
+		if(isset($this->_data[$key]))
 		{
-			return $this->data[$key];
+			return $this->_data[$key];
 		}
 
 		return $default;
@@ -45,35 +50,35 @@ class Registry
 
 	public function set($key, $value)
 	{
-		$this->data[$key] = $value;
+		$this->_data[$key] = $value;
 	}
 
 	public function setArray($array)
 	{
-		$this->data = array_merge($this->data, $array);
+		$this->_data = array_merge($this->_data, $array);
 	}
 
 
 	public function getParams()
 	{
-		if(is_null($this->params))
+		if(is_null($this->_params))
 		{
 			$this->parseInput();
 		}
 
-		return $this->params;
+		return $this->_params;
 	}
 
 	public function getParam($key, $default)
 	{
-		if(is_null($this->params))
+		if(is_null($this->_params))
 		{
 			$this->parseInput();
 		}
 
-		if(isset($this->params[$key]))
+		if(isset($this->_params[$key]))
 		{
-			return $this->params[$key];
+			return $this->_params[$key];
 		}
 		else
 		{
@@ -83,19 +88,19 @@ class Registry
 
 	public function setParam($key, $value)
 	{
-		$this->params[$key] = $value;
+		$this->_params[$key] = $value;
 	}
 
 	public function unsetParam($key)
 	{
-		unset($this->params[$key]);
+		unset($this->_params[$key]);
 	}
 
 	public function parseInput()
 	{
 		$params = $_REQUEST;
 
-		if($_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'DELETE')
+		if(!isset($_SERVER['REQUEST_METHOD']) || in_array($_SERVER['REQUEST_METHOD'], array('PUT', 'DELETE')))
 		{
 			$vars = file_get_contents('php://input');
 
@@ -110,6 +115,6 @@ class Registry
 			$params = array_merge($params, $inputData);
 		}
 
-		$this->params = $params;
+		$this->_params = $params;
 	}
 }

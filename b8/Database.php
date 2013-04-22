@@ -21,6 +21,8 @@ class Database extends \PDO
 	public static function setDetails($database, $username, $password)
 	{
 		self::$details = array('db' => $database, 'user' => $username, 'pass' => $password);
+		self::$connections['read'] = null;
+		self::$connections['write'] = null;
 	}
 
 	/**
@@ -47,7 +49,7 @@ class Database extends \PDO
 				// Try to connect:
 				try
 				{
-					$connection = @new self('mysql:host=' . $server . ';dbname=' . self::$details['db'],
+					$connection = new self('mysql:host=' . $server . ';dbname=' . self::$details['db'],
 						self::$details['user'],
 						self::$details['pass'],
 						array(
