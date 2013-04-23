@@ -8,4 +8,4 @@ before_script:
   - mysql -e "DROP DATABASE IF EXISTS b8_test;" -uroot
   - mysql -e "CREATE DATABASE b8_test;" -uroot
   - mysql -e "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test'" -uroot
-script: phpunit ./tests/
+script: phpunit -d "short_open_tag = 1" ./tests/
