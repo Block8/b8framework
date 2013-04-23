@@ -9,4 +9,5 @@ before_script:
   - mysql -e "CREATE DATABASE b8_test;" -uroot
   - mysql -e "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test'" -uroot
   - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo 'apc.enable_cli = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 script: phpunit -d "short_open_tag = On" ./tests/
