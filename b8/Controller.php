@@ -7,14 +7,12 @@ use b8\Registry;
  * b8 Abstract Controller class
  * @package b8
  */
-class Controller
+abstract class Controller
 {
 	/**
 	 * Initialise the controller.
 	 */
-	public function init()
-	{
-	}
+	abstract public function init();
 
 	/**
 	 * Get a hash of incoming request parameters ($_GET, $_POST)
