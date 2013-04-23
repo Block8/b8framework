@@ -30,16 +30,21 @@ class ViewTest extends \PHPUnit_Framework_TestCase
 		$view = new b8\View('vars', dirname(__FILE__) . '/data/view/');
 		$view->who = 'World';
 
+		print $view->render();
+
 		$this->assertTrue(isset($view->who));
 		$this->assertFalse(isset($view->what));
 		$this->assertTrue($view->render() == 'Hello World');
-	}
+			}
 
 	public function testFormatViewHelper()
 	{
 		$view = new b8\View('format', dirname(__FILE__) . '/data/view/');
 		$view->number = 1000000.25;
 		$view->symbol = true;
+
+		print $view->render();
+
 		$this->assertTrue($view->render() == '£1,000,000.25');
 
 		$view->number = 1024;
