@@ -148,24 +148,6 @@ class RestController extends Controller
 		return $where;
 	}
 
-	/**
-	 *
-	 */
-	public function doDeed($obj, $deed)
-	{
-		if(empty($obj))
-		{
-			throw new HttpException\NotFoundException('The ' . strtolower($this->_modelName) . ' you are trying to access does not exist.');
-		}
-
-		if($deed && method_exists($this, $deed . 'Deed'))
-		{
-			$obj = $this->{$deed . 'Deed'}($obj);
-		}
-
-		return $obj;
-	}
-
 	public function get($key)
 	{
 		if(!$this->activeUser->checkPermission('canRead', $this->_resourceName))
@@ -231,12 +213,16 @@ class RestController extends Controller
 
 		$store = Factory::getStore($this->_modelName);
 
-		if($obj = $store->getByPrimaryKey($key))
+		try
 		{
-			if($store->delete($obj))
+			if($obj = $store->getByPrimaryKey($key))
 			{
+				$store->delete($obj);
 				return array('deleted' => true);
 			}
+		}
+		catch(\Exception $ex)
+		{
 		}
 
 		return array('deleted' => false);
