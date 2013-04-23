@@ -86,7 +86,7 @@ abstract class Element
 			$viewFile = end($class);
 		}
 
-		if(file_exists($viewPath . 'Form/' . $viewFile))
+		if(file_exists($viewPath . 'Form/' . $viewFile . '.phtml'))
 		{
 			$view = new View('Form/' . $viewFile);
 		}
