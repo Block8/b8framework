@@ -166,9 +166,13 @@ abstract class Store
 
 				$query .= ' ' . $where['query'];
 				$countQuery .= ' ' . $where['query'];
-				foreach($where['params'] as $param)
+
+				if(isset($where['params']))
 				{
-					$params[] = $param;
+					foreach($where['params'] as $param)
+					{
+						$params[] = $param;
+					}
 				}
 			}
 		}
@@ -206,21 +210,22 @@ abstract class Store
 			$query .= ' OFFSET ' . $offset;
 		}
 
-		$stmt = Database::getConnection('read')->prepare($countQuery);
-		if($stmt->execute($params))
+		try
 		{
+			$stmt = Database::getConnection('read')->prepare($countQuery);
+			$stmt->execute($params);
 			$res   = $stmt->fetch(\PDO::FETCH_ASSOC);
 			$count = (int)$res['cnt'];
 		}
-		else
+		catch(\PDOException $ex)
 		{
 			$count = 0;
 		}
 
-		$stmt = Database::getConnection('read')->prepare($query);
-
-		if($stmt->execute($params))
+		try
 		{
+			$stmt = Database::getConnection('read')->prepare($query);
+			$stmt->execute($params);
 			$res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 			$rtn = array();
 
@@ -231,9 +236,9 @@ abstract class Store
 
 			return array('items' => $rtn, 'count' => $count);
 		}
-		else
+		catch(\PDOException $ex)
 		{
-			return array('items' => array(), 'count' => 0);
+			throw $ex;
 		}
 	}
 
@@ -279,12 +284,10 @@ abstract class Store
 				$q->execute();
 
 				$rtn = $this->getByPrimaryKey($data[$this->_primaryKey], 'write');
-
-				return $rtn;
 			}
 			else
 			{
-				return $obj;
+				$rtn = $obj;
 			}
 		}
 		else
@@ -306,12 +309,12 @@ abstract class Store
 
 				if($q->execute($qParams))
 				{
-					return $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
+					$rtn = $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
 				}
 			}
 		}
 
-		throw new HttpException\ServerErrorException('Could not save.');
+		return $rtn;
 	}
 
 	public function delete(Model $obj)
@@ -340,9 +343,9 @@ abstract class Store
 	 */
 	protected function fieldCheck($field)
 	{
-		if(is_null($field))
+		if(empty($field))
 		{
-			throw new HttpException('You cannot have null field');
+			throw new HttpException('You cannot have an empty field name.');
 		}
 
 		if(strpos($field, '.') === false)
