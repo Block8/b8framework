@@ -34,7 +34,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 	{
 		\b8\Database::setDetails($this->_name, $this->_user, $this->_pass);
 
-		$details = \b8\Database::getInstance()->getDetails();
+		$details = \b8\Database::getConnection('read')->getDetails();
 		$this->assertTrue(is_array($details));
 		$this->assertTrue(($details['db'] == $this->_name));
 		$this->assertTrue(($details['user'] == $this->_user));
