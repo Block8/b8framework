@@ -48,11 +48,11 @@ class FieldSet extends Element
 			{
 				$fieldName = $field->getName();
 
-				if(empty($fieldName))
+				if(empty($fieldName) || !isset($values[$fieldName]))
 				{
 					$field->setValues($values);
 				}
-				elseif(isset($values[$fieldName]))
+				else
 				{
 					$field->setValues($values[$fieldName]);
 				}
