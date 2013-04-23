@@ -33,6 +33,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 	public function testGetDetails()
 	{
 		\b8\Database::setDetails($this->_name, $this->_user, $this->_pass);
+		\b8\Database::setReadServers(array('localhost'));
 
 		$details = \b8\Database::getConnection('read')->getDetails();
 		$this->assertTrue(is_array($details));
