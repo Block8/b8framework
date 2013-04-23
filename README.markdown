@@ -1,5 +1,7 @@
 b8 Framework
 ============
+[![Build Status](https://travis-ci.org/Block8/b8framework.png?branch=master)](https://travis-ci.org/Block8/b8framework)
+
 
 *b8 framework* is a lightweight, simple framework for high-throughput PHP applications. It does not enforce a specific type of application, nor particularly an application structure, it simply helps you to build things. 
 
