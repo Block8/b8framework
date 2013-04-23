@@ -19,6 +19,7 @@ class CacheTest extends PHPUnit_Framework_TestCase
 		b8\Registry::getInstance()->set('DisableCaching', true);
 
 		$cache = b8\Cache::getInstance();
+		$this->assertFalse($cache->isEnabled());
 		$this->assertFalse($cache->set('anything', 10));
 		$this->assertTrue(is_null($cache->get('anything')));
 
@@ -28,8 +29,12 @@ class CacheTest extends PHPUnit_Framework_TestCase
 	public function testCaching()
 	{
 		$cache = b8\Cache::getInstance();
-		$this->assertTrue($cache->set('anything', 10));
-		$this->assertTrue($cache->get('anything') == 10);
-		$this->assertTrue(is_null($cache->get('invalid')));
+
+		if($cache->isEnabled())
+		{
+			$this->assertTrue($cache->set('anything', 10));
+			$this->assertTrue($cache->get('anything') == 10);
+			$this->assertTrue(is_null($cache->get('invalid')));
+		}
 	}
 }

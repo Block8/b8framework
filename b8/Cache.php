@@ -33,11 +33,30 @@ class Cache
 	}
 
 	/**
+	 * Check if caching is enabled.
+	 */
+	public function isEnabled()
+	{
+		$rtn = false;
+
+		$apcCli = ini_get('apc.enable_cli');
+
+		if( function_exists('apc_fetch') &&
+			!Registry::getInstance()->get('DisableCaching', false) &&
+			(php_sapi_name() != 'cli' || in_array($apcCli, array('1', 1, true, 'On'))))
+		{
+			$rtn = true;
+		}
+
+		return $rtn;
+	}
+
+	/**
 	 * Get item from the cache:
 	 */
 	public function get($key)
 	{
-		if(Registry::getInstance()->get('DisableCaching', false) || !function_exists('apc_fetch'))
+		if(!$this->isEnabled())
 		{
 			return null;
 		}
@@ -58,7 +77,7 @@ class Cache
 	 */
 	public function set($key, $value, $ttl = 0)
 	{
-		if(Registry::getInstance()->get('DisableCaching', false) || !function_exists('apc_store'))
+		if(!$this->isEnabled())
 		{
 			return false;
 		}
