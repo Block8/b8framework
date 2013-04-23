@@ -124,14 +124,8 @@ class HttpClient
 
 			$length = hexdec(trim($line));
 
-			if(!is_int($length) || empty($response))
+			if(!is_int($length) || empty($response) || $line === false || $length < 1)
 			{
-				return $originalResponse;
-			}
-
-			if($line === false || $length < 1 || empty($response))
-			{
-				// break out of the streams loop
 				break;
 			}
 
@@ -155,6 +149,11 @@ class HttpClient
 			while(true);
 		}
 		while(true);
+
+		if(empty($body))
+		{
+			$body = $originalResponse;
+		}
 
 		return $body;
 	}
