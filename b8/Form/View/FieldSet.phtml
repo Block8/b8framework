@@ -1,0 +1,9 @@
+<fieldset class="row <?= $css; ?>">
+	<?php if($label): ?>
+	<legend><?= $label; ?></legend>
+	<?php endif; ?>
+
+	<?php foreach($children as $field): ?>
+		<?= $field; ?>
+	<?php endforeach; ?>
+</fieldset>

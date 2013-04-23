@@ -1,0 +1,11 @@
+<div class="<?= $ccss; ?>">
+	<?php if($label): ?>
+		<label for="<?= $id ?>"><?= $label; ?></label>
+	<?php endif; ?>
+
+	<select id="<?= $id; ?>" class="<?= $css; ?>" name="<?= $name; ?>">
+		<?php foreach($options as $val => $lbl): ?>
+		<option value="<?= $val; ?>" <?= ($value == $val) ? ' selected="selected"' : ''; ?>><?= $lbl; ?></option>
+		<?php endforeach; ?>
+	</select>
+</div>

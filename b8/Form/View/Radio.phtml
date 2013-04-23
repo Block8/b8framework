@@ -1,0 +1,12 @@
+<div id="<?= $id; ?>" class="<?= $ccss; ?>">
+	<?php if($label): ?>
+		<label><?= $label; ?></label>
+	<?php endif; ?>
+
+	<?php foreach($options as $val => $lbl): ?>
+	<label class="radio" for="radio-<?= $id; ?>-<?= $val; ?>">
+		<input type="radio" id="radio-<?= $id; ?>-<?= $val; ?>" class="<?= $css; ?>" name="<?= $name; ?>" value="<?= $val; ?>" <?= ($value == $val) ? ' checked="checked"' : ''; ?>>
+		<?= $lbl; ?>
+	</label>
+	<?php endforeach; ?>
+</div>
