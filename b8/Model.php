@@ -85,13 +85,7 @@ class Model
 			}
 			else
 			{
-
-				if(is_string($value) && !mb_check_encoding($value, 'UTF-8'))
-				{
-					$value = mb_convert_encoding($value, 'UTF-8');
-				}
-
-				$rtn = $value;
+				$rtn = (is_string($value) && !mb_check_encoding($value, 'UTF-8')) ? mb_convert_encoding($value, 'UTF-8') : $value;
 			}
 		}
 
