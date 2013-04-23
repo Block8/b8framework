@@ -117,7 +117,7 @@ abstract class Store
 				}
 				else
 				{
-					$wheres[] = $key . ' IN (\'' . implode('\', \'', array_map('mysqli_real_escape_string', $value)) . '\')';
+					$wheres[] = $key . ' IN (' . implode(', ', array_map(array(Database::getConnection('read'), 'quote'), $value)) . ')';
 				}
 			}
 		}
