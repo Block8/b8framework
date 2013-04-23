@@ -34,11 +34,12 @@ class FormTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue($f->getAction() == '/');
 		$this->assertTrue($f->getMethod() == 'POST');
 
-		Registry::getInstance()->set('ViewPath', dirname(__FILE__) . '/data/view/');
-		$v = new b8\View\UserView('{@f}');
-		$v->f = $f;
-		$html = trim($v->render('form'));
-		$this->assertTrue($html == '/POST');
+		Registry::getInstance()->set('ViewPath', getcwd() . '/tests/data/view/');
+
+		$this->assertTrue($f->render('form') == '/POST');
+
+		Registry::getInstance()->set('ViewPath', '');
+		$this->assertTrue(strpos((string)$f, '<form') !== false);
 	}
 
 	public function testElementBasics()

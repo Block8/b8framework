@@ -8,4 +8,5 @@ before_script:
   - mysql -e "DROP DATABASE IF EXISTS b8_test;" -uroot
   - mysql -e "CREATE DATABASE b8_test;" -uroot
   - mysql -e "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test'" -uroot
-script: phpunit -d "short_open_tag = 1" ./tests/
+  - echo 'short_open_tag = On' >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+script: phpunit -d "short_open_tag = On" ./tests/
