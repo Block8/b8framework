@@ -1,15 +1,13 @@
 <?php
-namespace b8\Framework;
+namespace b8;
 use b8\Registry;
 
 /**
- * Allows caching of data throughout the system to improve performance. Currently uses APC only.
- *
  * @package    b8
- * @subpackage Caching
+ * @subpackage Cache
  */
 
-class DataCache
+class Cache
 {
 	protected static $instance = null;
 	protected $useCache = true;
@@ -32,7 +30,6 @@ class DataCache
 	 */
 	protected function __construct()
 	{
-		$this->useCache = !(Registry::getInstance()->get('DisableCaching', false));
 	}
 
 	/**
@@ -40,7 +37,7 @@ class DataCache
 	 */
 	public function get($key)
 	{
-		if(!$this->useCache || !function_exists('apc_fetch'))
+		if(Registry::getInstance()->get('DisableCaching', false) || !function_exists('apc_fetch'))
 		{
 			return null;
 		}
@@ -61,7 +58,7 @@ class DataCache
 	 */
 	public function set($key, $value, $ttl = 0)
 	{
-		if(!$this->useCache || !function_exists('apc_store'))
+		if(Registry::getInstance()->get('DisableCaching', false) || !function_exists('apc_store'))
 		{
 			return false;
 		}
