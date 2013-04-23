@@ -28,7 +28,7 @@ abstract class Element
 
 	public function setName($name)
 	{
-		$this->_name = $name;
+		$this->_name = strtolower(preg_replace('/([^a-zA-Z0-9])/', '', $name));
 	}
 
 	public function getId()
