@@ -72,7 +72,7 @@ class Input extends Element
 		{
 			try
 			{
-				$validator($this->_value);
+				call_user_func_array($validator, array($this->_value));
 			}
 			catch(\Exception $ex)
 			{
