@@ -37,9 +37,12 @@ class Input extends Element
 		return $this->_validator;
 	}
 
-	public function setValidator(callable $validator)
+	public function setValidator($validator)
 	{
-		$this->_validator = $validator;
+		if(is_callable($validator) || $validator instanceof \Closure)
+		{
+			$this->_validator = $validator;
+		}
 	}
 
 	public function getPattern()
@@ -72,7 +75,7 @@ class Input extends Element
 		{
 			try
 			{
-				$validator($this->_value);
+				call_user_func_array($validator, array($this->_value));
 			}
 			catch(\Exception $ex)
 			{
