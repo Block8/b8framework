@@ -65,39 +65,25 @@ class Map
 						$toTable    = $matches[3][$i];
 						$toCol      = $matches[4][$i];
 						$fkName     = $matches[1][$i];
-						$fkDelete   = false;
-						$fkUpdate   = false;
+						$fk         = array();
 
 						if(isset($matches[6][$i]))
 						{
-							if($matches[6][$i] == 'DELETE')
-							{
-								$fkDelete = $matches[7][$i];
-							}
-
-							if($matches[6][$i] == 'UPDATE')
-							{
-								$fkUpdate = $matches[7][$i];
-							}
+							$fk[$matches[6][$i]] = $matches[7][$i];
 						}
 
 						if(isset($matches[9][$i]))
 						{
-							if($matches[9][$i] == 'DELETE')
-							{
-								$fkDelete = $matches[10][$i];
-							}
-
-							if($matches[9][$i] == 'UPDATE')
-							{
-								$fkUpdate = $matches[10][$i];
-							}
+							$fk[$matches[9][$i]] = $matches[10][$i];
 						}
+
+						$fk['UPDATE'] = empty($fk['UPDATE']) ? '' : $fk['UPDATE'];
+						$fk['DELETE'] = empty($fk['DELETE']) ? '' : $fk['DELETE'];
 
 						if(isset($this->_tables[$fromTable]) && isset($this->_tables[$toTable]))
 						{
 							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']);
-							$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('fk_name' => $fkName, 'fk_delete' => $fkDelete, 'fk_update' => $fkUpdate, 'table_php_name' => $this->_tables[$toTable]['php_name'], 'from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
+							$this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array('fk_name' => $fkName, 'fk_delete' => $fk['DELETE'], 'fk_update' => $fk['UPDATE'], 'table_php_name' => $this->_tables[$toTable]['php_name'], 'from_col_php' => $this->_generatePhpName($fromCol), 'from_col' => $fromCol, 'php_name' => $phpName, 'table' => $toTable, 'col' => $toCol, 'col_php' => $this->_generatePhpName($toCol));
 
 							$phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']) . $this->_tables[$fromTable]['php_name'].'s';
 							$this->_tables[$toTable]['relationships']['toMany'][] = array('from_col_php' => $this->_generatePhpName($fromCol), 'php_name' => $phpName, 'thisCol' => $toCol, 'table' => $fromTable, 'table_php' => $this->_generatePhpName($fromTable), 'fromCol' => $fromCol, 'col_php' => $this->_generatePhpName($toCol));
@@ -253,14 +239,7 @@ class Map
 
 		if(empty($fkMethod))
 		{
-			if(substr(strtolower($sqlName), -2) == 'id')
-			{
-				$fkMethod = substr($sqlName, 0, -2);
-			}
-			else
-			{
-				$fkMethod = $tablePhpName;
-			}
+			$fkMethod = (substr(strtolower($sqlName), -2) == 'id') ? substr($sqlName, 0, -2) : $tablePhpName;
 		}
 
 		return ucwords($fkMethod);
