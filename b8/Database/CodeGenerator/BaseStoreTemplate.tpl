@@ -24,6 +24,15 @@ class {@table.php_name}StoreBase extends Store
 
 {/if}
 
+{ifnot table.primary_key}
+
+	public function getByPrimaryKey($value, $useConnection = 'read')
+	{
+		throw new \Exception('getByPrimaryKey is not implemented for this store, as the table has no primary key.');
+	}
+
+{/ifnot}
+
 {loop table.columns}
 {if item.unique_indexed}
 

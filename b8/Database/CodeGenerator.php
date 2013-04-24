@@ -25,6 +25,7 @@ class CodeGenerator
 	public function generateModels()
 	{
 		print PHP_EOL . 'GENERATING MODELS' . PHP_EOL . PHP_EOL;
+		@mkdir($this->_path . 'Model/Base/', 0777, true);
 
 		foreach($this->_tables as $tableName => $table)
 		{
@@ -50,6 +51,7 @@ class CodeGenerator
 	public function generateStores()
 	{
 		print PHP_EOL . 'GENERATING STORES' . PHP_EOL . PHP_EOL;
+		@mkdir($this->_path . 'Store/Base/', 0777, true);
 
 		foreach($this->_tables as $tableName => $table)
 		{
@@ -75,6 +77,8 @@ class CodeGenerator
 	public function generateControllers()
 	{
 		print PHP_EOL . 'GENERATING CONTROLLERS' . PHP_EOL . PHP_EOL;
+
+		@mkdir($this->_path . 'Controller/Base/', 0777, true);
 
 		foreach($this->_tables as $tableName => $table)
 		{

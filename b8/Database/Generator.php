@@ -26,10 +26,18 @@ class Generator
 
 	public function generate()
 	{
-		error_reporting(0);
+		error_reporting(E_ERROR & E_WARNING);
 		$di = new \DirectoryIterator($this->_path);
 
-		$this->_todo = array();
+		$this->_todo = array(
+			'drop_fk'   => array(),
+			'drop_index'=> array(),
+			'create'    => array(),
+			'alter'     => array(),
+			'add_index' => array(),
+			'add_fk'    => array(),
+		);
+
 		foreach($di as $file)
 		{
 			if($file->isDot())
@@ -73,11 +81,11 @@ class Generator
 		print 'ADD FK: ' . count($this->_todo['add_fk']) . PHP_EOL;
 
 
-		$order = array('drop_fk', 'drop_index', 'create', 'alter', 'add_index', 'add_fk');
+		$order = array_keys($this->_todo);
 
 		while($group = array_shift($order))
 		{
-			if(!isset($this->_todo[$group]))
+			if(!isset($this->_todo[$group]) || !is_array($this->_todo[$group]) || !count($this->_todo[$group]))
 			{
 				continue;
 			}
@@ -114,10 +122,11 @@ class Generator
 				case 'date':
 				case 'datetime':
 				case 'float':
+					$add .= '';
 				break;
 
 				default:
-					$add .= '(' . $def['length'] . ')';
+					$add .= !empty($def['length']) ? '(' . $def['length'] . ')' : '';
 				break;
 			}
 
@@ -159,11 +168,6 @@ class Generator
 
 		foreach($idxs as $name => $idx)
 		{
-			if($name == 'PRIMARY')
-			{
-				continue;
-			}
-
 			$this->_addIndex($tbl, $name, $idx);
 		}
 
@@ -228,11 +232,12 @@ class Generator
 					case 'date':
 					case 'datetime':
 					case 'float':
-						break;
+						$add .= '';
+					break;
 
 					default:
-						$add .= '(' . $model['length'] . ')';
-						break;
+						$add .= !empty($model['length']) ? '(' . $model['length'] . ')' : '';
+					break;
 				}
 
 				if(empty($model['nullable']) || !$model['nullable'])
@@ -248,6 +253,11 @@ class Generator
 				if(!empty($model['auto_increment']) && $model['auto_increment'])
 				{
 					$add .= ' AUTO_INCREMENT ';
+				}
+
+				if(!empty($model['primary_key']) && $model['primary_key'] && !isset($table['indexes']['PRIMARY']))
+				{
+					$add .= ' PRIMARY KEY ';
 				}
 
 				$this->_todo['alter'][] = 'ALTER TABLE `' . $tableName . '` ADD COLUMN ' . $add;
@@ -266,11 +276,12 @@ class Generator
 			case 'date':
 			case 'datetime':
 			case 'float':
-				break;
+				$add .= '';
+			break;
 
 			default:
-				$add .= '(' . $model['length'] . ')';
-				break;
+				$add .= !empty($model['length']) ? '(' . $model['length'] . ')' : '';
+			break;
 		}
 
 		if(empty($model['nullable']) || !$model['nullable'])
@@ -346,7 +357,12 @@ class Generator
 		{
 			foreach($indexes as $name => $index)
 			{
-				// New column
+				if($name == 'PRIMARY')
+				{
+					continue;
+				}
+
+				// New index
 				$this->_addIndex($tableName, $name, $index);
 			}
 		}
@@ -356,31 +372,27 @@ class Generator
 	{
 		if($name == 'PRIMARY')
 		{
-			$q = 'ALTER TABLE `' . $table . '` ADD PRIMARY KEY(' . $idx['columns'] . ')';
+			return;
 		}
-		else
-		{
-			$q = 'CREATE ' . ($idx['unique'] ? 'UNIQUE' : '') . ' INDEX `' . $name . '` ON `' . $table . '` (' . $idx['columns'] . ')';
-		}
+
+		$q = 'CREATE ' . (isset($idx['unique']) && $idx['unique'] ? 'UNIQUE' : '') . ' INDEX `' . $name . '` ON `' . $table . '` (' . $idx['columns'] . ')';
 
 		$this->_todo[$stage][] = $q;
 	}
 
 	protected function _alterIndex($table, $name, $idx, $stage = 'index')
 	{
-		if($name == 'PRIMARY')
-		{
-			$q = 'ALTER TABLE `' . $table . '` DROP PRIMARY KEY, ADD PRIMARY KEY(' . $idx['columns'] . ')';
-			$this->_todo[$stage][] = $q;
-			return;
-		}
-
 		$this->_dropIndex($table, $name, $stage);
 		$this->_addIndex($table, $name, $idx, $stage);
 	}
 
 	protected function _dropIndex($table, $idxName, $stage = 'drop_index')
 	{
+		if($idxName == 'PRIMARY')
+		{
+			return;
+		}
+
 		$q = 'DROP INDEX `' . $idxName . '` ON `' . $table . '`';
 		$this->_todo[$stage][] = $q;
 	}
