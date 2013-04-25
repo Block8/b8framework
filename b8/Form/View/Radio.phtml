@@ -6,7 +6,7 @@
 	<div class="controls">
 	<?php foreach($options as $val => $lbl): ?>
 	<label class="radio" for="radio-<?= $id; ?>-<?= $val; ?>">
-		<input type="radio" id="radio-<?= $id; ?>-<?= $val; ?>" class="<?= $css; ?>" name="<?= $name; ?>" value="<?= $val; ?>" <?= ($value == $val) ? ' checked="checked"' : ''; ?>>
+		<input type="radio" id="radio-<?= $id; ?>-<?= $val; ?>" class="<?= $css; ?>" name="<?= $name; ?>" value="<?= $val; ?>" <?= ($value == $val) ? ' checked="checked"' : ''; ?> <?= $required ? 'required' : '' ?>>
 		<?= $lbl; ?>
 	</label>
 	<?php endforeach; ?>
