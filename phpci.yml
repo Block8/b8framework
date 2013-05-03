@@ -1,0 +1,24 @@
+prepare:
+  - mysql -e "DROP DATABASE IF EXISTS b8_test;" -uroot
+  - mysql -e "CREATE DATABASE b8_test;" -uroot
+  - mysql -e "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test'" -uroot
+
+ignore:
+  - "vendor/"
+  - "tests/"
+
+plugins:
+  composer:
+    action: "install"
+  php_unit:
+    directory: "tests/"
+  php_mess_detector:
+    allow_failures: true
+  php_code_sniffer:
+    standard: "PSR1"
+    allow_failures: true
+  php_cpd:
+    allow_failures: true
+
+on_complete:
+  - mysql -e "DROP DATABASE IF EXISTS b8_test;" -uroot
