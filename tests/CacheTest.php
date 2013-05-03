@@ -1,7 +1,7 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/Cache.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Cache.php');
 
 use b8\Registry,
 	b8\Cache;

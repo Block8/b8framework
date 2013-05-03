@@ -1,7 +1,7 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/Database.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Database.php');
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase
 {

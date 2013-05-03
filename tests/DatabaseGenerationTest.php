@@ -1,10 +1,10 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/Model.php');
-require_once('b8/Database.php');
-require_once('b8/Database/Map.php');
-require_once('b8/Database/Generator.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Model.php');
+require_once(dirname(__FILE__) . '/../b8/Database.php');
+require_once(dirname(__FILE__) . '/../b8/Database/Map.php');
+require_once(dirname(__FILE__) . '/../b8/Database/Generator.php');
 
 use b8\Database\Generator,
 	b8\Database\Map;
@@ -31,7 +31,7 @@ class DatabaseGenerationTest extends \PHPUnit_Framework_TestCase
 
 	public function testCreateDatabase()
 	{
-		$gen = new Generator($this->_db, 'Test', getcwd() . '/tests/data/generation/models/');
+		$gen = new Generator($this->_db, 'Test', dirname(__FILE__) . '/data/generation/models/');
 		$gen->generate();
 
 		$map    = new Map($this->_db);
@@ -54,10 +54,10 @@ class DatabaseGenerationTest extends \PHPUnit_Framework_TestCase
 
 	public function testUpdateDatabase()
 	{
-		$gen = new Generator($this->_db, 'Test', getcwd() . '/tests/data/generation/models/');
+		$gen = new Generator($this->_db, 'Test', dirname(__FILE__) . '/data/generation/models/');
 		$gen->generate();
 
-		$gen = new Generator($this->_db, 'Update', getcwd() . '/tests/data/generation/update_models/');
+		$gen = new Generator($this->_db, 'Update', dirname(__FILE__) . '/data/generation/update_models/');
 		$gen->generate();
 
 		$map    = new Map($this->_db);

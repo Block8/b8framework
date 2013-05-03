@@ -1,6 +1,6 @@
 <?php
 
-require_once('b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
 use b8\Registry;
 
 class RegistryTest extends \PHPUnit_Framework_TestCase

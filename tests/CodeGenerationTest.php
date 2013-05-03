@@ -1,21 +1,21 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/Model.php');
-require_once('b8/Controller.php');
-require_once('b8/Controller/RestController.php');
-require_once('b8/Store.php');
-require_once('b8/Store/Factory.php');
-require_once('b8/Database.php');
-require_once('b8/View.php');
-require_once('b8/View/UserView.php');
-require_once('b8/Database/Map.php');
-require_once('b8/Database/Generator.php');
-require_once('b8/Database/CodeGenerator.php');
-require_once('b8/Exception/HttpException.php');
-require_once('b8/Exception/HttpException/ValidationException.php');
-require_once('b8/Exception/HttpException/BadRequestException.php');
-require_once('b8/Exception/HttpException/ForbiddenException.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Model.php');
+require_once(dirname(__FILE__) . '/../b8/Controller.php');
+require_once(dirname(__FILE__) . '/../b8/Controller/RestController.php');
+require_once(dirname(__FILE__) . '/../b8/Store.php');
+require_once(dirname(__FILE__) . '/../b8/Store/Factory.php');
+require_once(dirname(__FILE__) . '/../b8/Database.php');
+require_once(dirname(__FILE__) . '/../b8/View.php');
+require_once(dirname(__FILE__) . '/../b8/View/UserView.php');
+require_once(dirname(__FILE__) . '/../b8/Database/Map.php');
+require_once(dirname(__FILE__) . '/../b8/Database/Generator.php');
+require_once(dirname(__FILE__) . '/../b8/Database/CodeGenerator.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/ValidationException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/BadRequestException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/ForbiddenException.php');
 
 use b8\Database\Generator,
 	b8\Database\CodeGenerator,
@@ -41,7 +41,7 @@ class CodeGenerationTest extends \PHPUnit_Framework_TestCase
 		self::$_db->query('DROP TABLE IF EXISTS dos');
 		self::$_db->query('DROP TABLE IF EXISTS uno');
 
-		self::$_base = getcwd() . '/tests/data/generation/';
+		self::$_base = dirname(__FILE__) . '/data/generation/';
 		$gen = new Generator(self::$_db, 'Test', self::$_base .'models/');
 		$gen->generate();
 	}

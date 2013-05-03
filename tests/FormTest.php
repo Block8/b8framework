@@ -1,24 +1,24 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/View.php');
-require_once('b8/View/UserView.php');
-require_once('b8/Form/Element.php');
-require_once('b8/Form/Input.php');
-require_once('b8/Form/FieldSet.php');
-require_once('b8/Form.php');
-require_once('b8/Form/ControlGroup.php');
-require_once('b8/Form/Element/Text.php');
-require_once('b8/Form/Element/Button.php');
-require_once('b8/Form/Element/Checkbox.php');
-require_once('b8/Form/Element/CheckboxGroup.php');
-require_once('b8/Form/Element/Email.php');
-require_once('b8/Form/Element/Hidden.php');
-require_once('b8/Form/Element/Select.php');
-require_once('b8/Form/Element/Radio.php');
-require_once('b8/Form/Element/Submit.php');
-require_once('b8/Form/Element/TextArea.php');
-require_once('b8/Form/Element/Url.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/View.php');
+require_once(dirname(__FILE__) . '/../b8/View/UserView.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Input.php');
+require_once(dirname(__FILE__) . '/../b8/Form/FieldSet.php');
+require_once(dirname(__FILE__) . '/../b8/Form.php');
+require_once(dirname(__FILE__) . '/../b8/Form/ControlGroup.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Text.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Button.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Checkbox.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/CheckboxGroup.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Email.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Hidden.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Select.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Radio.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Submit.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/TextArea.php');
+require_once(dirname(__FILE__) . '/../b8/Form/Element/Url.php');
 
 use b8\Form,
 	b8\Registry;
@@ -34,7 +34,7 @@ class FormTest extends \PHPUnit_Framework_TestCase
 		$this->assertTrue($f->getAction() == '/');
 		$this->assertTrue($f->getMethod() == 'POST');
 
-		Registry::getInstance()->set('ViewPath', getcwd() . '/tests/data/view/');
+		Registry::getInstance()->set('ViewPath', dirname(__FILE__) . '/data/view/');
 
 		$this->assertTrue($f->render('form') == '/POST');
 

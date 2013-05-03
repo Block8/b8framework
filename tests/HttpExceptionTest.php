@@ -1,13 +1,13 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/Exception/HttpException.php');
-require_once('b8/Exception/HttpException/BadRequestException.php');
-require_once('b8/Exception/HttpException/ForbiddenException.php');
-require_once('b8/Exception/HttpException/NotAuthorizedException.php');
-require_once('b8/Exception/HttpException/NotFoundException.php');
-require_once('b8/Exception/HttpException/ServerErrorException.php');
-require_once('b8/Exception/HttpException/ValidationException.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/BadRequestException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/ForbiddenException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/NotAuthorizedException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/NotFoundException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/ServerErrorException.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException/ValidationException.php');
 
 use b8\Exception\HttpException,
 	b8\Exception\HttpException\BadRequestException;

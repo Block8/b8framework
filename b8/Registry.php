@@ -36,6 +36,7 @@ class Registry
 
 	protected function __construct()
 	{
+
 	}
 
 	public function get($key, $default = null)

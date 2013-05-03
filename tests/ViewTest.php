@@ -1,10 +1,10 @@
 <?php
 
-require_once('b8/Registry.php');
-require_once('b8/View.php');
-require_once('b8/View/UserView.php');
-require_once('b8/View/Helper/Format.php');
-require_once('b8/Exception/HttpException.php');
+require_once(dirname(__FILE__) . '/../b8/Registry.php');
+require_once(dirname(__FILE__) . '/../b8/View.php');
+require_once(dirname(__FILE__) . '/../b8/View/UserView.php');
+require_once(dirname(__FILE__) . '/../b8/View/Helper/Format.php');
+require_once(dirname(__FILE__) . '/../b8/Exception/HttpException.php');
 
 use b8\View,
 	b8\View\UserView;
