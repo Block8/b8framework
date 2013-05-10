@@ -1,7 +1,8 @@
 <?php
 
 namespace b8\Form\Element;
-use b8\Form\Element\Text;
+use b8\Form\Element\Text,
+	b8\View;
 
 class Password extends Text
 {
