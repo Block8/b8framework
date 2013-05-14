@@ -1,9 +1,9 @@
-<fieldset class="row <?= $css; ?>">
+<fieldset class="row <?php print $css; ?>">
 	<?php if($label): ?>
-	<legend><?= $label; ?></legend>
+	<legend><?php print $label; ?></legend>
 	<?php endif; ?>
 
 	<?php foreach($children as $field): ?>
-		<?= $field; ?>
+		<?php print $field; ?>
 	<?php endforeach; ?>
 </fieldset>
