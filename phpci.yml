@@ -7,8 +7,8 @@ setup:
     action: "install"
 
 ignore:
-  - "vendor/"
-  - "tests/"
+  - "vendor"
+  - "tests"
 
 test:
   php_unit:
