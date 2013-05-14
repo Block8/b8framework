@@ -6,12 +6,14 @@ class HttpClient
 {
 	protected $_base = '';
 	protected $_params = array();
+	protected $_headers = array();
 
 	public function __construct($base = null)
 	{
 		$settings      = Registry::getInstance()->get('HttpClient', array('base' => '', 'params' => array()));
 		$this->_base   = $settings['base'];
 		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
+		$this->_headers = array('Content-Type: application/x-www-form-urlencoded');
 
 		if(!is_null($base))
 		{
@@ -19,12 +21,16 @@ class HttpClient
 		}
 	}
 
+	public function setHeaders(array $headers)
+	{
+		$this->_headers = $headers;
+	}
+
 	public function request($method, $uri, $params = array())
 	{
 		// Clean incoming:
 		$method     = strtoupper($method);
 		$getParams  = $this->_params;
-		$bodyParams = array();
 
 		if($method == 'GET' || $method == 'DELETE')
 		{
@@ -32,11 +38,10 @@ class HttpClient
 		}
 		else
 		{
-			$bodyParams = array_merge($bodyParams, $params);
+			$bodyParams = is_array($params) ? http_build_query($params) : $params;
 		}
 
 		$getParams  = http_build_query($getParams);
-		$bodyParams = http_build_query($bodyParams);
 
 		if(substr($uri, 0, 1) != '/' && !empty($this->_base))
 		{
@@ -49,7 +54,7 @@ class HttpClient
 		$context['http']['timeout']       = 30;
 		$context['http']['method']        = $method;
 		$context['http']['ignore_errors'] = true;
-		$context['http']['header']        = 'Content-Type: application/x-www-form-urlencoded';
+		$context['http']['header']        = implode(PHP_EOL, $this->_headers);
 
 		if(in_array($method, array('PUT', 'POST')))
 		{
