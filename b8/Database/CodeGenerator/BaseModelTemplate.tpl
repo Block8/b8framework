@@ -12,71 +12,90 @@ use b8\Model;
  */
 class {@table.php_name}Base extends Model
 {
-	public static $sleepable= array();
-	protected $_tableName   = '{@name}';
-	protected $_modelName   = '{@table.php_name}';
-	protected $_data        = array(
+	public static $sleepable = array();
+	protected $_tableName = '{@name}';
+	protected $_modelName = '{@table.php_name}';
+
+	protected $_data = array(
 {loop table.columns}
-					'{@item.name}'    =>    null,
+		'{@item.name}' => null,
 
-{/loop}                                  );
-	protected $_getters     = array(
+{/loop}		);
+
+	protected $_getters = array(
 {loop table.columns}
-					'{@item.name}'    =>    'get{@item.php_name}',
+		'{@item.name}' => 'get{@item.php_name}',
 
-{/loop}
-{loop table.relationships.toOne}
-					'{@item.php_name}'  => 'get{@item.php_name}',
+{/loop}{loop table.relationships.toOne}
+		'{@item.php_name}' => 'get{@item.php_name}',
 
-{/loop}
-							);
+{/loop}		);
 
-	protected $_setters     = array(
+	protected $_setters = array(
 {loop table.columns}
-					'{@item.name}'    =>    'set{@item.php_name}',
+		'{@item.name}' => 'set{@item.php_name}',
 
-{/loop}
-{loop table.relationships.toOne}
-	'{@item.php_name}'  => 'set{@item.php_name}',
+{/loop}{loop table.relationships.toOne}
+		'{@item.php_name}' => 'set{@item.php_name}',
 
-{/loop}                                 );
-	public $columns         = array(
+{/loop}		);
+
+	public $columns = array(
 {loop table.columns}
-					'{@item.name}'    =>    array(
-													'type' => '{@item.type}',
-													'length' => '{@item.length}',
+		'{@item.name}' => array(
+			'type' => '{@item.type}',
+			'length' => '{@item.length}',
 {if item.null}
-													'nullable' => true,
-{/if}
+			'nullable' => true,
 
+{/if}
 {if item.is_primary_key}
-													'primary_key' => true,
-{/if}
+			'primary_key' => true,
 
+{/if}
 {if item.auto}
-													'auto_increment' => true,
-{/if}
+			'auto_increment' => true,
 
+{/if}
 {if item.default}
-													'default' => '{@item.default}',
+			'default' => '{@item.default}',
+
 {/if}
+			),
 
-												),
+{/loop}		);
 
-{/loop}                                  );
-	public $indexes         = array(
+	public $indexes = array(
 {loop table.indexes}
-					'{@item.name}'    =>    array({if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'),
+			'{@item.name}' => array({if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'),
 
-{/loop}                                  );
-	public $foreignKeys     = array(
+{/loop}		);
+
+	public $foreignKeys = array(
 {loop table.relationships.toOne}
-					'{@item.fk_name}'    =>    array('local_col' => '{@item.from_col}', 'update' => '{@item.fk_update}', 'delete' => '{@item.fk_delete}', 'table' => '{@item.table}', 'col' => '{@item.col}'),
+			'{@item.fk_name}' => array('local_col' => '{@item.from_col}', 'update' => '{@item.fk_update}', 'delete' => '{@item.fk_delete}', 'table' => '{@item.table}', 'col' => '{@item.col}'),
 
-{/loop}                                  );
+{/loop}		);
 
 {loop table.columns}
 
+	/**
+	* Get the value of {@item.php_name} / {@item.name}.
+	*
+{if item.validate_int}
+	* @return int
+
+{/if}{if item.validate_string}
+	* @return string
+
+{/if}{if item.validate_float}
+	* @return float
+
+{/if}{if item.validate_date}
+	* @return \DateTime
+
+{/if}
+	*/
 	public function get{@item.php_name}()
 	{
 		$rtn    = $this->_data['{@item.name}'];
@@ -93,10 +112,28 @@ class {@table.php_name}Base extends Model
 		return $rtn;
 	}
 
-{/loop}
+{/loop}{loop table.columns}
 
-{loop table.columns}
+	/**
+	* Set the value of {@item.php_name} / {@item.name}.
+	*
+{if item.validate_null}
+	* Must not be null.
 
+{/if}{if item.validate_int}
+	* @param $value int
+
+{/if}{if item.validate_string}
+	* @param $value string
+
+{/if}{if item.validate_float}
+	* @param $value float
+
+{/if}{if item.validate_date}
+	* @param $value \DateTime
+
+{/if}
+	*/	
 	public function set{@item.php_name}($value)
 	{
 {if item.validate_null}
@@ -123,9 +160,7 @@ class {@table.php_name}Base extends Model
 		$this->_setModified('{@item.name}');
 	}
 
-{/loop}
-
-{loop table.relationships.toOne}
+{/loop}{loop table.relationships.toOne}
 
 	/**
 	 * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
@@ -155,6 +190,11 @@ class {@table.php_name}Base extends Model
 		return $rtn;
 	}
 
+	/**
+	* Set {@item.php_name} - Accepts an ID, an array representing a {@item.table_php_name} or a {@item.table_php_name} model.
+	*
+	* @param $value mixed
+	*/
 	public function set{@item.php_name}($value)
 	{
 		// Is this an instance of {@item.table_php_name}?
@@ -173,14 +213,17 @@ class {@table.php_name}Base extends Model
 		return $this->set{@item.from_col_php}($value);
 	}
 
+	/**
+	* Set {@item.php_name} - Accepts a {@item.table_php_name} model.
+	* 
+	* @param $value \{@parent.appNamespace}\Model\{@item.table_php_name}
+	*/
 	public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
 	{
 		return $this->set{@item.from_col_php}($value->get{@item.col_php}());
 	}
 
-{/loop}
-
-{loop table.relationships.toMany}
+{/loop}{loop table.relationships.toMany}
 
 	/**
 	 * Get {@item.table_php} models by {@item.from_col_php} for this {@parent.table.php_name}.
