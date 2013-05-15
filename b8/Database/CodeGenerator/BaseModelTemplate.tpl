@@ -75,7 +75,6 @@ class {@table.php_name}Base extends Model
 
 {/loop}                                  );
 
-
 {loop table.columns}
 
 	public function get{@item.php_name}()
@@ -114,7 +113,7 @@ class {@table.php_name}Base extends Model
 		$this->_validateDate('{@item.php_name}', $value);
 {/if}
 
-		if($this->_data['{@item.name}'] == $value)
+		if($this->_data['{@item.name}'] === $value)
 		{
 			return;
 		}
@@ -144,7 +143,16 @@ class {@table.php_name}Base extends Model
 			return null;
 		}
 
-		return \b8\Store\Factory::getStore('{@item.table_php_name}')->getBy{@item.col_php}($key);
+		$cacheKey	= 'Cache.{@item.table_php_name}.' . $key;
+		$rtn		= $this->registry->get($cacheKey, null);
+
+		if(empty($rtn))
+		{
+			$rtn	= \b8\Store\Factory::getStore('{@item.table_php_name}')->getBy{@item.col_php}($key);
+			$this->registry->set($cacheKey, $rtn);
+		}
+
+		return $rtn;
 	}
 
 	public function set{@item.php_name}($value)

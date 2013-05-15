@@ -1,7 +1,8 @@
 <?php
 
 namespace b8;
-use b8\Exception\HttpException;
+use b8\Exception\HttpException,
+	b8\Registry;
 
 class Model
 {
@@ -11,6 +12,7 @@ class Model
 	protected $_data            = array();
 	protected $_modified        = array();
 	protected $_tableName;
+	protected $registry;
 
 	public function __construct($initialData = array())
 	{
@@ -18,6 +20,8 @@ class Model
 		{
 			$this->_data = array_merge($this->_data, $initialData);
 		}
+
+		$this->registry = Registry::getInstance();
 	}
 
 	public function getTableName()
