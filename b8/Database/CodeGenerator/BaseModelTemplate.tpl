@@ -12,16 +12,33 @@ use b8\Model;
  */
 class {@table.php_name}Base extends Model
 {
+	/**
+	* @var array
+	*/
 	public static $sleepable = array();
+
+	/**
+	* @var string
+	*/
 	protected $_tableName = '{@name}';
+
+	/**
+	* @var string
+	*/
 	protected $_modelName = '{@table.php_name}';
 
+	/**
+	* @var array
+	*/
 	protected $_data = array(
 {loop table.columns}
 		'{@item.name}' => null,
 
 {/loop}		);
 
+	/**
+	* @var array
+	*/
 	protected $_getters = array(
 {loop table.columns}
 		'{@item.name}' => 'get{@item.php_name}',
@@ -31,6 +48,9 @@ class {@table.php_name}Base extends Model
 
 {/loop}		);
 
+	/**
+	* @var array
+	*/
 	protected $_setters = array(
 {loop table.columns}
 		'{@item.name}' => 'set{@item.php_name}',
@@ -40,6 +60,9 @@ class {@table.php_name}Base extends Model
 
 {/loop}		);
 
+	/**
+	* @var array
+	*/
 	public $columns = array(
 {loop table.columns}
 		'{@item.name}' => array(
@@ -65,12 +88,18 @@ class {@table.php_name}Base extends Model
 
 {/loop}		);
 
+	/**
+	* @var array
+	*/
 	public $indexes = array(
 {loop table.indexes}
 			'{@item.name}' => array({if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'),
 
 {/loop}		);
 
+	/**
+	* @var array
+	*/
 	public $foreignKeys = array(
 {loop table.relationships.toOne}
 			'{@item.fk_name}' => array('local_col' => '{@item.from_col}', 'update' => '{@item.fk_update}', 'delete' => '{@item.fk_delete}', 'table' => '{@item.table}', 'col' => '{@item.col}'),
