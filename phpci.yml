@@ -1,3 +1,8 @@
+build_settings:
+  ignore:
+    - "vendor"
+    - "tests"
+
 setup:
   mysql:
     - "DROP DATABASE IF EXISTS b8_test;"
@@ -5,10 +10,6 @@ setup:
     - "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test';"
   composer:
     action: "install"
-
-ignore:
-  - "vendor"
-  - "tests"
 
 test:
   php_unit:
