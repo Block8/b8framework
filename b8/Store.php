@@ -7,9 +7,9 @@ use b8\Database,
 
 abstract class Store
 {
-	protected $_modelName   = null;
-	protected $_tableName   = null;
-	protected $_primaryKey  = null;
+	protected $modelName   = null;
+	protected $tableName   = null;
+	protected $primaryKey  = null;
 
 	/**
 	 * @return \b8\Model
@@ -18,8 +18,8 @@ abstract class Store
 
 	public function getWhere($where = array(), $limit = 25, $offset = 0, $joins = array(), $order = array(), $manualJoins = array(), $group = null, $manualWheres = array(), $whereType = 'AND')
 	{
-		$query      = 'SELECT ' . $this->_tableName . '.* FROM ' . $this->_tableName;
-		$countQuery = 'SELECT COUNT(*) AS cnt FROM ' . $this->_tableName;
+		$query      = 'SELECT ' . $this->tableName . '.* FROM ' . $this->tableName;
+		$countQuery = 'SELECT COUNT(*) AS cnt FROM ' . $this->tableName;
 
 		$wheres = array();
 		$params = array();
@@ -231,7 +231,7 @@ abstract class Store
 
 			foreach($res as $data)
 			{
-				$rtn[] = new $this->_modelName($data);
+				$rtn[] = new $this->modelName($data);
 			}
 
 			return array('items' => $rtn, 'count' => $count);
@@ -244,12 +244,12 @@ abstract class Store
 
 	public function save(Model $obj, $saveAllColumns = false)
 	{
-	    if(!isset($this->_primaryKey))
+	    if(!isset($this->primaryKey))
 	    {
 			throw new HttpException\BadRequestException('Save not implemented for this store.');
 	    }
 
-	    if(!($obj instanceof $this->_modelName))
+	    if(!($obj instanceof $this->modelName))
 	    {
 			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
 	    }
@@ -258,7 +258,7 @@ abstract class Store
 	    $modified = ($saveAllColumns) ? array_keys($data) : $obj->getModified();
 
 
-	    if(isset($data[$this->_primaryKey]))
+	    if(isset($data[$this->primaryKey]))
 	    {
 			$updates = array();
 			$update_params = array();
@@ -270,9 +270,9 @@ abstract class Store
 
 			if(count($updates))
 			{
-				$qs = 'UPDATE ' . $this->_tableName . '
+				$qs = 'UPDATE ' . $this->tableName . '
 											SET ' . implode(', ', $updates) . ' 
-											WHERE ' . $this->_primaryKey . ' = :primaryKey';
+											WHERE ' . $this->primaryKey . ' = :primaryKey';
 				$q  = Database::getConnection('write')->prepare($qs);
 
 				foreach($update_params as $update_param)
@@ -280,10 +280,10 @@ abstract class Store
 					$q->bindValue(':' . $update_param[0], $update_param[1]);
 				}
 
-				$q->bindValue(':primaryKey', $data[$this->_primaryKey]);
+				$q->bindValue(':primaryKey', $data[$this->primaryKey]);
 				$q->execute();
 
-				$rtn = $this->getByPrimaryKey($data[$this->_primaryKey], 'write');
+				$rtn = $this->getByPrimaryKey($data[$this->primaryKey], 'write');
 			}
 			else
 			{
@@ -304,7 +304,7 @@ abstract class Store
 
 			if(count($cols))
 			{
-				$qs = 'INSERT INTO ' . $this->_tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
+				$qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
 				$q  = Database::getConnection('write')->prepare($qs);
 
 				if($q->execute($qParams))
@@ -319,20 +319,20 @@ abstract class Store
 
 	public function delete(Model $obj)
 	{
-	    if(!isset($this->_primaryKey))
+	    if(!isset($this->primaryKey))
 	    {
 			throw new HttpException\BadRequestException('Delete not implemented for this store.');
 	    }
 
-	    if(!($obj instanceof $this->_modelName))
+	    if(!($obj instanceof $this->modelName))
 	    {
 			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
 	    }
 
 		$data = $obj->getDataArray();
 
-		$q = Database::getConnection('write')->prepare('DELETE FROM ' . $this->_tableName . ' WHERE ' . $this->_primaryKey . ' = :primaryKey');
-		$q->bindValue(':primaryKey', $data[$this->_primaryKey]);
+		$q = Database::getConnection('write')->prepare('DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKey . ' = :primaryKey');
+		$q->bindValue(':primaryKey', $data[$this->primaryKey]);
 		$q->execute();
 
 		return true;
@@ -350,7 +350,7 @@ abstract class Store
 
 		if(strpos($field, '.') === false)
 		{
-			return $this->_tableName . '.' . $field;
+			return $this->tableName . '.' . $field;
 		}
 
 		return $field;

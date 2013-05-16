@@ -7,18 +7,18 @@ use b8\Exception\HttpException,
 class Model
 {
 	public static $sleepable    = array();
-	protected $_getters         = array();
-	protected $_setters         = array();
-	protected $_data            = array();
-	protected $_modified        = array();
-	protected $_tableName;
+	protected $getters         = array();
+	protected $setters         = array();
+	protected $data            = array();
+	protected $modified        = array();
+	protected $tableName;
 	protected $registry;
 
 	public function __construct($initialData = array())
 	{
 		if(is_array($initialData))
 		{
-			$this->_data = array_merge($this->_data, $initialData);
+			$this->data = array_merge($this->data, $initialData);
 		}
 
 		$this->registry = Registry::getInstance();
@@ -26,7 +26,7 @@ class Model
 
 	public function getTableName()
 	{
-		return $this->_tableName;
+		return $this->tableName;
 	}
 
 	public function toArray($depth = 2, $currentDepth = 0)
@@ -37,7 +37,7 @@ class Model
 		}
 		else
 		{
-			$sleepable = array_keys($this->_getters);
+			$sleepable = array_keys($this->getters);
 		}
 
 		$rtn = array();
@@ -53,9 +53,9 @@ class Model
 	{
 		$rtn = null;
 
-		if(array_key_exists($property, $this->_getters))
+		if(array_key_exists($property, $this->getters))
 		{
-			$method = $this->_getters[$property];
+			$method = $this->getters[$property];
 			$rtn    = $this->{$method}();
 
 			if(is_object($rtn) || is_array($rtn))
@@ -98,21 +98,21 @@ class Model
 
 	public function getDataArray()
 	{
-		return $this->_data;
+		return $this->data;
 	}
 
 	public function getModified()
 	{
-		return $this->_modified;
+		return $this->modified;
 	}
 
 	public function setValues(array $values)
 	{
 		foreach($values as $key => $value)
 		{
-			if(isset($this->_setters[$key]))
+			if(isset($this->setters[$key]))
 			{
-				$func = $this->_setters[$key];
+				$func = $this->setters[$key];
 
 				if($value === 'null')
 				{
@@ -134,7 +134,7 @@ class Model
 
 	protected function _setModified($column)
 	{
-		$this->_modified[$column] = $column;
+		$this->modified[$column] = $column;
 	}
 
 	//----------------
