@@ -39,11 +39,16 @@ class Application
     */
     protected $actionParams;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, Http\Request $request = null)
     {
         $this->config = $config;
-        $this->request = new Http\Request();
         $this->response = new Http\Response();
+
+        if (!is_null($request)) {
+            $this->request = $request;
+        } else {
+            $this->request = new Http\Request();
+        }
     }
 
     public function handleRequest()
