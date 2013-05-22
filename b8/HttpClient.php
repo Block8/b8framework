@@ -9,8 +9,8 @@ class HttpClient
 	protected $_headers = array();
 
 	public function __construct($base = null)
-	{
-		$settings      = Registry::getInstance()->get('HttpClient', array('base' => '', 'params' => array()));
+	{		
+		$settings      = Config::getInstance()->get('http_client', array('base' => '', 'params' => array()));
 		$this->_base   = $settings['base'];
 		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
 		$this->_headers = array('Content-Type: application/x-www-form-urlencoded');

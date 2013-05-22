@@ -38,6 +38,22 @@ class RestController extends Controller
 	{
 	}
 
+	protected function setControllerView()
+	{
+	}
+
+	protected function setView()
+	{
+	}
+
+	public function handleAction($action, $actionParams)
+	{
+		$response = call_user_func_array(array($this, $action), $actionParams);
+		$this->response->setContent($response);
+
+		return $this->response;
+	}
+
 	public function setActiveUser(RestUser $user)
 	{
 		$this->activeUser = $user;

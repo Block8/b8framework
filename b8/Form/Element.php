@@ -1,8 +1,9 @@
 <?php
 
 namespace b8\Form;
-use b8\View,
-	b8\Registry;
+
+use b8\View;
+use b8\Config;
 
 abstract class Element
 {
@@ -78,7 +79,7 @@ abstract class Element
 
 	public function render($viewFile = null)
 	{
-		$viewPath = Registry::getInstance()->get('ViewPath');
+		$viewPath = Config::getInstance()->get('view_path');
 
 		if(is_null($viewFile))
 		{

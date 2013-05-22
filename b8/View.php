@@ -10,15 +10,26 @@ class View
 
 	public function __construct($file, $path = null)
 	{
-		$viewPath = is_null($path) ? Registry::getInstance()->get('ViewPath') : $path;
-		$viewFile = $viewPath . $file . '.phtml';
-
-		if(!file_exists($viewFile))
-		{
-			throw new \Exception('View file does not exist: ' . $viewFile);
+		if (!self::exists($file, $path)) {
+			throw new \Exception('View file does not exist: ' . $file);
 		}
 
-		$this->viewFile = $viewFile;
+		$this->viewFile = self::getViewFile($file, $path);
+	}
+
+	protected static function getViewFile($file, $path = null)
+	{
+		$viewPath = is_null($path) ? Config::getInstance()->get('view_path') : $path;
+		return $viewPath . $file . '.phtml';
+	}
+
+	public static function exists($file, $path = null)
+	{
+		if (!file_exists(self::getViewFile($file, $path))) {
+			return false;
+		}
+
+		return true;
 	}
 
 	public function __isset($var)
@@ -40,7 +51,7 @@ class View
 	{
 		if(!isset(self::$_helpers[$method]))
 		{
-			$class = '\\' . Registry::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
+			$class = '\\' . Config::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
 
 			if(!class_exists($class))
 			{

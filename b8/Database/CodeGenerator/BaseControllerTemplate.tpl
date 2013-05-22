@@ -5,7 +5,7 @@
  */
 
 namespace {@appNamespace}\Controller\Base;
-require_once(APPLICATION_PATH . '{@appNamespace}/Controller/Base/{@table.php_name}ControllerBase.php');
+
 use b8\Controller\RestController;
 
 /**

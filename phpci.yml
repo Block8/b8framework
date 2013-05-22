@@ -8,12 +8,8 @@ setup:
     - "DROP DATABASE IF EXISTS b8_test;"
     - "CREATE DATABASE b8_test;"
     - "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test';"
-  composer:
-    action: "install"
 
 test:
-  php_unit:
-    directory: "tests/"
   php_mess_detector:
     allow_failures: true
   php_code_sniffer:
@@ -25,3 +21,14 @@ test:
 complete:
   mysql:
     - "DROP DATABASE IF EXISTS b8_test;"
+  package_build:
+    directory: /www/b8framework-builds
+    filename: "%project.title%-%date%"
+    format:
+      - "tar"
+      - "zip"
+
+success:
+  notify:
+    recipients:
+      - "dan@block8.co.uk"

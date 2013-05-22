@@ -212,11 +212,11 @@ class {@table.php_name}Base extends Model
         }
 
         $cacheKey   = 'Cache.{@item.table_php_name}.' . $key;
-        $rtn        = $this->registry->get($cacheKey, null);
+        $rtn        = $this->cache->get($cacheKey, null);
 
         if (empty($rtn)) {
             $rtn    = \b8\Store\Factory::getStore('{@item.table_php_name}')->getBy{@item.col_php}($key);
-            $this->registry->set($cacheKey, $rtn);
+            $this->cache->set($cacheKey, $rtn);
         }
 
         return $rtn;

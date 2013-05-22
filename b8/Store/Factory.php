@@ -1,7 +1,7 @@
 <?php
 
 namespace b8\Store;
-use b8\Registry;
+use b8\Config;
 
 class Factory
 {
@@ -53,7 +53,7 @@ class Factory
 	{
 		if(!isset($this->loadedStores[$store]))
 		{
-			$class = Registry::getInstance()->get('app_namespace') . '\\Store\\' . $store . 'Store';
+			$class = Config::getInstance()->get('app_namespace') . '\\Store\\' . $store . 'Store';
 			$obj   = new $class();
 
 			$this->loadedStores[$store] = $obj;

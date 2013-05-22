@@ -1,8 +1,9 @@
 <?php
 
 namespace b8;
-use b8\Exception\HttpException,
-	b8\Registry;
+
+use b8\Exception\HttpException;
+use b8\Cache;
 
 class Model
 {
@@ -12,7 +13,7 @@ class Model
 	protected $data            = array();
 	protected $modified        = array();
 	protected $tableName;
-	protected $registry;
+	protected $cache;
 
 	public function __construct($initialData = array())
 	{
@@ -21,7 +22,7 @@ class Model
 			$this->data = array_merge($this->data, $initialData);
 		}
 
-		$this->registry = Registry::getInstance();
+		$this->cache = Cache::getCache(Cache::TYPE_REQUEST);
 	}
 
 	public function getTableName()

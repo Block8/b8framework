@@ -2,120 +2,90 @@
 
 namespace b8;
 
-if(!defined('B8_PATH'))
-{
+use b8\Config;
+use b8\Http\Request;
+
+if (!defined('B8_PATH')) {
 	define('B8_PATH', dirname(__FILE__) . '/');
 }
 
+/**
+* b8\Registry is now deprecated in favour of using the following classes:
+* @see b8\Http\Request
+* @see b8\Http\Response
+* @see b8\Config
+*/
 class Registry
 {
 	/**
 	 * @var \b8\Registry
 	 */
-	protected static $_instance;
+	protected static $instance;
 	protected $_data    = array();
 	protected $_params  = null;
+
+	/**
+	* @var b8\Config
+	*/
+	protected $config;
+
+	/**
+	* @var b8\Http\Request
+	*/
+	protected $request;
 
 	/**
 	 * @return Registry
 	 */
 	public static function getInstance()
 	{
-		if(is_null(self::$_instance))
-		{
-			self::$_instance = new self();
-		}
-
-		return self::$_instance;
+		return self::$instance;
 	}
 
-	public static function forceReset()
+	public function __construct(Config $config, Request $request)
 	{
-		self::$_instance = null;
-	}
+		$this->config = $config;
+		$this->request = $request;
 
-	protected function __construct()
-	{
-
+		self::$instance = $this;
 	}
 
 	public function get($key, $default = null)
 	{
-		if(isset($this->_data[$key]))
-		{
-			return $this->_data[$key];
-		}
-
-		return $default;
+		return $this->config->get($key, $default);
 	}
 
 	public function set($key, $value)
 	{
-		$this->_data[$key] = $value;
+		return $this->config->set($key, $value);
 	}
 
 	public function setArray($array)
 	{
-		$this->_data = array_merge($this->_data, $array);
+		return $this->config->set($array);
 	}
-
 
 	public function getParams()
 	{
-		if(is_null($this->_params))
-		{
-			$this->parseInput();
-		}
-
-		return $this->_params;
+		return $this->request->getParams();
 	}
 
 	public function getParam($key, $default)
 	{
-		if(is_null($this->_params))
-		{
-			$this->parseInput();
-		}
-
-		if(isset($this->_params[$key]))
-		{
-			return $this->_params[$key];
-		}
-		else
-		{
-			return $default;
-		}
+		return $this->request->getParam($key, $default);
 	}
 
 	public function setParam($key, $value)
 	{
-		$this->_params[$key] = $value;
+		return $this->request->setParam($key, $value);
 	}
 
 	public function unsetParam($key)
 	{
-		unset($this->_params[$key]);
+		return $this->request->unsetParam($key);
 	}
 
 	public function parseInput()
 	{
-		$params = $_REQUEST;
-
-		if(!isset($_SERVER['REQUEST_METHOD']) || in_array($_SERVER['REQUEST_METHOD'], array('PUT', 'DELETE')))
-		{
-			$vars = file_get_contents('php://input');
-
-			if(!is_string($vars) || strlen(trim($vars)) === 0)
-			{
-				$vars = '';
-			}
-
-			$inputData = array();
-			parse_str($vars, $inputData);
-
-			$params = array_merge($params, $inputData);
-		}
-
-		$this->_params = $params;
 	}
 }
