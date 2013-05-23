@@ -2,6 +2,8 @@
 
 namespace b8;
 
+use Symfony\Component\Yaml\Parser as YamlParser;
+
 if (!defined('B8_PATH')) {
     define('B8_PATH', dirname(__FILE__) . '/');
 }
@@ -20,11 +22,26 @@ class Config
     */
     protected $config = array();
 
-    public function __construct(array $settings = array())
+    public function __construct($settings = null)
     {
-        $this->setArray($settings);
-
         self::$instance = $this;
+
+        if (empty($settings)) {
+            return;
+        } elseif (is_array($settings)) {
+            // Array of setting data.
+            $this->setArray($settings);
+        } elseif (is_string($settings) && file_exists($settings)) {
+            $this->loadYaml($settings);
+        }
+    }
+
+    public function loadYaml($yamlFile)
+    {
+        // Path to a YAML file.
+        $parser = new YamlParser();
+        $yaml = file_get_contents($yamlFile);
+        $this->setArray($parser->parse($yaml));
     }
 
     /**
@@ -35,9 +52,29 @@ class Config
     */
     public function get($key, $default = null)
     {
-        if(isset($this->config[$key]))
-        {
-            return $this->config[$key];
+        $keyParts = explode('.', $key);
+        $selected =& $this->config;
+
+        while ($part = array_shift($keyParts)) {
+            if (!isset($selected)) {
+                $selected = null;
+                break;
+            }
+
+            if (!is_array($selected)) {
+                $selected = null;
+                break;
+            }
+
+            if (!isset($selected[$part])) {
+                $selected = null;
+            }
+
+            $selected =& $selected[$part];
+        }
+
+        if (isset($selected)) {
+            return $selected;
         }
 
         return $default;

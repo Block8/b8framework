@@ -29,11 +29,11 @@ class CodeGenerationTest extends \PHPUnit_Framework_TestCase
 
 	public static function setUpBeforeClass()
 	{
-		Database::setDetails('b8_test', 'b8_test', 'b8_test');
+		Database::setDetails('b8_test_' . getenv('PHPCI_BUILD'), 'b8_test', 'b8_test');
 		Database::setWriteServers(array('localhost'));
 		Database::setReadServers(array('localhost'));
 
-		Registry::getInstance()->set('app_namespace', 'Generation');
+		Registry::getInstance()->set('b8.app.namespace', 'Generation');
 
 		self::$_db = Database::getConnection('write');
 

@@ -19,7 +19,7 @@ class View
 
 	protected static function getViewFile($file, $path = null)
 	{
-		$viewPath = is_null($path) ? Config::getInstance()->get('view_path') : $path;
+		$viewPath = is_null($path) ? Config::getInstance()->get('b8.view.path') : $path;
 		return $viewPath . $file . '.phtml';
 	}
 
@@ -51,7 +51,7 @@ class View
 	{
 		if(!isset(self::$_helpers[$method]))
 		{
-			$class = '\\' . Config::getInstance()->get('app_namespace') . '\\Helper\\' . $method;
+			$class = '\\' . Config::getInstance()->get('b8.app.namespace') . '\\Helper\\' . $method;
 
 			if(!class_exists($class))
 			{

@@ -73,7 +73,7 @@ class Application
         $parts = $this->request->getPathParts();
 
         if (empty($parts[0])) {
-            $parts[0] = $this->config->get('default_controller', 'index');
+            $parts[0] = $this->config->get('b8.app.default_controller', 'index');
         }
 
         $controller = str_replace('-', ' ', trim($parts[0]));
@@ -81,7 +81,7 @@ class Application
         $controller = str_replace(' ', '', $controller);
 
         $this->controllerName   = $controller;
-        $class                  = '\\' . $this->config->get('app_namespace') . '\\Controller\\' . $controller . 'Controller';
+        $class                  = '\\' . $this->config->get('b8.app.namespace') . '\\Controller\\' . $controller . 'Controller';
 
         if (!class_exists($class)) {
             throw new HttpException\BadRequestException('Invalid controller: ' . $this->controllerName .' does not exist.');

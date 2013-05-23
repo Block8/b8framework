@@ -5,9 +5,9 @@ build_settings:
 
 setup:
   mysql:
-    - "DROP DATABASE IF EXISTS b8_test;"
+    - "DROP DATABASE IF EXISTS b8_test_%PHPCI_BUILD%;"
     - "CREATE DATABASE b8_test;"
-    - "GRANT ALL PRIVILEGES ON b8_test.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test';"
+    - "GRANT ALL PRIVILEGES ON b8_test_%PHPCI_BUILD%.* TO b8_test@'localhost' IDENTIFIED BY 'b8_test';"
 
 test:
   php_mess_detector:
@@ -20,7 +20,7 @@ test:
 
 complete:
   mysql:
-    - "DROP DATABASE IF EXISTS b8_test;"
+    - "DROP DATABASE IF EXISTS b8_test_%PHPCI_BUILD%;"
   package_build:
     directory: /www/b8framework-builds
     filename: "%project.title%-%date%"

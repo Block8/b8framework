@@ -2,27 +2,63 @@
 
 namespace b8;
 
+use b8\Config;
+
 class Database extends \PDO
 {
+	protected static $initialised   = false;
 	protected static $servers       = array('read' => array(), 'write' => array());
 	protected static $connections   = array('read' => null, 'write' => null);
 	protected static $details       = array();
 
+	/**
+	* @deprecated
+	*/
 	public static function setReadServers($read)
 	{
-		self::$servers['read'] = $read;
+		$config = Config::getInstance();
+
+		$settings = $config->get('database', array());
+		$settings['servers']['read'] = $read;
+		$config->set('database', $settings);
 	}
 
+	/**
+	* @deprecated
+	*/
 	public static function setWriteServers($write)
 	{
-		self::$servers['write'] = $write;
+		$config = Config::getInstance();
+
+		$settings = $config->get('database', array());
+		$settings['servers']['write'] = $write;
+		$config->set('database', $settings);
 	}
 
+	/**
+	* @deprecated
+	*/
 	public static function setDetails($database, $username, $password)
 	{
-		self::$details = array('db' => $database, 'user' => $username, 'pass' => $password);
-		self::$connections['read'] = null;
-		self::$connections['write'] = null;
+		$config               = Config::getInstance();
+		$settings             = $config->get('database', array());
+		$settings['name']     = $database;
+		$settings['username'] = $username;
+		$settings['password'] = $password;
+		$config->set('database', $settings);
+	}
+
+	protected static function init()
+	{
+		$config   = Config::getInstance();
+		$settings = $config->get('database', array());
+
+		self::$servers['read']  = $settings['servers']['read'];
+		self::$servers['write'] = $settings['servers']['write'];
+		self::$details['db']    = $settings['name'];
+		self::$details['user']  = $settings['username'];
+		self::$details['pass']  = $settings['password'];
+		self::$initialised      = true;
 	}
 
 	/**
@@ -33,6 +69,10 @@ class Database extends \PDO
 	 */
 	public static function getConnection($type = 'read')
 	{
+		if (!self::$initialised) {
+			self::init();
+		}
+
 		if(is_null(self::$connections[$type]))
 		{
 			// Shuffle, so we pick a random server:

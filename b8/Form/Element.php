@@ -79,7 +79,7 @@ abstract class Element
 
 	public function render($viewFile = null)
 	{
-		$viewPath = Config::getInstance()->get('view_path');
+		$viewPath = Config::getInstance()->get('b8.view.path');
 
 		if(is_null($viewFile))
 		{

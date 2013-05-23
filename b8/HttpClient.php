@@ -10,8 +10,8 @@ class HttpClient
 
 	public function __construct($base = null)
 	{		
-		$settings      = Config::getInstance()->get('http_client', array('base' => '', 'params' => array()));
-		$this->_base   = $settings['base'];
+		$settings      = Config::getInstance()->get('b8.http.client', array('base_url' => '', 'params' => array()));
+		$this->_base   = $settings['base_url'];
 		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
 		$this->_headers = array('Content-Type: application/x-www-form-urlencoded');
 
