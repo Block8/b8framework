@@ -44,11 +44,11 @@ class Generator
 			{
 				continue;
 			}
-
-			if($file->getExtension() != 'php')
+			$fileName = explode('.', $file->getBasename());
+			if ($fileName[count($fileName)-1] != 'php')
 			{
 				continue;
-			}
+			}	
 
 			$modelName = '\\' . $this->_ns . '\\Model\\Base\\' . str_replace('.php', '', $file->getFilename());
 
