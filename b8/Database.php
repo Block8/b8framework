@@ -18,9 +18,9 @@ class Database extends \PDO
 	{
 		$config = Config::getInstance();
 
-		$settings = $config->get('database', array());
+		$settings = $config->get('b8.database', array());
 		$settings['servers']['read'] = $read;
-		$config->set('database', $settings);
+		$config->set('b8.database', $settings);
 	}
 
 	/**
@@ -30,9 +30,9 @@ class Database extends \PDO
 	{
 		$config = Config::getInstance();
 
-		$settings = $config->get('database', array());
+		$settings = $config->get('b8.database', array());
 		$settings['servers']['write'] = $write;
-		$config->set('database', $settings);
+		$config->set('b8.database', $settings);
 	}
 
 	/**
@@ -41,18 +41,17 @@ class Database extends \PDO
 	public static function setDetails($database, $username, $password)
 	{
 		$config               = Config::getInstance();
-		$settings             = $config->get('database', array());
+		$settings             = $config->get('b8.database', array());
 		$settings['name']     = $database;
 		$settings['username'] = $username;
 		$settings['password'] = $password;
-		$config->set('database', $settings);
+		$config->set('b8.database', $settings);
 	}
 
 	protected static function init()
 	{
 		$config   = Config::getInstance();
-		$settings = $config->get('database', array());
-
+		$settings = $config->get('b8.database', array());
 		self::$servers['read']  = $settings['servers']['read'];
 		self::$servers['write'] = $settings['servers']['write'];
 		self::$details['db']    = $settings['name'];
@@ -75,16 +74,22 @@ class Database extends \PDO
 
 		if(is_null(self::$connections[$type]))
 		{
-			// Shuffle, so we pick a random server:
-			shuffle(self::$servers[$type]);
+                        if (is_array(self::$servers[$type])) {
+                            // Shuffle, so we pick a random server:
+                            $servers = self::$servers[$type];
+                            shuffle($servers);
+                        } else {
+                            // Only one server was specified
+                            $servers = array(self::$servers[$type]);
+                        }
 
 			$connection = null;
 
 			// Loop until we get a working connection:
-			while(count(self::$servers[$type]))
+			while(count($servers))
 			{
 				// Pull the next server:
-				$server = array_shift(self::$servers[$type]);
+				$server = array_shift($servers);
 
 				// Try to connect:
 				try
