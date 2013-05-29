@@ -84,7 +84,7 @@ class Application
         $class                  = '\\' . $this->config->get('b8.app.namespace') . '\\Controller\\' . $controller . 'Controller';
 
         if (!class_exists($class)) {
-            throw new HttpException\BadRequestException('Invalid controller: ' . $this->controllerName .' does not exist.');
+            throw new HttpException\BadRequestException('Invalid controller ['.$class.']: ' . $this->controllerName .' does not exist.');
         }
 
         $this->controller = new $class($this->config, $this->request, $this->response);
