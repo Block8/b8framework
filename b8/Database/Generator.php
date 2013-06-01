@@ -45,7 +45,8 @@ class Generator
 				continue;
 			}
 
-			if($file->getExtension() != 'php')
+			$ext = pathinfo($file->getFilename(), PATHINFO_EXTENSION);
+			if($ext != 'php')
 			{
 				continue;
 			}
