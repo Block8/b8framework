@@ -53,28 +53,22 @@ class Config
     public function get($key, $default = null)
     {
         $keyParts = explode('.', $key);
-        $selected =& $this->config;
+        $selected = $this->config;
 
+        $i = -1;
+        $last_part = count($keyParts) - 1;
         while ($part = array_shift($keyParts)) {
-            if (!isset($selected)) {
-                $selected = null;
-                break;
+            $i++;
+
+            if (!array_key_exists($part, $selected)) {
+                return $default;
             }
 
-            if (!is_array($selected)) {
-                $selected = null;
-                break;
+            if ($i === $last_part) {
+                return $selected[$part];
+            } else {
+                $selected = $selected[$part];
             }
-
-            if (!isset($selected[$part])) {
-                $selected = null;
-            }
-
-            $selected =& $selected[$part];
-        }
-
-        if (isset($selected)) {
-            return $selected;
         }
 
         return $default;
@@ -95,7 +89,7 @@ class Config
     */
     public function setArray($array)
     {
-        $this->config = array_merge($this->config, $array);
+        self::deepMerge($this->config, $array);
     }
 
     /**
@@ -130,5 +124,42 @@ class Config
     public function __unset($key)
     {
         unset($this->config[$key]);
+    }
+
+    /**
+     * Deeply merge the $target array onto the $source array.
+     * The $source array will be modified!
+     * @param array $source
+     * @param array $target
+     */
+    public static function deepMerge(&$source, $target)
+    {
+        if (count($source) === 0) {
+            $source = $target;
+            return;
+        }
+        foreach ($target as $target_key => $target_value) {
+            if (isset($source[$target_key])) {
+                if (!is_array($source[$target_key]) && !is_array($target_value)) {
+                    // Neither value is an array, overwrite
+                    $source[$target_key] = $target_value;
+
+                } elseif (is_array($source[$target_key]) && is_array($target_value)) {
+                    // Both are arrays, deep merge them
+                    self::deepMerge($source[$target_key], $target_value);
+
+                } elseif (is_array($source[$target_key])) {
+                    // Source is the array, push target value
+                    $source[$target_key][] = $target_value;
+                } else {
+                    // Target is the array, push source value and copy back
+                    $target_value[] = $source[$target_key];
+                    $source[$target_key] = $target_value;
+                }
+            } else {
+                // No merge required, just set the value
+                $source[$target_key] = $target_value;
+            }
+        }
     }
 }
