@@ -31,10 +31,13 @@ class Request
 
         if (isset($_SERVER['PATH_INFO'])) {
             $path = $_SERVER['PATH_INFO'];
-        }
-
-        if (isset($_SERVER['REDIRECT_PATH_INFO'])) {
+        } elseif (isset($_SERVER['REDIRECT_PATH_INFO'])) {
             $path = $_SERVER['REDIRECT_PATH_INFO'];
+        } elseif (isset($_SERVER['SCRIPT_NAME'])) {
+            $script = dirname( $_SERVER['SCRIPT_NAME'] );
+            if (strpos($path, $script) === 0 ) {
+                $path = substr($path, strlen($script));
+            }
         }
 
         $path = explode('?', $path);
