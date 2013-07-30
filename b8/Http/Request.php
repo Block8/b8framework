@@ -29,12 +29,17 @@ class Request
     {
         $path = $_SERVER['REQUEST_URI'];
 
-        if (isset($_SERVER['PATH_INFO'])) {
-            $path = $_SERVER['PATH_INFO'];
-        }
-
         if (isset($_SERVER['REDIRECT_PATH_INFO'])) {
             $path = $_SERVER['REDIRECT_PATH_INFO'];
+        } elseif (isset($_SERVER['PATH_INFO'])) {
+            $path = $_SERVER['PATH_INFO'];
+        } elseif ($_SERVER['DOCUMENT_ROOT'] != dirname($_SERVER['SCRIPT_FILENAME'])) {
+            $basePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']));
+            $path = substr($path, strlen($basePath));
+        }
+
+        if (substr($path, -10) == '/index.php') {
+            $path = substr($path, 0, -10);
         }
 
         $path = explode('?', $path);
