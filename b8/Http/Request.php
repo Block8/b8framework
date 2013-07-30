@@ -27,7 +27,7 @@ class Request
 
     protected function getRequestPath()
     {
-        $path = $_SERVER['REQUEST_URI'];
+        $path = isset($_SERVER['REQUEST_URI'])? $_SERVER['REQUEST_URI']: '';
 
         if (isset($_SERVER['REDIRECT_PATH_INFO'])) {
             $path = $_SERVER['REDIRECT_PATH_INFO'];
