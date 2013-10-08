@@ -158,7 +158,13 @@ class Map
 
 		$col['null']    = strtolower($column['Null']) == 'yes' ? true : false;
 		$col['auto']    = strtolower($column['Extra']) == 'auto_increment' ? true : false;
-		$col['default'] = $column['Default'] == 'NULL' || empty($column['Default']) ? null : $column['Default'];
+
+		if ($column['Default'] == 'NULL' || is_null($column['Default'])) {
+			$col['default_is_null'] = true;
+		} else {
+			$col['default_is_null'] = false;
+			$col['default'] = $column['Default'];
+		}
 
 		if(!empty($column['Key']))
 		{

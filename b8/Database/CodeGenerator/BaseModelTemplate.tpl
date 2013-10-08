@@ -81,10 +81,14 @@ class {@table.php_name}Base extends Model
             'auto_increment' => true,
 
 {/if}
-{if item.default}
-            'default' => '{@item.default}',
+{if item.default_is_null}
+            'default' => null,
 
 {/if}
+{ifnot item.default_is_null}
+            'default' => '{@item.default}',
+
+{/ifnot}
             ),
 
 {/loop}     );
@@ -185,7 +189,7 @@ class {@table.php_name}Base extends Model
         $this->_validateDate('{@item.php_name}', $value);
 {/if}
 
-        if ($this->data['{@item.name}'] == $value) {
+        if ($this->data['{@item.name}'] === $value) {
             return;
         }
 
