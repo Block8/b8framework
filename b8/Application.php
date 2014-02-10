@@ -80,15 +80,7 @@ class Application
         $controller = ucwords($controller);
         $controller = str_replace(' ', '', $controller);
 
-        $this->controllerName   = $controller;
-        $class                  = '\\' . $this->config->get('b8.app.namespace') . '\\Controller\\' . $controller . 'Controller';
-
-        if (!class_exists($class)) {
-            throw new HttpException\BadRequestException('Invalid controller ['.$class.']: ' . $this->controllerName .' does not exist.');
-        }
-
-        $this->controller = new $class($this->config, $this->request, $this->response);
-        $this->controller->init();
+        $this->loadController($controller);
     }
 
     protected function initAction()
@@ -113,5 +105,18 @@ class Application
         if (!$this->controller->hasAction($this->action)) {
             throw new HttpException\BadRequestException('Invalid action: ' . $this->action . ' does not exist.');
         }
+    }
+
+    protected function loadController($controllerName)
+    {
+        $this->controllerName   = $controllerName;
+        $class                  = '\\' . $this->config->get('b8.app.namespace') . '\\Controller\\' . $controllerName . 'Controller';
+
+        if (!class_exists($class)) {
+            throw new HttpException\BadRequestException('Invalid controller ['.$class.']: ' . $this->controllerName .' does not exist.');
+        }
+
+        $this->controller = new $class($this->config, $this->request, $this->response);
+        $this->controller->init();
     }
 }
