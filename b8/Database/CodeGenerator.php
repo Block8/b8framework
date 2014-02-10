@@ -13,13 +13,14 @@ class CodeGenerator
 	protected $_ns      = null;
 	protected $_path    = null;
 
-	public function __construct(Database $db, $namespace, $path)
+	public function __construct(Database $db, $namespace, $path, $includeCountQueries = true)
 	{
 		$this->_db      = $db;
 		$this->_ns      = $namespace;
 		$this->_path    = $path;
 		$this->_map     = new Map($this->_db);
 		$this->_tables  = $this->_map->generate();
+		$this->_counts  = $includeCountQueries;
 	}
 
 	public function generateModels()
@@ -107,6 +108,7 @@ class CodeGenerator
 		$tpl->appNamespace  = $this->_ns;
 		$tpl->name          = $tableName;
 		$tpl->table         = $table;
+		$tpl->counts        = $this->_counts; 
 
 		return $tpl->render();
 	}

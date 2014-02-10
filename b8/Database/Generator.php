@@ -112,7 +112,7 @@ class Generator
 		$pks = array();
 		foreach($cols as $colName => $def)
 		{
-			$add = $colName . ' ' . $def['type'];
+			$add = '`' . $colName . '` ' . $def['type'];
 
 			switch($def['type'])
 			{
@@ -147,7 +147,7 @@ class Generator
 
 			if(!empty($def['primary_key']) && $def['primary_key'])
 			{
-				$pks[] = $colName;
+				$pks[] = '`' . $colName . '`';
 			}
 
 			$defs[] = $add;
@@ -158,7 +158,7 @@ class Generator
 			$defs[] = 'PRIMARY KEY (' . implode(', ', $pks) . ')';
 		}
 
-		$stmt = 'CREATE TABLE ' . $tbl . ' (' . PHP_EOL;
+		$stmt = 'CREATE TABLE `' . $tbl . '` (' . PHP_EOL;
 		$stmt .= implode(", \n", $defs);
 
 		$stmt .= PHP_EOL . ') ENGINE=InnoDB DEFAULT CHARSET=utf8';

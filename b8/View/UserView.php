@@ -12,101 +12,166 @@ class UserView extends View
 
 	public function render()
 	{
-		$rtn = $this->viewCode;
-		$rtn = $this->_parseLoops($rtn);
-		$rtn = $this->_parseIfs($rtn);
-		$rtn = $this->_parseVars($rtn);
-		$rtn = $this->_parseHelpers($rtn);
-
-		return $rtn;
+		return $this->parse($this->viewCode);
 	}
 
-	protected function _parseIfs($rtn)
+	protected function parse($string)
 	{
-		$rtn = preg_replace_callback('/\{if ([a-zA-Z]+):([a-zA-Z0-9_]+)\}\r?\n?(.*?)\r?\n?\{\/if\}\r?\n?/smu', array($this, '_doParseHelperIf'), $rtn);
-		$rtn = preg_replace_callback('/\{ifnot ([a-zA-Z]+):([a-zA-Z0-9_]+)\}\r?\n?(.*?)\r?\n?\{\/ifnot\}\r?\n?/smu', array($this, '_doParseHelperIfNot'), $rtn);
-		$rtn = preg_replace_callback('/\{if ([a-zA-Z0-9_\.]+)\}\r?\n?(.*?)\r?\n?\{\/if\}\r?\n?/smu', array($this, '_doParseIf'), $rtn);
-		$rtn = preg_replace_callback('/\{ifnot ([a-zA-Z0-9_\.]+)\}\r?\n?(.*?)\r?\n?\{\/ifnot\}\r?\n?/smu', array($this, '_doParseIfNot'), $rtn);
+		$lastCond = null;
+		$keywords = array('ifnot', 'if', 'loop', '@', '/ifnot', '/if', '/loop');
+		$stack = array('children' => array(array('type' => 'string', 'body' => '')));
+		$stack['children'][0]['parent'] =& $stack;
+		$current =& $stack['children'][0];
 
-		return $rtn;
+		while (!empty($string)) {
+			$current['body'] .= $this->readUntil('{', $string);
+
+			if (!empty($string)) {
+				$gotKeyword = false;
+
+				foreach($keywords as $keyword) {
+					$kwLen = strlen($keyword) + 1;
+
+					if (substr($string, 0, $kwLen) == '{' . $keyword) {
+						$gotKeyword = true;
+
+						$item = array('type' => $keyword, 'cond' => '', 'children' => '');
+						$string = substr($string, $kwLen);
+
+						$cond = trim($this->readUntil('}', $string));
+						$item['cond'] = $cond;
+						$lastCond = $cond;
+						$string = substr($string, 1);
+
+						$str = array('type' => 'string', 'body' => '');
+						$parent =& $current['parent'];
+
+						if (substr($current['body'], (0 - strlen(PHP_EOL))) === PHP_EOL) {
+							$current['body'] = substr($current['body'], 0, strlen($current['body']) - strlen(PHP_EOL));
+						}
+
+						$item['parent'] =& $parent;
+						
+						$parent['children'][] = $item;
+
+						if ($keyword == '@') {
+							// If we're processing a variable, add a string to the parent and move up to that as current.
+							$parent['children'][] = $str;
+							$current =& $parent['children'][count($parent['children']) - 1];
+							$current['parent'] =& $parent;
+						} elseif (substr($keyword, 0, 1) == '/') {
+							// If we're processing the end of a block (if/loop), add a string to the parent's parent and move up to that.
+							$parent =& $parent['parent'];
+							$parent['children'][] = $str;
+							$current =& $parent['children'][count($parent['children']) - 1];
+							$current['parent'] =& $parent;
+						} else {
+							$parent['children'][count($parent['children']) - 1]['children'][] = $str;
+							$current =& $parent['children'][count($parent['children']) - 1]['children'][0];
+							$current['parent'] =& $parent['children'][count($parent['children']) - 1];
+						}
+
+						break;
+					}
+				}
+
+				if (!$gotKeyword) {
+					$current['body'] .= substr($string, 0, 1);
+					$string = substr($string, 1);
+				}
+			}
+		}
+
+		return $this->processStack($stack);
 	}
 
-	protected function _parseLoops($rtn)
+	protected function processStack($stack)
 	{
-		$rtn = preg_replace_callback('/\{loop ([a-zA-Z0-9\_\.]+)\}\r?\n?(.*?)\r?\n?\{\/loop\}/smu', array($this, '_doParseLoop'), $rtn);
+		$res = '';
 
-		return $rtn;
+		while (count($stack['children'])) {
+			$current = array_shift($stack['children']);
+
+			switch ($current['type']) {
+				case 'string':
+					$res .= $current['body'];
+					break;
+
+				case '@':
+					$res .= $this->doParseVar($current['cond']);
+					break;
+
+				case 'if':
+					$res .= $this->doParseIf($current['cond'], $current);
+					break;
+
+				case 'ifnot':
+					$res .= $this->doParseIfNot($current['cond'], $current);
+					break;
+
+				case 'loop':
+					$res .= $this->doParseLoop($current['cond'], $current);
+					break;
+			}
+		}
+
+		return $res;
 	}
 
-	protected function _parseHelpers($rtn)
+	protected function readUntil($until, &$string)
 	{
-		$rtn = preg_replace_callback('/\{@([a-zA-Z]+)\:([a-zA-Z0-9\_]+)\}/', array($this, '_doParseHelper'), $rtn);
+		$read = '';
 
-		return $rtn;
+		while (!empty($string)) {
+			$char = substr($string, 0, 1);
+
+			if ($char == $until) {
+				break;
+			}
+
+			$read .= $char;
+			$string = substr($string, 1);
+		}
+
+		return $read;
 	}
 
-	protected function _doParseHelper($var)
+	protected function doParseVar($var)
 	{
-		$helper   = $var[1];
-		$property = $var[2];
-
-		return isset($this->{$helper}()->{$property}) ? $this->{$helper}()->{$property} : '';
-	}
-
-	protected function _parseVars($rtn)
-	{
-		$rtn = preg_replace_callback('/\{@([a-zA-Z0-9\_\.]+)\}/', array($this, '_doParseVar'), $rtn);
-
-		return $rtn;
-	}
-
-	protected function _doParseVar($var)
-	{
-		if($var[1] == 'year')
+		if($var == 'year')
 		{
 			return date('Y');
 		}
 
-		return $this->_processVariableName($var[1]);
+		$val = $this->processVariableName($var);
+		return empty($val) ? null : $val;
 	}
 
-	protected function _doParseIf($var)
+	protected function doParseIf($var, $stack)
 	{
-		$working  = $this->_processVariableName($var[1]);
-		$content  = $var[2];
+		$working  = $this->processVariableName($var);
 
-		return $working ? $content : '';
+		if ($working) {
+			return $this->processStack($stack);
+		}
+
+		return '';
 	}
 
-	protected function _doParseIfNot($var)
+	protected function doParseIfNot($var, $stack)
 	{
-		$working  = $this->_processVariableName($var[1]);
-		$content  = $var[2];
+		$working  = $this->processVariableName($var);
 
-		return $working ? '' : $content;
+		if (!$working) {
+			return $this->processStack($stack);
+		}
+
+		return '';
 	}
 
-	protected function _doParseHelperIf($var)
+	protected function doParseLoop($var, $stack)
 	{
-		$helper   = $var[1];
-		$property = $var[2];
-		$content  = $var[3];
-
-		return isset($this->{$helper}()->{$property}) && !empty($this->{$helper}()->{$property}) ? $content : '';
-	}
-
-	protected function _doParseHelperIfNot($var)
-	{
-		$helper   = $var[1];
-		$property = $var[2];
-		$content  = $var[3];
-
-		return !isset($this->{$helper}()->{$property}) || empty($this->{$helper}()->{$property}) ? $content : '';
-	}
-
-	protected function _doParseLoop($var)
-	{
-		$working    = $this->_processVariableName($var[1]);
+		$working    = $this->processVariableName($var);
 
 		if(is_null($working))
 		{
@@ -119,20 +184,31 @@ class UserView extends View
 		}
 
 		$rtn = '';
-		foreach($working as $item)
-		{
-			$contentView       = new self($var[2]);
-			$contentView->parent = $this;
-			$contentView->item = $item;
-
-			$rtn .= $contentView->render();
+		foreach ($working as $item) {
+			$itemWas = isset($this->item) ? $this->item : null;
+			$this->parent = $this;
+			$this->item = $item;
+			$rtn .= $this->processStack($stack);
+			$this->item = $itemWas;
 		}
 
 		return $rtn;
 	}
 
-	protected function _processVariableName($varName)
+	protected function processVariableName($varName)
 	{
+		// The variable could actually be a reference to a helper:
+		if (strpos($varName, ':') !== false) {
+			list($helper, $property) = explode(':', $varName);
+
+			if (!empty($this->{$helper}()->{$property})) {
+				return $this->{$helper}()->{$property};
+			} else {
+				return null;
+			}
+		}
+
+		// Or not:
 		$varPart    = explode('.', $varName);
 		$thisPart   = array_shift($varPart);
 
@@ -169,6 +245,11 @@ class UserView extends View
 			{
 				$working = strtoupper($working);
 				continue;
+			}
+
+			if ($thisPart == 'isNumeric')
+			{
+				return is_numeric($working);
 			}
 
 			return null;

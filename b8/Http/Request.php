@@ -38,9 +38,7 @@ class Request
             $path = substr($path, strlen($basePath));
         }
 
-        if (substr($path, -10) == '/index.php') {
-            $path = substr($path, 0, -10);
-        }
+        $path = str_replace(array('/index.php', 'index.php'), '', $path);
 
         $path = explode('?', $path);
         $path = array_shift($path);
