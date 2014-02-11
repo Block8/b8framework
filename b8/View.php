@@ -7,6 +7,7 @@ class View
 {
 	protected $_vars = array();
 	protected static $_helpers = array();
+    protected static $extension = 'phtml';
 
 	public function __construct($file, $path = null)
 	{
@@ -20,7 +21,7 @@ class View
 	protected static function getViewFile($file, $path = null)
 	{
 		$viewPath = is_null($path) ? Config::getInstance()->get('b8.view.path') : $path;
-		return $viewPath . $file . '.phtml';
+		return $viewPath . $file . '.' . static::$extension;
 	}
 
 	public static function exists($file, $path = null)
