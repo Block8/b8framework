@@ -369,16 +369,18 @@ class Template extends View
 
 	public function processVariableName($varName)
 	{
-		// The variable could actually be a reference to a helper:
-		if (strpos($varName, ':') !== false) {
-			list($helper, $property) = explode(':', $varName);
+        // The variable could actually be a reference to a helper:
+        if (strpos($varName, ':') !== false) {
+            list($helper, $property) = explode(':', $varName);
 
-			if (!empty($this->{$helper}()->{$property})) {
-				return $this->{$helper}()->{$property};
-			} else {
-				return null;
-			}
-		}
+            $helper = $this->{$helper}();
+
+            if (property_exists($helper, $property) || method_exists($helper, '__get')) {
+                return $helper->{$property};
+            }
+
+            return null;
+        }
 
 		// Or not:
 		$varPart    = explode('.', $varName);
