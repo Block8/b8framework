@@ -501,7 +501,7 @@ class Template extends View
     protected function callHelperFunction($args)
     {
         $helper = $args['helper'];
-        $function = $args['call'];
+        $function = $args['method'];
 
         return $this->{$helper}()->{$function}();
     }
