@@ -71,7 +71,7 @@ class FieldSet extends Element
 
 	public function addField(Element $field)
 	{
-		$this->_children[] = $field;
+		$this->_children[$field->getName()] = $field;
 		$field->setParent($this);
 	}
 
@@ -101,4 +101,14 @@ class FieldSet extends Element
 
 		$view->children = $rendered;
 	}
+
+    protected function getChildren()
+    {
+        return $this->_children;
+    }
+
+    protected function getChild($fieldName)
+    {
+        return $this->_children[$fieldName];
+    }
 }

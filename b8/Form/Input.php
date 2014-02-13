@@ -11,6 +11,7 @@ class Input extends Element
 	protected $_validator;
 	protected $_value;
 	protected $_error;
+    protected $_customError = false;
 
 	public function getValue()
 	{
@@ -84,8 +85,18 @@ class Input extends Element
 			}
 		}
 
+        if ($this->_customError) {
+            return false;
+        }
+
 		return true;
 	}
+
+    public function setError($message)
+    {
+        $this->_customError = true;
+        $this->_error = $message;
+    }
 
 	protected function _onPreRender(View &$view)
 	{
