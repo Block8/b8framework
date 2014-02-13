@@ -216,14 +216,10 @@ class Template extends View
     {
         $matches = array();
 
-        if (preg_match('/([a-zA-Z0-9_.-]+)(\s+?([\!\=\<\>]+)?\s+?([a-zA-Z0-9_.-]+)?)?/', $condition, $matches)) {
-            if (count($matches) == 2) {
-                return $this->processVariableName($condition) ? true : false;
-            }
-
+        if (preg_match('/([a-zA-Z0-9_\-\(\):\s.]+)\s+?([\!\=\<\>]+)?\s+?([a-zA-Z0-9\(\)_\-:\s.]+)?/', $condition, $matches)) {
             $left = is_numeric($matches[1]) ? intval($matches[1]) : $this->processVariableName($matches[1]);
-            $right = is_numeric($matches[4]) ? intval($matches[4]) : $this->processVariableName($matches[4]);
-            $operator = $matches[3];
+            $right = is_numeric($matches[3]) ? intval($matches[3]) : $this->processVariableName($matches[3]);
+            $operator = $matches[2];
 
             switch ($operator) {
                 case '==':
@@ -245,6 +241,8 @@ class Template extends View
                 case '<':
                     return ($left < $right);
             }
+        } elseif (preg_match('/([a-zA-Z0-9_\-\(\):\s.]+)/', $condition, $matches)) {
+            return $this->processVariableName($condition) ? true : false;
         }
     }
 
@@ -369,7 +367,18 @@ class Template extends View
 
 	public function processVariableName($varName)
 	{
-        // The variable could actually be a reference to a helper:
+        // Case one - Test for function calls:
+        if (substr($varName, 0, 1) == '(' && substr($varName, -1) == ')') {
+
+            $functionCall = substr($varName, 1, -1);
+            $parts = explode(' ', $functionCall, 2);
+            $functionName = $parts[0];
+            $arguments = isset($parts[1]) ? $parts[1] : null;
+
+            return $this->executeTemplateFunction($functionName, $arguments);
+        }
+
+        // Case two - Test for helper calls:
         if (strpos($varName, ':') !== false) {
             list($helper, $property) = explode(':', $varName);
 
@@ -382,7 +391,7 @@ class Template extends View
             return null;
         }
 
-		// Or not:
+		// Case three - Process as a variable:
 		$varPart    = explode('.', $varName);
 		$thisPart   = array_shift($varPart);
 
@@ -444,14 +453,18 @@ class Template extends View
 
     protected function doParseFunction($stack)
     {
-        if (array_key_exists($stack['function_name'], $this->templateFunctions)) {
-            $handler = $this->templateFunctions[$stack['function_name']];
-            $args = $this->processFunctionArguments($stack['cond']);
+        return $this->executeTemplateFunction($stack['function_name'], $stack['cond']);
+    }
 
+    protected function executeTemplateFunction($function, $args)
+    {
+        if (array_key_exists($function, $this->templateFunctions)) {
+            $handler = $this->templateFunctions[$function];
+            $args = $this->processFunctionArguments($args);
             return $handler($args, $this);
         }
 
-        return '';
+        return null;
     }
 
     protected function processFunctionArguments($args)
