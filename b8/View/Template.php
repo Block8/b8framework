@@ -12,7 +12,7 @@ class Template extends View
 	{
 		$this->viewCode = $viewCode;
 
-        $this->templateFunctions = array('include' => array($this, 'includeTemplate'), 'helper' => array($this, 'callHelperFunction'));
+        $this->templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
 	}
 
     public static function createFromFile($file)
