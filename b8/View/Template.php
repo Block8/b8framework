@@ -396,11 +396,20 @@ class Template extends View
 		{
 			$thisPart   = array_shift($varPart);
 
-			if(is_object($working) && property_exists($working, $thisPart))
-			{
-				$working = $working->{$thisPart};
-				continue;
-			}
+			if(is_object($working)) {
+                // Check if we're working with an actual property:
+                if (property_exists($working, $thisPart)) {
+                    $working = $working->{$thisPart};
+                    continue;
+                }
+
+                // Check if the object has a magic __get method:
+                if (method_exists($working, '__get')) {
+                    $working = $working->{$thisPart};
+                    continue;
+                }
+            }
+
 
 			if(is_array($working) && array_key_exists($thisPart, $working))
 			{

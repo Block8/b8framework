@@ -203,4 +203,22 @@ class Model
 			throw new HttpException\ValidationException($name . ' must not be null.');
 		}
 	}
+
+    public function __get($key)
+    {
+        if (array_key_exists($key, $this->getters)) {
+            $getter = $this->getters[$key];
+            return $this->{$getter}();
+        }
+
+        return null;
+    }
+
+    public function __set($key, $value)
+    {
+        if (array_key_exists($key, $this->setters)) {
+            $setter = $this->setters[$key];
+            return $this->{$setter}($value);
+        }
+    }
 }
