@@ -102,12 +102,12 @@ class FieldSet extends Element
 		$view->children = $rendered;
 	}
 
-    protected function getChildren()
+    public function getChildren()
     {
         return $this->_children;
     }
 
-    protected function getChild($fieldName)
+    public function getChild($fieldName)
     {
         return $this->_children[$fieldName];
     }
