@@ -216,7 +216,7 @@ class Template extends View
     {
         $matches = array();
 
-        if (preg_match('/([a-zA-Z0-9_\-\(\):\s.]+)\s+?([\!\=\<\>]+)?\s+?([a-zA-Z0-9\(\)_\-:\s.]+)?/', $condition, $matches)) {
+        if (preg_match('/([a-zA-Z0-9_\-\(\):\s.\"]+)\s+?([\!\=\<\>]+)?\s+?([a-zA-Z0-9\(\)_\-:\s.\"]+)?/', $condition, $matches)) {
             $left = is_numeric($matches[1]) ? intval($matches[1]) : $this->processVariableName($matches[1]);
             $right = is_numeric($matches[3]) ? intval($matches[3]) : $this->processVariableName($matches[3]);
             $operator = $matches[2];
@@ -378,7 +378,12 @@ class Template extends View
             return $this->executeTemplateFunction($functionName, $arguments);
         }
 
-        // Case two - Test for helper calls:
+        // Case two - Test if it is just a string:
+        if (substr($varName, 0, 1) == '"' && substr($varName, -1) == '"') {
+            return substr($varName, 1, -1);
+        }
+
+        // Case three - Test for helper calls:
         if (strpos($varName, ':') !== false) {
             list($helper, $property) = explode(':', $varName);
 
@@ -391,7 +396,7 @@ class Template extends View
             return null;
         }
 
-		// Case three - Process as a variable:
+		// Case four - Process as a variable:
 		$varPart    = explode('.', $varName);
 		$thisPart   = array_shift($varPart);
 
