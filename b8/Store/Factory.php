@@ -34,10 +34,10 @@ class Factory
 	 *
 	 * @return \b8\Store
 	 */
-	public static function getStore($storeName)
+	public static function getStore($storeName, $namespace = null)
 	{
 		$factory = self::getInstance();
-		return $factory->loadStore($storeName);
+		return $factory->loadStore($storeName, $namespace);
 	}
 
 	protected function __construct()
@@ -49,11 +49,12 @@ class Factory
 	 *
 	 * @return \b8\Store;
 	 */
-	public function loadStore($store)
+	public function loadStore($store, $namespace = null)
 	{
 		if(!isset($this->loadedStores[$store]))
 		{
-			$class = Config::getInstance()->get('b8.app.namespace') . '\\Store\\' . $store . 'Store';
+            $namespace = is_null($namespace) ? Config::getInstance()->get('b8.app.namespace') : $namespace;
+			$class =  $namespace . '\\Store\\' . $store . 'Store';
 			$obj   = new $class();
 
 			$this->loadedStores[$store] = $obj;

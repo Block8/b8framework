@@ -3,7 +3,7 @@
 namespace b8\Database;
 use b8\Database,
 	b8\Database\Map,
-	b8\View\UserView;
+	b8\View\Template;
 
 class CodeGenerator
 {
@@ -13,65 +13,88 @@ class CodeGenerator
 	protected $_ns      = null;
 	protected $_path    = null;
 
-	public function __construct(Database $db, $namespace, $path, $includeCountQueries = true)
+    /**
+     * @param Database $db
+     * @param array $namespaces
+     * @param string $path
+     * @param bool $includeCountQueries
+     */
+    public function __construct(Database $db, array $namespaces, $path, $includeCountQueries = true)
 	{
 		$this->_db      = $db;
-		$this->_ns      = $namespace;
+        $this->_ns = $namespaces;
 		$this->_path    = $path;
 		$this->_map     = new Map($this->_db);
 		$this->_tables  = $this->_map->generate();
 		$this->_counts  = $includeCountQueries;
 	}
 
+    protected function getNamespace($modelName)
+    {
+        return array_key_exists($modelName, $this->_ns) ? $this->_ns[$modelName] : $this->_ns['default'];
+    }
+
 	public function generateModels()
 	{
 		print PHP_EOL . 'GENERATING MODELS' . PHP_EOL . PHP_EOL;
-		@mkdir($this->_path . 'Model/Base/', 0777, true);
 
 		foreach($this->_tables as $tableName => $table)
 		{
+            $namespace = $this->getNamespace($table['php_name']);
+            $modelPath = $this->_path . str_replace('\\', '/', $namespace) . '/Model/';
+            $basePath = $modelPath . 'Base/';
+            $modelFile = $modelPath . $table['php_name'] . '.php';
+            $baseFile = $basePath . $table['php_name'] . 'Base.php';
+
+            if (!is_dir($basePath)) {
+                @mkdir($basePath, 0777, true);
+            }
+
 			$model  = $this->_processTemplate($tableName, $table, 'ModelTemplate');
 			$base   = $this->_processTemplate($tableName, $table, 'BaseModelTemplate');
 
-			$modelPath  = $this->_path . 'Model/' . $table['php_name'] . '.php';
-			$basePath   = $this->_path . 'Model/Base/' . $table['php_name'] . 'Base.php';
-
 			print '-- ' . $table['php_name'] . PHP_EOL;
 
-			if(!is_file($modelPath))
+			if(!is_file($modelFile))
 			{
 				print '-- -- Writing new Model' . PHP_EOL;
-				file_put_contents($modelPath, $model);
+				file_put_contents($modelFile, $model);
 			}
 
 			print '-- -- Writing base Model' . PHP_EOL;
-			file_put_contents($basePath, $base);
+			file_put_contents($baseFile, $base);
 		}
 	}
 
 	public function generateStores()
 	{
 		print PHP_EOL . 'GENERATING STORES' . PHP_EOL . PHP_EOL;
-		@mkdir($this->_path . 'Store/Base/', 0777, true);
 
 		foreach($this->_tables as $tableName => $table)
 		{
+            $namespace = $this->getNamespace($table['php_name']);
+            $storePath = $this->_path . str_replace('\\', '/', $namespace) . '/Store/';
+            $basePath = $storePath . 'Base/';
+            $storeFile = $storePath . $table['php_name'] . 'Store.php';
+            $baseFile = $basePath . $table['php_name'] . 'StoreBase.php';
+
+            if (!is_dir($basePath)) {
+                @mkdir($basePath, 0777, true);
+            }
+
 			$model  = $this->_processTemplate($tableName, $table, 'StoreTemplate');
 			$base   = $this->_processTemplate($tableName, $table, 'BaseStoreTemplate');
 
-			$modelPath  = $this->_path . 'Store/' . $table['php_name'] . 'Store.php';
-			$basePath   = $this->_path . 'Store/Base/' . $table['php_name'] . 'StoreBase.php';
-
 			print '-- ' . $table['php_name'] . PHP_EOL;
 
-			if(!is_file($modelPath))
+			if(!is_file($storeFile))
 			{
 				print '-- -- Writing new Store' . PHP_EOL;
-				file_put_contents($modelPath, $model);
+				file_put_contents($storeFile, $model);
 			}
 
 			print '-- -- Writing base Store' . PHP_EOL;
-			file_put_contents($basePath, $base);
+			file_put_contents($baseFile, $base);
 		}
 	}
 
@@ -83,32 +106,42 @@ class CodeGenerator
 
 		foreach($this->_tables as $tableName => $table)
 		{
-			$model  = $this->_processTemplate($tableName, $table, 'ControllerTemplate');
-			$base   = $this->_processTemplate($tableName, $table, 'BaseControllerTemplate');
+            $namespace = $this->getNamespace($table['php_name']);
+            $controllerPath = $this->_path . str_replace('\\', '/', $namespace) . '/Controller/';
+            $basePath = $controllerPath . 'Base/';
+            $controllerFile = $controllerPath . $table['php_name'] . 'Controller.php';
+            $baseFile = $basePath . $table['php_name'] . 'ControllerBase.php';
 
-			$modelPath  = $this->_path . 'Controller/' . $table['php_name'] . 'Controller.php';
-			$basePath   = $this->_path . 'Controller/Base/' . $table['php_name'] . 'ControllerBase.php';
+            if (!is_dir($basePath)) {
+                @mkdir($basePath, 0777, true);
+            }
+
+            $model  = $this->_processTemplate($tableName, $table, 'ControllerTemplate');
+			$base   = $this->_processTemplate($tableName, $table, 'BaseControllerTemplate');
 
 			print '-- ' . $table['php_name'] . PHP_EOL;
 
-			if(!is_file($modelPath))
+			if(!is_file($controllerFile))
 			{
 				print '-- -- Writing new Controller' . PHP_EOL;
-				file_put_contents($modelPath, $model);
+				file_put_contents($controllerFile, $model);
 			}
 
 			print '-- -- Writing base Controller' . PHP_EOL;
-			file_put_contents($basePath, $base);
+			file_put_contents($baseFile, $base);
 		}
 	}
 
 	protected function _processTemplate($tableName, $table, $template)
 	{
-		$tpl    = new UserView(file_get_contents(B8_PATH . 'Database/CodeGenerator/' . $template . '.tpl'));
-		$tpl->appNamespace  = $this->_ns;
+        $tpl = Template::createFromFile($template, B8_PATH . 'Database/CodeGenerator/');
+		$tpl->appNamespace  = $this->getNamespace($table['php_name']);
 		$tpl->name          = $tableName;
 		$tpl->table         = $table;
-		$tpl->counts        = $this->_counts; 
+		$tpl->counts        = $this->_counts;
+        $tpl->addFunction('get_namespace', function($args, $view) {
+            return $this->getNamespace($view->getVariable($args['model']));
+        });
 
 		return $tpl->render();
 	}

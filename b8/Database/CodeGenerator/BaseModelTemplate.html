@@ -6,7 +6,7 @@
 
 namespace {@appNamespace}\Model\Base;
 
-use b8\Model;
+use {@appNamespace}\Model;
 use b8\Store\Factory;
 
 /**
@@ -215,7 +215,7 @@ class {@table.php_name}Base extends Model
         $rtn        = $this->cache->get($cacheKey, null);
 
         if (empty($rtn)) {
-            $rtn    = Factory::getStore('{@item.table_php_name}')->getBy{@item.col_php}($key);
+            $rtn    = Factory::getStore('{@item.table_php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.col_php}($key);
             $this->cache->set($cacheKey, $rtn);
         }
 
@@ -264,7 +264,7 @@ class {@table.php_name}Base extends Model
      */
     public function get{@item.php_name}()
     {
-        return Factory::getStore('{@item.table_php}')->getBy{@item.from_col_php}($this->get{@item.col_php}());
+        return Factory::getStore('{@item.table_php}', '{get_namespace model: item.table_php_name}')->getBy{@item.from_col_php}($this->get{@item.col_php}());
     }
 
 {/loop}
@@ -273,7 +273,7 @@ class {@table.php_name}Base extends Model
 
     public static function getByPrimaryKey($value, $useConnection = 'read')
     {
-        return Factory::getStore('{@table.php_name}')->getByPrimaryKey($value, $useConnection);
+        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getByPrimaryKey($value, $useConnection);
     }
 
 {loop table.columns}
@@ -281,14 +281,14 @@ class {@table.php_name}Base extends Model
 
     public static function getBy{@item.php_name}($value, $useConnection = 'read')
     {
-        return Factory::getStore('{@table.php_name}')->getBy{@item.php_name}($value, $useConnection);
+        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $useConnection);
     }
 {/if}
 {if item.many_indexed}
 
     public static function getBy{@item.php_name}($value, $limit = null, $useConnection = 'read')
     {
-        return Factory::getStore('{@table.php_name}')->getBy{@item.php_name}($value, $limit, $useConnection);
+        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $limit, $useConnection);
     }
 {/if}
 {/loop}

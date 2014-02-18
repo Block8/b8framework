@@ -15,13 +15,13 @@ class Template extends View
         $this->templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
 	}
 
-    public static function createFromFile($file)
+    public static function createFromFile($file, $path = null)
     {
-        if (!self::exists($file)) {
+        if (!self::exists($file, $path)) {
             throw new \Exception('View file does not exist: ' . $file);
         }
 
-        $viewFile = self::getViewFile($file);
+        $viewFile = self::getViewFile($file, $path);
         return new self(file_get_contents($viewFile));
     }
 
