@@ -5,14 +5,14 @@ use b8\View;
 
 class Template extends View
 {
-    protected $templateFunctions = array();
+    protected static $templateFunctions = array();
     protected static $extension = 'html';
 
 	public function __construct($viewCode)
 	{
 		$this->viewCode = $viewCode;
 
-        $this->templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
+        static::$templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
 	}
 
     public static function createFromFile($file, $path = null)
@@ -32,12 +32,12 @@ class Template extends View
 
     public function addFunction($name, callable $handler)
     {
-        $this->templateFunctions[$name] = $handler;
+        static::$templateFunctions[$name] = $handler;
     }
 
     public function removeFunction($name)
     {
-        unset($this->templateFunctions[$name]);
+        unset(static::$templateFunctions[$name]);
     }
 
 	public function render()
@@ -50,7 +50,7 @@ class Template extends View
 		$lastCond = null;
 		$keywords = array('ifnot', 'if', 'else', 'for', 'loop', '@', '/ifnot', '/if', '/for', '/loop');
 
-        foreach ($this->templateFunctions as $function => $handler) {
+        foreach (static::$templateFunctions as $function => $handler) {
             $keywords[] = $function;
         }
 
@@ -77,7 +77,7 @@ class Template extends View
 						$lastCond = $cond;
 						$string = substr($string, 1);
 
-                        if (array_key_exists($keyword, $this->templateFunctions)) {
+                        if (array_key_exists($keyword, static::$templateFunctions)) {
                             $item['function_name'] = $keyword;
                             $item['type'] = 'function';
                         }
@@ -463,8 +463,8 @@ class Template extends View
 
     protected function executeTemplateFunction($function, $args)
     {
-        if (array_key_exists($function, $this->templateFunctions)) {
-            $handler = $this->templateFunctions[$function];
+        if (array_key_exists($function, static::$templateFunctions)) {
+            $handler = static::$templateFunctions[$function];
             $args = $this->processFunctionArguments($args);
             return $handler($args, $this);
         }
