@@ -504,9 +504,9 @@ class Template extends View
         return $this->processVariableName($variable);
     }
 
-    protected function includeTemplate($args)
+    protected function includeTemplate($args, $view)
     {
-        $template = static::createFromFile($this->getVariable($args['template']));
+        $template = static::createFromFile($view->getVariable($args['template']));
 
         if (isset($args['variables'])) {
             if (!is_array($args['variables'])) {
@@ -519,9 +519,9 @@ class Template extends View
                 $variable = array_map('trim', $variable);
 
                 if (count($variable) == 1) {
-                    $template->{$variable[0]} = $this->processVariableName($variable[0]);
+                    $template->{$variable[0]} = $view->getVariable($variable[0]);
                 } else {
-                    $template->{$variable[1]} = $this->processVariableName($variable[0]);
+                    $template->{$variable[1]} = $view->getVariable($variable[0]);
                 }
             }
         }
