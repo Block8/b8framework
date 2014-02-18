@@ -17,20 +17,20 @@ class Template extends View
 
     public static function createFromFile($file, $path = null)
     {
-        if (!self::exists($file, $path)) {
+        if (!static::exists($file, $path)) {
             throw new \Exception('View file does not exist: ' . $file);
         }
 
-        $viewFile = self::getViewFile($file, $path);
-        return new self(file_get_contents($viewFile));
+        $viewFile = static::getViewFile($file, $path);
+        return new static(file_get_contents($viewFile));
     }
 
     public static function createFromString($string)
     {
-        return new self($string);
+        return new static($string);
     }
 
-    public function addFunction($name, callable $handler)
+    public function addFunction($name, $handler)
     {
         static::$templateFunctions[$name] = $handler;
     }
@@ -504,7 +504,7 @@ class Template extends View
 
     protected function includeTemplate($args)
     {
-        $template = self::createFromFile($args['template']);
+        $template = static::createFromFile($args['template']);
 
         if (isset($args['variables'])) {
             if (!is_array($args['variables'])) {
