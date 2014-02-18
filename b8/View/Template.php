@@ -5,14 +5,16 @@ use b8\View;
 
 class Template extends View
 {
-    protected static $templateFunctions = array();
+    public static $templateFunctions = array();
     protected static $extension = 'html';
 
 	public function __construct($viewCode)
 	{
 		$this->viewCode = $viewCode;
 
-        static::$templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
+        if (!count(self::$templateFunctions)) {
+            self::$templateFunctions = array('include' => array($this, 'includeTemplate'), 'call' => array($this, 'callHelperFunction'));
+        }
 	}
 
     public static function createFromFile($file, $path = null)
@@ -32,12 +34,12 @@ class Template extends View
 
     public function addFunction($name, $handler)
     {
-        static::$templateFunctions[$name] = $handler;
+        self::$templateFunctions[$name] = $handler;
     }
 
     public function removeFunction($name)
     {
-        unset(static::$templateFunctions[$name]);
+        unset(self::$templateFunctions[$name]);
     }
 
 	public function render()
@@ -50,7 +52,7 @@ class Template extends View
 		$lastCond = null;
 		$keywords = array('ifnot', 'if', 'else', 'for', 'loop', '@', '/ifnot', '/if', '/for', '/loop');
 
-        foreach (static::$templateFunctions as $function => $handler) {
+        foreach (self::$templateFunctions as $function => $handler) {
             $keywords[] = $function;
         }
 
@@ -77,7 +79,7 @@ class Template extends View
 						$lastCond = $cond;
 						$string = substr($string, 1);
 
-                        if (array_key_exists($keyword, static::$templateFunctions)) {
+                        if (array_key_exists($keyword, self::$templateFunctions)) {
                             $item['function_name'] = $keyword;
                             $item['type'] = 'function';
                         }
@@ -90,7 +92,7 @@ class Template extends View
 						}
 
 						$item['parent'] =& $parent;
-						
+
 						$parent['children'][] = $item;
 
 						if ($keyword == '@' || $item['type'] == 'function') {
@@ -463,8 +465,8 @@ class Template extends View
 
     protected function executeTemplateFunction($function, $args)
     {
-        if (array_key_exists($function, static::$templateFunctions)) {
-            $handler = static::$templateFunctions[$function];
+        if (array_key_exists($function, self::$templateFunctions)) {
+            $handler = self::$templateFunctions[$function];
             $args = $this->processFunctionArguments($args);
             return $handler($args, $this);
         }
@@ -504,7 +506,7 @@ class Template extends View
 
     protected function includeTemplate($args)
     {
-        $template = static::createFromFile($args['template']);
+        $template = static::createFromFile($this->getVariable($args['template']));
 
         if (isset($args['variables'])) {
             if (!is_array($args['variables'])) {

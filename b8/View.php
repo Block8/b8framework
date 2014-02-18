@@ -21,7 +21,9 @@ class View
 	protected static function getViewFile($file, $path = null)
 	{
 		$viewPath = is_null($path) ? Config::getInstance()->get('b8.view.path') : $path;
-		return $viewPath . $file . '.' . static::$extension;
+		$fullPath = $viewPath . $file . '.' . static::$extension;
+
+        return $fullPath;
 	}
 
 	public static function exists($file, $path = null)
