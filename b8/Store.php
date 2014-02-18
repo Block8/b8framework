@@ -254,68 +254,88 @@ abstract class Store
 			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
 	    }
 
-	    $data = $obj->getDataArray();
-	    $modified = ($saveAllColumns) ? array_keys($data) : $obj->getModified();
+        $data = $obj->getDataArray();
 
-
-	    if(isset($data[$this->primaryKey]))
+        if(isset($data[$this->primaryKey]))
 	    {
-			$updates = array();
-			$update_params = array();
-			foreach($modified as $key)
-			{
-				$updates[]       = $key . ' = :' . $key;
-				$update_params[] = array($key, $data[$key]);
-			}
-
-			if(count($updates))
-			{
-				$qs = 'UPDATE ' . $this->tableName . '
-											SET ' . implode(', ', $updates) . ' 
-											WHERE ' . $this->primaryKey . ' = :primaryKey';
-				$q  = Database::getConnection('write')->prepare($qs);
-
-				foreach($update_params as $update_param)
-				{
-					$q->bindValue(':' . $update_param[0], $update_param[1]);
-				}
-
-				$q->bindValue(':primaryKey', $data[$this->primaryKey]);
-				$q->execute();
-
-				$rtn = $this->getByPrimaryKey($data[$this->primaryKey], 'write');
-			}
-			else
-			{
-				$rtn = $obj;
-			}
+			$rtn = $this->saveByUpdate($obj, $saveAllColumns);
 		}
 		else
 		{
-			$cols    = array();
-			$values  = array();
-			$qParams = array();
-			foreach($modified as $key)
-			{
-				$cols[]              = $key;
-				$values[]            = ':' . $key;
-				$qParams[':' . $key] = $data[$key];
-			}
-
-			if(count($cols))
-			{
-				$qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
-				$q  = Database::getConnection('write')->prepare($qs);
-
-				if($q->execute($qParams))
-				{
-					$rtn = $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
-				}
-			}
+			$rtn = $this->saveByInsert($obj, $saveAllColumns);
 		}
 
 		return $rtn;
 	}
+
+    public function saveByUpdate(Model $obj, $saveAllColumns = false)
+    {
+        $rtn = null;
+        $data = $obj->getDataArray();
+        $modified = ($saveAllColumns) ? array_keys($data) : $obj->getModified();
+
+        $updates = array();
+        $update_params = array();
+        foreach($modified as $key)
+        {
+            $updates[]       = $key . ' = :' . $key;
+            $update_params[] = array($key, $data[$key]);
+        }
+
+        if(count($updates))
+        {
+            $qs = 'UPDATE ' . $this->tableName . '
+											SET ' . implode(', ', $updates) . '
+											WHERE ' . $this->primaryKey . ' = :primaryKey';
+            $q  = Database::getConnection('write')->prepare($qs);
+
+            foreach($update_params as $update_param)
+            {
+                $q->bindValue(':' . $update_param[0], $update_param[1]);
+            }
+
+            $q->bindValue(':primaryKey', $data[$this->primaryKey]);
+            $q->execute();
+
+            $rtn = $this->getByPrimaryKey($data[$this->primaryKey], 'write');
+        }
+        else
+        {
+            $rtn = $obj;
+        }
+
+        return $rtn;
+    }
+
+    public function saveByInsert(Model $obj, $saveAllColumns = false)
+    {
+        $rtn = null;
+        $data = $obj->getDataArray();
+        $modified = ($saveAllColumns) ? array_keys($data) : $obj->getModified();
+
+        $cols    = array();
+        $values  = array();
+        $qParams = array();
+        foreach($modified as $key)
+        {
+            $cols[]              = $key;
+            $values[]            = ':' . $key;
+            $qParams[':' . $key] = $data[$key];
+        }
+
+        if(count($cols))
+        {
+            $qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
+            $q  = Database::getConnection('write')->prepare($qs);
+
+            if($q->execute($qParams))
+            {
+                $rtn = $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
+            }
+        }
+
+        return $rtn;
+    }
 
 	public function delete(Model $obj)
 	{
