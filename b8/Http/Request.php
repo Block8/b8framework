@@ -28,10 +28,10 @@ class Request
     protected function getRequestPath()
     {
         $path = isset($_SERVER['REQUEST_URI'])? $_SERVER['REQUEST_URI']: '';
-
-        if (isset($_SERVER['REDIRECT_PATH_INFO'])) {
+                
+        if (isset($_SERVER['REDIRECT_PATH_INFO']) && $_SERVER['REDIRECT_PATH_INFO'] != '') {
             $path = $_SERVER['REDIRECT_PATH_INFO'];
-        } elseif (isset($_SERVER['PATH_INFO'])) {
+        } elseif (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] != '') {
             $path = $_SERVER['PATH_INFO'];
         } elseif ($_SERVER['DOCUMENT_ROOT'] != dirname($_SERVER['SCRIPT_FILENAME'])) {
             $basePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']));
