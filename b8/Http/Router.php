@@ -28,7 +28,12 @@ class Router
         $this->config = $config;
     }
 
-    public function register($route, callable $callback = null, $options = array())
+    public function clearRoutes()
+    {
+        $this->routes = array();
+    }
+
+    public function register($route, $options = array(), callable $callback = null)
     {
         array_unshift($this->routes, array('route' => $route, 'callback' => $callback, 'defaults' => $options));
     }
@@ -88,7 +93,7 @@ class Router
             $thisArgs = $pathParts;
 
             if ($routeMatches) {
-                return array('namespace' => $thisNamespace, 'controller' => $thisController, 'action' => $thisAction, 'args' => $thisArgs);
+                return array('namespace' => $thisNamespace, 'controller' => $thisController, 'action' => $thisAction, 'args' => $thisArgs, 'callback' => $route['callback']);
             }
         }
 
