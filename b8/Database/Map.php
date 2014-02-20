@@ -49,7 +49,7 @@ class Map
     {
         foreach($this->_tables as $table => $t)
         {
-            $res = $this->_db->query('SHOW CREATE TABLE '.$table)->fetchAll(\PDO::FETCH_ASSOC);
+            $res = $this->_db->query('SHOW CREATE TABLE `'.$table.'`')->fetchAll(\PDO::FETCH_ASSOC);
 
             foreach($res as $r)
             {
@@ -100,7 +100,7 @@ class Map
         foreach($this->_tables as $key => &$val)
         {
             $cols = array();
-            foreach($this->_db->query('DESCRIBE ' . $key)->fetchAll(\PDO::FETCH_ASSOC) as $column)
+            foreach($this->_db->query('DESCRIBE `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $column)
             {
                 $col                = $this->_processColumn(array(), $column, $val);
                 $cols[$col['name']] = $col;
@@ -117,7 +117,7 @@ class Map
         {
             $indexes = array();
 
-            foreach($this->_db->query('SHOW INDEXES FROM ' . $key)->fetchAll(\PDO::FETCH_ASSOC) as $idx)
+            foreach($this->_db->query('SHOW INDEXES FROM `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $idx)
             {
                 if(!isset($indexes[$idx['Key_name']]))
                 {

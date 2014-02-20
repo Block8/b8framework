@@ -42,7 +42,7 @@ class {@table.php_name}StoreBase extends Store
             throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $query = 'SELECT * FROM {@parent.name} WHERE {@item.name} = :{@item.name} LIMIT 1';
+        $query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name} LIMIT 1';
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
 
@@ -70,7 +70,7 @@ class {@table.php_name}StoreBase extends Store
         }
 
 {if counts}
-        $query = 'SELECT COUNT(*) AS cnt FROM {@parent.name} WHERE {@item.name} = :{@item.name}' . $add;
+        $query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
 
@@ -85,7 +85,7 @@ class {@table.php_name}StoreBase extends Store
         $count = null;
 {/ifnot}
 
-        $query = 'SELECT * FROM {@parent.name} WHERE {@item.name} = :{@item.name}' . $add;
+        $query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
 
