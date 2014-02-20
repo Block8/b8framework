@@ -45,7 +45,7 @@ class Application
             $this->request = new Http\Request();
         }
 
-        $this->router = new Http\Router($this->request, $this->config);
+        $this->router = new Http\Router($this, $this->request, $this->config);
 
         if (method_exists($this, 'init')) {
             $this->init();
@@ -94,6 +94,25 @@ class Application
         $controller->init();
 
         return $controller;
+    }
+
+    protected function controllerExists($route)
+    {
+        $namespace = $this->toPhpName($route['namespace']);
+        $controller = $this->toPhpName($route['controller']);
+
+        $controllerClass = $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
+
+        return class_exists($controllerClass);
+    }
+
+    public function isValidRoute($route)
+    {
+        if ($this->controllerExists($route)) {
+            return true;
+        }
+
+        return false;
     }
 
     protected function toPhpName($string)

@@ -2,6 +2,7 @@
 
 namespace b8\Http;
 
+use b8\Application;
 use b8\Config;
 use b8\Http\Request;
 
@@ -18,12 +19,18 @@ class Router
     protected $config;
 
     /**
+     * @var \b8\Application
+     */
+    protected $application;
+
+    /**
      * @var array
      */
     protected $routes = array(array('route' => '/:controller/:action', 'callback' => null, 'defaults' => array()));
 
-    public function __construct(Request $request, Config $config)
+    public function __construct(Application $application, Request $request, Config $config)
     {
+        $this->application = $application;
         $this->request = $request;
         $this->config = $config;
     }
@@ -46,9 +53,9 @@ class Router
             //-------
             // Set up default values for everything:
             //-------
-            $thisController = $this->config->get('b8.app.default_controller', 'Default');
             $thisNamespace = 'Controller';
-            $thisAction = 'index';
+            $thisController = null;
+            $thisAction = null;
 
             if (array_key_exists('namespace', $route['defaults'])) {
                 $thisNamespace = $route['defaults']['namespace'];
@@ -62,7 +69,7 @@ class Router
                 $thisAction = $route['defaults']['action'];
             }
 
-            $routeParts = explode('/', substr($route['route'], 1));
+            $routeParts = array_filter(explode('/', $route['route']));
             $routeMatches = true;
 
             while (count($routeParts)) {
@@ -93,7 +100,11 @@ class Router
             $thisArgs = $pathParts;
 
             if ($routeMatches) {
-                return array('namespace' => $thisNamespace, 'controller' => $thisController, 'action' => $thisAction, 'args' => $thisArgs, 'callback' => $route['callback']);
+                $route = array('namespace' => $thisNamespace, 'controller' => $thisController, 'action' => $thisAction, 'args' => $thisArgs, 'callback' => $route['callback']);
+
+                if ($this->application->isValidRoute($route)) {
+                    return $route;
+                }
             }
         }
 
