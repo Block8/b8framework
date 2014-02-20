@@ -22,7 +22,7 @@ class CodeGenerator
     public function __construct(Database $db, array $namespaces, $path, $includeCountQueries = true)
 	{
 		$this->_db      = $db;
-        $this->_ns = $namespaces;
+        $this->_ns      = $namespaces;
 		$this->_path    = $path;
 		$this->_map     = new Map($this->_db);
 		$this->_tables  = $this->_map->generate();
@@ -34,6 +34,11 @@ class CodeGenerator
         return array_key_exists($modelName, $this->_ns) ? $this->_ns[$modelName] : $this->_ns['default'];
     }
 
+    public function getPath($namespace)
+    {
+        return array_key_exists($namespace, $this->_path) ? $this->_path[$namespace] : $this->_path['default'];
+    }
+
 	public function generateModels()
 	{
 		print PHP_EOL . 'GENERATING MODELS' . PHP_EOL . PHP_EOL;
@@ -41,7 +46,7 @@ class CodeGenerator
 		foreach($this->_tables as $tableName => $table)
 		{
             $namespace = $this->getNamespace($table['php_name']);
-            $modelPath = $this->_path . str_replace('\\', '/', $namespace) . '/Model/';
+            $modelPath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Model/';
             $basePath = $modelPath . 'Base/';
             $modelFile = $modelPath . $table['php_name'] . '.php';
             $baseFile = $basePath . $table['php_name'] . 'Base.php';
@@ -73,7 +78,7 @@ class CodeGenerator
 		foreach($this->_tables as $tableName => $table)
 		{
             $namespace = $this->getNamespace($table['php_name']);
-            $storePath = $this->_path . str_replace('\\', '/', $namespace) . '/Store/';
+            $storePath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Store/';
             $basePath = $storePath . 'Base/';
             $storeFile = $storePath . $table['php_name'] . 'Store.php';
             $baseFile = $basePath . $table['php_name'] . 'StoreBase.php';
@@ -107,7 +112,7 @@ class CodeGenerator
 		foreach($this->_tables as $tableName => $table)
 		{
             $namespace = $this->getNamespace($table['php_name']);
-            $controllerPath = $this->_path . str_replace('\\', '/', $namespace) . '/Controller/';
+            $controllerPath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Controller/';
             $basePath = $controllerPath . 'Base/';
             $controllerFile = $controllerPath . $table['php_name'] . 'Controller.php';
             $baseFile = $basePath . $table['php_name'] . 'ControllerBase.php';
