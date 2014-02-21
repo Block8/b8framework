@@ -385,7 +385,12 @@ class Template extends View
             return substr($varName, 1, -1);
         }
 
-        // Case three - Test for helper calls:
+        // Case three - Test if it is just a number:
+        if (is_numeric($varName)) {
+            return $varName;
+        }
+
+        // Case four - Test for helper calls:
         if (strpos($varName, ':') !== false) {
             list($helper, $property) = explode(':', $varName);
 
@@ -398,7 +403,7 @@ class Template extends View
             return null;
         }
 
-		// Case four - Process as a variable:
+		// Case five - Process as a variable:
 		$varPart    = explode('.', $varName);
 		$thisPart   = array_shift($varPart);
 
