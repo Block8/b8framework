@@ -330,7 +330,8 @@ abstract class Store
 
             if($q->execute($qParams))
             {
-                $rtn = $this->getByPrimaryKey(Database::getConnection('write')->lastInsertId(), 'write');
+                $id = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection('write')->lastInsertId();
+                $rtn = $this->getByPrimaryKey($id, 'write');
             }
         }
 
