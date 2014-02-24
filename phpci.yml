@@ -11,6 +11,6 @@ build_settings:
 test:
   lint:
 
-success:
+failure:
   email:
     committer: true
