@@ -10,3 +10,7 @@ build_settings:
 
 test:
   lint:
+
+success:
+  email:
+    committer: true
