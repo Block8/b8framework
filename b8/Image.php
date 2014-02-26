@@ -7,14 +7,21 @@ class Image
     public static $cachePath = '/tmp/';
     public static $sourcePath = './';
 
-
     /**
      * @var \Imagick
      */
     protected $source;
 
+    /**
+     * @var array
+     */
+    protected $focalPoint;
+
+    protected $imageId;
+
     public function __construct($imagePath)
     {
+        $this->imageId = md5($imagePath);
         $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
     }
 
@@ -34,9 +41,9 @@ class Image
         $this->source = $image;
     }
 
-    public function render($media, $width, $height, $format = 'jpeg')
+    public function render($width, $height, $format = 'jpeg')
     {
-        $cachePath = self::$cachePath . $media['fileId'] . '.' . $width  . 'x' . $height . '.' . $format;
+        $cachePath = self::$cachePath . $this->imageId . '.' . $width  . 'x' . $height . '.' . $format;
 
         if(file_exists($cachePath) && 0)
         {
@@ -44,16 +51,16 @@ class Image
         }
         else
         {
-            $output = $this->doRender($media, $width, $height, $format);
+            $output = $this->doRender($width, $height, $format);
             file_put_contents($cachePath, $output);
         }
 
         return $output;
     }
 
-    public function doRender($media, $width, $height, $format = 'jpeg')
+    public function doRender($width, $height, $format = 'jpeg')
     {
-        $focal                  = !empty($media['focal_point']) ? $media['focal_point'] : array(0, 0);
+        $focal                  = !empty($this->focalPoint) ? $this->focalPoint : array(0, 0);
         $focalX = (int)$focal[0];
         $focalY = (int)$focal[1];
 
