@@ -41,6 +41,11 @@ class Image
         $this->source = $image;
     }
 
+    public function setFocalPoint($x, $y)
+    {
+        $this->focalPoint = array($x, $y);
+    }
+
     public function render($width, $height, $format = 'jpeg')
     {
         $cachePath = self::$cachePath . $this->imageId . '.' . $width  . 'x' . $height . '.' . $format;
