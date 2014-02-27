@@ -13,7 +13,7 @@ class Upload
         $this->postKey = $postKey;
 
         if (!array_key_exists($postKey, $_FILES)) {
-            throw new \Exception('No file upload with key: '. $postKey);
+            throw new \Exception('No file upload with key: ' . $postKey);
         }
 
         $this->upload = $_FILES[$postKey];

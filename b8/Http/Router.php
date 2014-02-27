@@ -100,7 +100,13 @@ class Router
             $thisArgs = $pathParts;
 
             if ($routeMatches) {
-                $route = array('namespace' => $thisNamespace, 'controller' => $thisController, 'action' => $thisAction, 'args' => $thisArgs, 'callback' => $route['callback']);
+                $route = array(
+                    'namespace' => $thisNamespace,
+                    'controller' => $thisController,
+                    'action' => $thisAction,
+                    'args' => $thisArgs,
+                    'callback' => $route['callback']
+                );
 
                 if ($this->application->isValidRoute($route)) {
                     return $route;

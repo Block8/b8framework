@@ -48,14 +48,11 @@ class Image
 
     public function render($width, $height, $format = 'jpeg')
     {
-        $cachePath = self::$cachePath . $this->imageId . '.' . $width  . 'x' . $height . '.' . $format;
+        $cachePath = self::$cachePath . $this->imageId . '.' . $width . 'x' . $height . '.' . $format;
 
-        if(file_exists($cachePath) && 0)
-        {
+        if (file_exists($cachePath) && 0) {
             $output = file_get_contents($cachePath);
-        }
-        else
-        {
+        } else {
             $output = $this->doRender($width, $height, $format);
             file_put_contents($cachePath, $output);
         }
@@ -65,50 +62,43 @@ class Image
 
     public function doRender($width, $height, $format = 'jpeg')
     {
-        $focal                  = !empty($this->focalPoint) ? $this->focalPoint : array(0, 0);
+        $focal = !empty($this->focalPoint) ? $this->focalPoint : array(0, 0);
         $focalX = (int)$focal[0];
         $focalY = (int)$focal[1];
 
-        $width          = (int)$width;
-        $height         = (int)$height;
+        $width = (int)$width;
+        $height = (int)$height;
 
-        $source         = $this->getSource();
-        $sourceWidth    = $source->getImageWidth();
-        $sourceHeight   = $source->getImageHeight();
-        $sourceRatio    = $sourceWidth / $sourceHeight;
-        $targetRatio    = $height != 'auto' ? $width / $height : $sourceRatio;
+        $source = $this->getSource();
+        $sourceWidth = $source->getImageWidth();
+        $sourceHeight = $source->getImageHeight();
+        $sourceRatio = $sourceWidth / $sourceHeight;
+        $targetRatio = $height != 'auto' ? $width / $height : $sourceRatio;
 
-        $quads          = $this->_getQuadrants($sourceWidth, $sourceHeight);
+        $quads = $this->_getQuadrants($sourceWidth, $sourceHeight);
 
-        foreach($quads as $name => $l)
-        {
-            if($focalX >= $l[0] && $focalX <= $l[1] && $focalY >= $l[2] && $focalY <= $l[3])
-            {
+        foreach ($quads as $name => $l) {
+            if ($focalX >= $l[0] && $focalX <= $l[1] && $focalY >= $l[2] && $focalY <= $l[3]) {
                 $useQuad = $name;
             }
         }
 
-        if($sourceRatio <= $targetRatio)
-        {
+        if ($sourceRatio <= $targetRatio) {
             $scale = $sourceWidth / $width;
-        }
-        else
-        {
+        } else {
             $scale = $sourceHeight / $height;
         }
 
         $resizeWidth = (int)($sourceWidth / $scale);
         $resizeHeight = (int)($sourceHeight / $scale);
 
-        if($height == 'auto')
-        {
+        if ($height == 'auto') {
             $height = $resizeHeight;
         }
 
         $source->scaleImage($resizeWidth, $resizeHeight);
 
-        switch($useQuad)
-        {
+        switch ($useQuad) {
             case 'top_left':
                 $cropX = 0;
                 $cropY = 0;
@@ -148,13 +138,13 @@ class Image
 
     protected function _getQuadrants($x, $y)
     {
-        $rtn                    = array();
-        $rtn['top_left']        = array(0, $x / 2, 0, $y / 3);
-        $rtn['top_right']       = array(($x / 2) + 1, $x, 0, $y / 3);
-        $rtn['middle_left']     = array(0, $y / 2, ($y / 3)+1, (($y / 3) * 2));
-        $rtn['middle_right']    = array(($x / 2) + 1, $x, ($y / 3)+1, (($y / 3) * 2));
-        $rtn['bottom_left']     = array(0, $y / 2, (($y / 3) * 2)+1, $y);
-        $rtn['bottom_right']    = array(($x / 2) + 1, $x, (($y / 3) * 2)+1, $y);
+        $rtn = array();
+        $rtn['top_left'] = array(0, $x / 2, 0, $y / 3);
+        $rtn['top_right'] = array(($x / 2) + 1, $x, 0, $y / 3);
+        $rtn['middle_left'] = array(0, $y / 2, ($y / 3) + 1, (($y / 3) * 2));
+        $rtn['middle_right'] = array(($x / 2) + 1, $x, ($y / 3) + 1, (($y / 3) * 2));
+        $rtn['bottom_left'] = array(0, $y / 2, (($y / 3) * 2) + 1, $y);
+        $rtn['bottom_right'] = array(($x / 2) + 1, $x, (($y / 3) * 2) + 1, $y);
 
         return $rtn;
     }

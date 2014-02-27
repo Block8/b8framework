@@ -2,6 +2,8 @@ build_settings:
   ignore:
     - "vendor"
     - "tests"
+    - "b8/Controller/RestController.php" # Legacy
+    - "b8/Database/Generator.php" # Legacy
 
 test:
   lint:

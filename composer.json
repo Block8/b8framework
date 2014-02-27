@@ -17,6 +17,8 @@
         "symfony/yaml": "2.*"
     },
     "autoload": {
-        "psr-0": { "b8": "" }
+        "psr-0": {
+            "b8": ""
+        }
     }
 }

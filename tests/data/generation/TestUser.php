@@ -6,8 +6,8 @@ use b8\Type\RestUser;
 
 class TestUser implements RestUser
 {
-	public function checkPermission($permission, $resource)
-	{
-		return $resource == 'unos' || $resource == 'tress' ? true : false;
-	}
+    public function checkPermission($permission, $resource)
+    {
+        return $resource == 'unos' || $resource == 'tress' ? true : false;
+    }
 }
