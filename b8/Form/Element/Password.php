@@ -2,8 +2,7 @@
 
 namespace b8\Form\Element;
 
-use b8\Form\Element\Text,
-    b8\View;
+use b8\View;
 
 class Password extends Text
 {
@@ -12,9 +11,9 @@ class Password extends Text
         return parent::render(($viewFile ? $viewFile : 'Text'));
     }
 
-    protected function _onPreRender(View &$view)
+    protected function onPreRender(View &$view)
     {
-        parent::_onPreRender($view);
+        parent::onPreRender($view);
         $view->type = 'password';
     }
 }

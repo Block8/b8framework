@@ -7,12 +7,12 @@ use b8\Config;
 
 abstract class Element
 {
-    protected $_name;
-    protected $_id;
-    protected $_label;
-    protected $_css;
-    protected $_ccss;
-    protected $_parent;
+    protected $name;
+    protected $id;
+    protected $label;
+    protected $css;
+    protected $ccss;
+    protected $parent;
 
     public function __construct($name = null)
     {
@@ -23,57 +23,57 @@ abstract class Element
 
     public function getName()
     {
-        return $this->_name;
+        return $this->name;
     }
 
     public function setName($name)
     {
-        $this->_name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
+        $this->name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
     }
 
     public function getId()
     {
-        return !$this->_id ? 'element-' . $this->_name : $this->_id;
+        return !$this->id ? 'element-' . $this->name : $this->id;
     }
 
     public function setId($id)
     {
-        $this->_id = $id;
+        $this->id = $id;
     }
 
     public function getLabel()
     {
-        return $this->_label;
+        return $this->label;
     }
 
     public function setLabel($label)
     {
-        $this->_label = $label;
+        $this->label = $label;
     }
 
     public function getClass()
     {
-        return $this->_css;
+        return $this->css;
     }
 
     public function setClass($class)
     {
-        $this->_css = $class;
+        $this->css = $class;
     }
 
     public function getContainerClass()
     {
-        return $this->_ccss;
+        return $this->ccss;
     }
 
     public function setContainerClass($class)
     {
-        $this->_ccss = $class;
+        $this->ccss = $class;
     }
 
     public function setParent(Element $parent)
     {
-        $this->_parent = $parent;
+        $this->parent = $parent;
     }
 
     public function render($viewFile = null)
@@ -96,12 +96,12 @@ abstract class Element
         $view->label = $this->getLabel();
         $view->css = $this->getClass();
         $view->ccss = $this->getContainerClass();
-        $view->parent = $this->_parent;
+        $view->parent = $this->parent;
 
-        $this->_onPreRender($view);
+        $this->onPreRender($view);
 
         return $view->render();
     }
 
-    abstract protected function _onPreRender(View &$view);
+    abstract protected function onPreRender(View &$view);
 }

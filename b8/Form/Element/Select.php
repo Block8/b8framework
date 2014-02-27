@@ -2,8 +2,8 @@
 
 namespace b8\Form\Element;
 
-use b8\View,
-    b8\Form\Input;
+use b8\View;
+use b8\Form\Input;
 
 class Select extends Input
 {
@@ -14,9 +14,9 @@ class Select extends Input
         $this->_options = $options;
     }
 
-    protected function _onPreRender(View &$view)
+    protected function onPreRender(View &$view)
     {
-        parent::_onPreRender($view);
+        parent::onPreRender($view);
         $view->options = $this->_options;
     }
 }

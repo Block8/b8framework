@@ -75,7 +75,7 @@ class Image
         $sourceRatio = $sourceWidth / $sourceHeight;
         $targetRatio = $height != 'auto' ? $width / $height : $sourceRatio;
 
-        $quads = $this->_getQuadrants($sourceWidth, $sourceHeight);
+        $quads = $this->getQuadrants($sourceWidth, $sourceHeight);
 
         foreach ($quads as $name => $l) {
             if ($focalX >= $l[0] && $focalX <= $l[1] && $focalY >= $l[2] && $focalY <= $l[3]) {
@@ -136,7 +136,7 @@ class Image
         return $source;
     }
 
-    protected function _getQuadrants($x, $y)
+    protected function getQuadrants($x, $y)
     {
         $rtn = array();
         $rtn['top_left'] = array(0, $x / 2, 0, $y / 3);

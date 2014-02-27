@@ -2,46 +2,46 @@
 
 namespace b8\Form\Element;
 
-use b8\View,
-    b8\Form\Input;
+use b8\View;
+use b8\Form\Input;
 
 class Checkbox extends Input
 {
-    protected $_checked;
-    protected $_checkedValue;
+    protected $checked;
+    protected $checkedValue;
 
     public function getCheckedValue()
     {
-        return $this->_checkedValue;
+        return $this->checkedValue;
     }
 
     public function setCheckedValue($value)
     {
-        $this->_checkedValue = $value;
+        $this->checkedValue = $value;
     }
 
     public function setValue($value)
     {
         if (is_bool($value) && $value == true) {
-            $this->_value = $this->getCheckedValue();
-            $this->_checked = true;
+            $this->value = $this->getCheckedValue();
+            $this->checked = true;
             return;
         }
 
         if ($value == $this->getCheckedValue()) {
-            $this->_value = $this->getCheckedValue();
-            $this->_checked = true;
+            $this->value = $this->getCheckedValue();
+            $this->checked = true;
             return;
         }
 
-        $this->_value = $value;
-        $this->_checked = false;
+        $this->value = $value;
+        $this->checked = false;
     }
 
-    public function _onPreRender(View &$view)
+    public function onPreRender(View &$view)
     {
-        parent::_onPreRender($view);
+        parent::onPreRender($view);
         $view->checkedValue = $this->getCheckedValue();
-        $view->checked = $this->_checked;
+        $view->checked = $this->checked;
     }
 }

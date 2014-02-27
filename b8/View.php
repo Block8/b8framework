@@ -6,8 +6,8 @@ use b8\Exception\HttpException;
 
 class View
 {
-    protected $_vars = array();
-    protected static $_helpers = array();
+    protected $vars = array();
+    protected static $helpers = array();
     protected static $extension = 'phtml';
 
     public function __construct($file, $path = null)
@@ -38,22 +38,22 @@ class View
 
     public function __isset($var)
     {
-        return isset($this->_vars[$var]);
+        return isset($this->vars[$var]);
     }
 
     public function __get($var)
     {
-        return $this->_vars[$var];
+        return $this->vars[$var];
     }
 
     public function __set($var, $val)
     {
-        $this->_vars[$var] = $val;
+        $this->vars[$var] = $val;
     }
 
     public function __call($method, $params = array())
     {
-        if (!isset(self::$_helpers[$method])) {
+        if (!isset(self::$helpers[$method])) {
             $class = '\\' . Config::getInstance()->get('b8.app.namespace') . '\\Helper\\' . $method;
 
             if (!class_exists($class)) {
@@ -64,15 +64,15 @@ class View
                 throw new HttpException('Helper class does not exist: ' . $class);
             }
 
-            self::$_helpers[$method] = new $class();
+            self::$helpers[$method] = new $class();
         }
 
-        return self::$_helpers[$method];
+        return self::$helpers[$method];
     }
 
     public function render()
     {
-        extract($this->_vars);
+        extract($this->vars);
 
         ob_start();
         require($this->viewFile);

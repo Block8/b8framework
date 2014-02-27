@@ -83,9 +83,8 @@ class Application
         if (empty($this->controller)) {
             $namespace = $this->toPhpName($this->route['namespace']);
             $controller = $this->toPhpName($this->route['controller']);
-            $controllerClass = $this->config->get(
-                    'b8.app.namespace'
-                ) . '\\' . $namespace . '\\' . $controller . 'Controller';
+            $appNs = $this->config->get('b8.app.namespace');
+            $controllerClass = $appNs . '\\' . $namespace . '\\' . $controller . 'Controller';
             $this->controller = $this->loadController($controllerClass);
         }
 
@@ -105,9 +104,8 @@ class Application
         $namespace = $this->toPhpName($route['namespace']);
         $controller = $this->toPhpName($route['controller']);
 
-        $controllerClass = $this->config->get(
-                'b8.app.namespace'
-            ) . '\\' . $namespace . '\\' . $controller . 'Controller';
+        $appNs = $this->config->get('b8.app.namespace');
+        $controllerClass = $appNs . '\\' . $namespace . '\\' . $controller . 'Controller';
 
         return class_exists($controllerClass);
     }

@@ -2,9 +2,8 @@
 
 namespace b8\Database;
 
-use b8\Database,
-    b8\Database\Map,
-    b8\View\Template;
+use b8\Database;
+use b8\View\Template;
 
 class CodeGenerator
 {
@@ -82,8 +81,8 @@ class CodeGenerator
                 @mkdir($basePath, 0777, true);
             }
 
-            $model = $this->_processTemplate($tableName, $table, 'ModelTemplate');
-            $base = $this->_processTemplate($tableName, $table, 'BaseModelTemplate');
+            $model = $this->processTemplate($tableName, $table, 'ModelTemplate');
+            $base = $this->processTemplate($tableName, $table, 'BaseModelTemplate');
 
             print '-- ' . $table['php_name'] . PHP_EOL;
 
@@ -112,8 +111,8 @@ class CodeGenerator
                 @mkdir($basePath, 0777, true);
             }
 
-            $model = $this->_processTemplate($tableName, $table, 'StoreTemplate');
-            $base = $this->_processTemplate($tableName, $table, 'BaseStoreTemplate');
+            $model = $this->processTemplate($tableName, $table, 'StoreTemplate');
+            $base = $this->processTemplate($tableName, $table, 'BaseStoreTemplate');
 
             print '-- ' . $table['php_name'] . PHP_EOL;
 
@@ -144,8 +143,8 @@ class CodeGenerator
                 @mkdir($basePath, 0777, true);
             }
 
-            $model = $this->_processTemplate($tableName, $table, 'ControllerTemplate');
-            $base = $this->_processTemplate($tableName, $table, 'BaseControllerTemplate');
+            $model = $this->processTemplate($tableName, $table, 'ControllerTemplate');
+            $base = $this->processTemplate($tableName, $table, 'BaseControllerTemplate');
 
             print '-- ' . $table['php_name'] . PHP_EOL;
 
@@ -159,7 +158,7 @@ class CodeGenerator
         }
     }
 
-    protected function _processTemplate($tableName, $table, $template)
+    protected function processTemplate($tableName, $table, $template)
     {
         $tpl = Template::createFromFile($template, B8_PATH . 'Database/CodeGenerator/');
         $tpl->appNamespace = $this->getNamespace($table['php_name']);
@@ -167,12 +166,11 @@ class CodeGenerator
         $tpl->table = $table;
         $tpl->counts = $this->counts;
 
-        $tpl->addFunction(
-            'get_namespace',
-            function ($args, $view) {
-                return $this->getNamespace($view->getVariable($args['model']));
-            }
-        );
+        $callback = function ($args, $view) {
+            return $this->getNamespace($view->getVariable($args['model']));
+        };
+
+        $tpl->addFunction('get_namespace', $callback);
 
         return $tpl->render();
     }

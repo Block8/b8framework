@@ -2,9 +2,8 @@
 
 namespace b8;
 
+use b8\Database;
 use b8\Exception\HttpException;
-use b8\Database,
-    b8\Model;
 
 abstract class Store
 {
@@ -12,9 +11,7 @@ abstract class Store
     protected $tableName = null;
     protected $primaryKey = null;
 
-    /**
-     * @return \b8\Model
-     */
+
     abstract public function getByPrimaryKey($key, $useConnection = 'read');
 
     public function getWhere(
@@ -99,10 +96,8 @@ abstract class Store
                         }
                     }
                 } else {
-                    $wheres[] = $key . ' IN (' . implode(
-                            ', ',
-                            array_map(array(Database::getConnection('read'), 'quote'), $value)
-                        ) . ')';
+                    $func = array(Database::getConnection('read'), 'quote');
+                    $wheres[] = $key . ' IN (' . implode(', ', array_map($func, $value)) . ')';
                 }
             }
         }
@@ -271,10 +266,10 @@ abstract class Store
         }
 
         if (count($cols)) {
-            $qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(
-                    ', ',
-                    $values
-                ) . ')';
+            $colString = implode(', ', $cols);
+            $valString = implode(', ', $values);
+
+            $qs = 'INSERT INTO ' . $this->tableName . ' (' . $colString . ') VALUES (' . $valString . ')';
             $q = Database::getConnection('write')->prepare($qs);
 
             if ($q->execute($qParams)) {
@@ -324,4 +319,4 @@ abstract class Store
 
         return $field;
     }
-}	
+}

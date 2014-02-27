@@ -6,7 +6,6 @@ namespace b8;
  * @package    b8
  * @subpackage Cache
  */
-
 class Cache
 {
     const TYPE_APC = 'ApcCache';
@@ -17,6 +16,7 @@ class Cache
     /**
      * LEGACY: Older apps will expect an APC cache in return.
      * @deprecated
+     * @return \b8\Cache\ApcCache
      */
     public static function getInstance()
     {
@@ -24,7 +24,8 @@ class Cache
     }
 
     /**
-     * Get a cache object of a specified type.
+     * @param string $type
+     * @return \b8\Type\Cache
      */
     public static function getCache($type = self::TYPE_REQUEST)
     {

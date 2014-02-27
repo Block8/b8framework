@@ -100,12 +100,14 @@ class Template extends View
                         $parent['children'][] = $item;
 
                         if ($keyword == '@' || $item['type'] == 'function') {
-                            // If we're processing a variable, add a string to the parent and move up to that as current.
+                            // If we're processing a variable, add a string to the parent
+                            // and move up to that as current.
                             $parent['children'][] = $str;
                             $current =& $parent['children'][count($parent['children']) - 1];
                             $current['parent'] =& $parent;
                         } elseif (substr($keyword, 0, 1) == '/') {
-                            // If we're processing the end of a block (if/loop), add a string to the parent's parent and move up to that.
+                            // If we're processing the end of a block (if/loop), add a string to the
+                            // parent's parent and move up to that.
                             $parent =& $parent['parent'];
                             $parent['children'][] = $str;
                             $current =& $parent['children'][count($parent['children']) - 1];
@@ -308,7 +310,7 @@ class Template extends View
      * {/for}
      * </code>
      *
-     * @param $cond string The condition string for the loop, to be parsed (e.g. "myarray.items" or "0:pages.count; i++")
+     * @param $cond string The condition string for the loop.
      * @param $stack string The child stack for this loop, to be processed for each item.
      * @return string
      * @throws \Exception
@@ -414,7 +416,7 @@ class Template extends View
         $thisPart = array_shift($varPart);
 
 
-        if (!array_key_exists($thisPart, $this->_vars)) {
+        if (!array_key_exists($thisPart, $this->vars)) {
             return null;
         }
 

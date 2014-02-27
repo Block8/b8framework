@@ -8,13 +8,13 @@ use b8\Form\Element,
 
 class FieldSet extends Element
 {
-    protected $_children = array();
+    protected $children = array();
 
     public function getValues()
     {
         $rtn = array();
 
-        foreach ($this->_children as $field) {
+        foreach ($this->children as $field) {
             if ($field instanceof FieldSet) {
                 $fieldName = $field->getName();
 
@@ -35,7 +35,7 @@ class FieldSet extends Element
 
     public function setValues(array $values)
     {
-        foreach ($this->_children as $field) {
+        foreach ($this->children as $field) {
             if ($field instanceof FieldSet) {
                 $fieldName = $field->getName();
 
@@ -56,7 +56,7 @@ class FieldSet extends Element
 
     public function addField(Element $field)
     {
-        $this->_children[$field->getName()] = $field;
+        $this->children[$field->getName()] = $field;
         $field->setParent($this);
     }
 
@@ -64,7 +64,7 @@ class FieldSet extends Element
     {
         $rtn = true;
 
-        foreach ($this->_children as $child) {
+        foreach ($this->children as $child) {
             if (!$child->validate()) {
                 $rtn = false;
             }
@@ -73,11 +73,11 @@ class FieldSet extends Element
         return $rtn;
     }
 
-    protected function _onPreRender(View &$view)
+    protected function onPreRender(View &$view)
     {
         $rendered = array();
 
-        foreach ($this->_children as $child) {
+        foreach ($this->children as $child) {
             $rendered[] = $child->render();
         }
 
@@ -86,11 +86,11 @@ class FieldSet extends Element
 
     public function getChildren()
     {
-        return $this->_children;
+        return $this->children;
     }
 
     public function getChild($fieldName)
     {
-        return $this->_children[$fieldName];
+        return $this->children[$fieldName];
     }
 }

@@ -2,21 +2,20 @@
 
 namespace b8\Form\Element;
 
-use b8\Form\Element\Button,
-    b8\View;
+use b8\View;
 
 class Submit extends Button
 {
-    protected $_value = 'Submit';
+    protected $value = 'Submit';
 
     public function render($viewFile = null)
     {
         return parent::render(($viewFile ? $viewFile : 'Button'));
     }
 
-    protected function _onPreRender(View &$view)
+    protected function onPreRender(View &$view)
     {
-        parent::_onPreRender($view);
+        parent::onPreRender($view);
         $view->type = 'submit';
     }
 }

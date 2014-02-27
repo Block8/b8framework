@@ -4,32 +4,32 @@ namespace b8;
 
 class HttpClient
 {
-    protected $_base = '';
-    protected $_params = array();
-    protected $_headers = array();
+    protected $base = '';
+    protected $params = array();
+    protected $headers = array();
 
     public function __construct($base = null)
     {
         $settings = Config::getInstance()->get('b8.http.client', array('base_url' => '', 'params' => array()));
-        $this->_base = $settings['base_url'];
-        $this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
-        $this->_headers = array('Content-Type: application/x-www-form-urlencoded');
+        $this->base = $settings['base_url'];
+        $this->params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
+        $this->headers = array('Content-Type: application/x-www-form-urlencoded');
 
         if (!is_null($base)) {
-            $this->_base = $base;
+            $this->base = $base;
         }
     }
 
     public function setHeaders(array $headers)
     {
-        $this->_headers = $headers;
+        $this->headers = $headers;
     }
 
     public function request($method, $uri, $params = array())
     {
         // Clean incoming:
         $method = strtoupper($method);
-        $getParams = $this->_params;
+        $getParams = $this->params;
 
         if ($method == 'GET' || $method == 'DELETE') {
             $getParams = array_merge($getParams, $params);
@@ -39,7 +39,7 @@ class HttpClient
 
         $getParams = http_build_query($getParams);
 
-        if (substr($uri, 0, 1) != '/' && !empty($this->_base)) {
+        if (substr($uri, 0, 1) != '/' && !empty($this->base)) {
             $uri = '/' . $uri;
         }
 
@@ -49,7 +49,7 @@ class HttpClient
         $context['http']['timeout'] = 30;
         $context['http']['method'] = $method;
         $context['http']['ignore_errors'] = true;
-        $context['http']['header'] = implode(PHP_EOL, $this->_headers);
+        $context['http']['header'] = implode(PHP_EOL, $this->headers);
 
         if (in_array($method, array('PUT', 'POST'))) {
             $context['http']['content'] = $bodyParams;
@@ -58,13 +58,13 @@ class HttpClient
         $uri .= '?' . $getParams;
 
         $context = stream_context_create($context);
-        $result = file_get_contents($this->_base . $uri, false, $context);
+        $result = file_get_contents($this->base . $uri, false, $context);
 
         $res = array();
         $res['headers'] = $http_response_header;
         $res['code'] = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $res['headers'][0]);
         $res['success'] = false;
-        $res['body'] = $this->_decodeResponse($result);
+        $res['body'] = $this->decodeResponse($result);
 
         if ($res['code'] >= 200 && $res['code'] < 300) {
             $res['success'] = true;
@@ -103,13 +103,13 @@ class HttpClient
         return $this->request('DELETE', $uri, $params);
     }
 
-    protected function _decodeResponse($originalResponse)
+    protected function decodeResponse($originalResponse)
     {
         $response = $originalResponse;
         $body = '';
 
         do {
-            $line = $this->_readChunk($response);
+            $line = $this->readChunk($response);
 
             if ($line == PHP_EOL) {
                 continue;
@@ -122,7 +122,7 @@ class HttpClient
             }
 
             do {
-                $data = $this->_readChunk($response, $length);
+                $data = $this->readChunk($response, $length);
 
                 // remove the amount received from the total length on the next loop
                 // it'll attempt to read that much less data
@@ -145,7 +145,7 @@ class HttpClient
         return $body;
     }
 
-    function _readChunk(&$string, $len = 4096)
+    protected function readChunk(&$string, $len = 4096)
     {
         $rtn = '';
         for ($i = 0; $i <= $len; $i++) {

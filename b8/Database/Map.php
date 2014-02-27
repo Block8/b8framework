@@ -6,48 +6,48 @@ use b8\Database;
 
 class Map
 {
-    protected $_db = null;
-    protected $_tables = array();
+    protected $db = null;
+    protected $tables = array();
 
-    public function __construct(Database $db)
+    public function __construct(Database $database)
     {
-        $this->_db = $db;
+        $this->db = $database;
     }
 
     public function generate()
     {
-        $tables = $this->_getTables();
+        $tables = $this->getTables();
 
 
         foreach ($tables as $table) {
-            $this->_tables[$table] = array();
-            $this->_tables[$table]['php_name'] = $this->_generatePhpName($table);
+            $this->tables[$table] = array();
+            $this->tables[$table]['php_name'] = $this->generatePhpName($table);
         }
 
-        $this->_getRelationships();
-        $this->_getColumns();
-        $this->_getIndexes();
+        $this->getRelationships();
+        $this->getColumns();
+        $this->getIndexes();
 
-        return $this->_tables;
+        return $this->tables;
     }
 
-    protected function _getTables()
+    protected function getTables()
     {
-        $details = $this->_db->getDetails();
+        $details = $this->db->getDetails();
 
         $rtn = array();
 
-        foreach ($this->_db->query('SHOW TABLES')->fetchAll(\PDO::FETCH_ASSOC) as $tbl) {
+        foreach ($this->db->query('SHOW TABLES')->fetchAll(\PDO::FETCH_ASSOC) as $tbl) {
             $rtn[] = $tbl['Tables_in_' . $details['db']];
         }
 
         return $rtn;
     }
 
-    protected function _getRelationships()
+    protected function getRelationships()
     {
-        foreach ($this->_tables as $table => $t) {
-            $res = $this->_db->query('SHOW CREATE TABLE `' . $table . '`')->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($this->tables as $table => $t) {
+            $res = $this->db->query('SHOW CREATE TABLE `' . $table . '`')->fetchAll(\PDO::FETCH_ASSOC);
 
             foreach ($res as $r) {
                 $str = $r['Create Table'];
@@ -78,36 +78,33 @@ class Map
                         $fk['UPDATE'] = empty($fk['UPDATE']) ? '' : $fk['UPDATE'];
                         $fk['DELETE'] = empty($fk['DELETE']) ? '' : $fk['DELETE'];
 
-                        if (isset($this->_tables[$fromTable]) && isset($this->_tables[$toTable])) {
-                            $phpName = $this->_generateFkName($fromCol, $this->_tables[$fromTable]['php_name']);
+                        if (isset($this->tables[$fromTable]) && isset($this->tables[$toTable])) {
+                            $phpName = $this->generateFkName($fromCol, $this->tables[$fromTable]['php_name']);
 
-                            $this->_tables[$fromTable]['relationships']['toOne'][$fromCol] = array(
+                            $this->tables[$fromTable]['relationships']['toOne'][$fromCol] = array(
                                 'fk_name' => $fkName,
                                 'fk_delete' => $fk['DELETE'],
                                 'fk_update' => $fk['UPDATE'],
-                                'table_php_name' => $this->_tables[$toTable]['php_name'],
-                                'from_col_php' => $this->_generatePhpName($fromCol),
+                                'table_php_name' => $this->tables[$toTable]['php_name'],
+                                'from_col_php' => $this->generatePhpName($fromCol),
                                 'from_col' => $fromCol,
                                 'php_name' => $phpName,
                                 'table' => $toTable,
                                 'col' => $toCol,
-                                'col_php' => $this->_generatePhpName($toCol)
+                                'col_php' => $this->generatePhpName($toCol)
                             );
 
-                            $phpName = $this->_generateFkName(
-                                    $fromCol,
-                                    $this->_tables[$fromTable]['php_name']
-                                ) . $this->_tables[$fromTable]['php_name'] . 's';
-                            $this->_tables[$toTable]['relationships']['toMany'][] = array(
-                                'from_col_php' => $this->_generatePhpName(
-                                        $fromCol
-                                    ),
+                            $singular = $this->tables[$fromTable]['php_name'];
+                            $multiple = $singular . 's';
+                            $phpName = $this->generateFkName($fromCol, $singular) . $multiple;
+                            $this->tables[$toTable]['relationships']['toMany'][] = array(
+                                'from_col_php' => $this->generatePhpName($fromCol),
                                 'php_name' => $phpName,
                                 'thisCol' => $toCol,
                                 'table' => $fromTable,
-                                'table_php' => $this->_generatePhpName($fromTable),
+                                'table_php' => $this->generatePhpName($fromTable),
                                 'fromCol' => $fromCol,
-                                'col_php' => $this->_generatePhpName($toCol)
+                                'col_php' => $this->generatePhpName($toCol)
                             );
                         }
                     }
@@ -116,12 +113,12 @@ class Map
         }
     }
 
-    protected function _getColumns()
+    protected function getColumns()
     {
-        foreach ($this->_tables as $key => &$val) {
+        foreach ($this->tables as $key => &$val) {
             $cols = array();
-            foreach ($this->_db->query('DESCRIBE `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $column) {
-                $col = $this->_processColumn(array(), $column, $val);
+            foreach ($this->db->query('DESCRIBE `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $column) {
+                $col = $this->processColumn(array(), $column, $val);
                 $cols[$col['name']] = $col;
             }
 
@@ -130,12 +127,12 @@ class Map
 
     }
 
-    protected function _getIndexes()
+    protected function getIndexes()
     {
-        foreach ($this->_tables as $key => &$val) {
+        foreach ($this->tables as $key => &$val) {
             $indexes = array();
 
-            foreach ($this->_db->query('SHOW INDEXES FROM `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $idx) {
+            foreach ($this->db->query('SHOW INDEXES FROM `' . $key . '`')->fetchAll(\PDO::FETCH_ASSOC) as $idx) {
                 if (!isset($indexes[$idx['Key_name']])) {
                     $indexes[$idx['Key_name']] = array();
                     $indexes[$idx['Key_name']]['name'] = $idx['Key_name'];
@@ -160,10 +157,10 @@ class Map
         }
     }
 
-    protected function _processColumn($col, $column, &$table)
+    protected function processColumn($col, $column, &$table)
     {
         $col['name'] = $column['Field'];
-        $col['php_name'] = $this->_generatePhpName($col['name']);
+        $col['php_name'] = $this->generatePhpName($col['name']);
         $matches = array();
 
         preg_match('/^([a-zA-Z]+)(\()?([0-9\,]+)?(\))?/', $column['Type'], $matches);
@@ -240,7 +237,7 @@ class Map
         return $col;
     }
 
-    protected function _generatePhpName($sqlName)
+    protected function generatePhpName($sqlName)
     {
         $rtn = $sqlName;
         $rtn = str_replace('_', ' ', $rtn);
@@ -250,7 +247,7 @@ class Map
         return $rtn;
     }
 
-    protected function _generateFkName($sqlName, $tablePhpName)
+    protected function generateFkName($sqlName, $tablePhpName)
     {
         $fkMethod = substr($sqlName, 0, strripos($sqlName, '_'));
 

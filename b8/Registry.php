@@ -14,6 +14,7 @@ if (!defined('B8_PATH')) {
  * @see b8\Http\Request
  * @see b8\Http\Response
  * @see b8\Config
+ * @deprecated
  */
 class Registry
 {
@@ -21,8 +22,6 @@ class Registry
      * @var \b8\Registry
      */
     protected static $instance;
-    protected $_data = array();
-    protected $_params = null;
 
     /**
      * @var b8\Config

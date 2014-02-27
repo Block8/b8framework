@@ -170,19 +170,19 @@ return $rtn;
 public function set{@item.php_name}($value)
 {
 {if item.validate_null}
-$this->_validateNotNull('{@item.php_name}', $value);
+$this->validateNotNull('{@item.php_name}', $value);
 {/if}
 {if item.validate_int}
-$this->_validateInt('{@item.php_name}', $value);
+$this->validateInt('{@item.php_name}', $value);
 {/if}
 {if item.validate_string}
-$this->_validateString('{@item.php_name}', $value);
+$this->validateString('{@item.php_name}', $value);
 {/if}
 {if item.validate_float}
-$this->_validateFloat('{@item.php_name}', $value);
+$this->validateFloat('{@item.php_name}', $value);
 {/if}
 {if item.validate_date}
-$this->_validateDate('{@item.php_name}', $value);
+$this->validateDate('{@item.php_name}', $value);
 {/if}
 
 if ($this->data['{@item.name}'] === $value) {

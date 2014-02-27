@@ -2,8 +2,8 @@
 
 namespace b8\Form\Element;
 
-use b8\Form\Input,
-    b8\View;
+use b8\Form\Input;
+use b8\View;
 
 class Button extends Input
 {
@@ -12,9 +12,9 @@ class Button extends Input
         return true;
     }
 
-    protected function _onPreRender(View &$view)
+    protected function onPreRender(View &$view)
     {
-        parent::_onPreRender($view);
+        parent::onPreRender($view);
         $view->type = 'button';
     }
 }
