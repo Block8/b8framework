@@ -6,16 +6,16 @@ use b8\View;
 
 class TextArea extends Text
 {
-    protected $_rows = 4;
+    protected $rows = 4;
 
     public function getRows()
     {
-        return $this->_rows;
+        return $this->rows;
     }
 
     public function setRows($rows)
     {
-        $this->_rows = $rows;
+        $this->rows = $rows;
     }
 
     protected function onPreRender(View &$view)

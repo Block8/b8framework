@@ -120,15 +120,6 @@ class Model
         }
     }
 
-    /**
-     * @deprecated
-     */
-    protected function _setModified($column)
-    {
-        trigger_error('Please use Model::setModified() instead of Model::_setModified()', E_USER_DEPRECATED);
-        $this->setModified($column);
-    }
-
     //----------------
     // Validation
     //----------------

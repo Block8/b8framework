@@ -2,9 +2,8 @@
 
 namespace b8\Form;
 
-use b8\Form\Element,
-    b8\Form\Input,
-    b8\View;
+use b8\Form\Element;
+use b8\View;
 
 class FieldSet extends Element
 {

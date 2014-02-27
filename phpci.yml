@@ -4,6 +4,8 @@ build_settings:
     - "tests"
     - "b8/Controller/RestController.php" # Legacy
     - "b8/Database/Generator.php" # Legacy
+    - "b8/Database/Map.php" # Temporary
+    -
 
 test:
   lint:

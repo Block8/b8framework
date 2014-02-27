@@ -3,7 +3,7 @@
 namespace b8;
 
 /**
- * @package    b8
+ * @package b8
  * @subpackage Cache
  */
 class Cache
