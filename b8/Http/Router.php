@@ -76,13 +76,19 @@ class Router
 
             switch ($routePart) {
                 case ':namespace':
-                    $thisNamespace = !is_null($pathPart) ? $pathPart : $thisNamespace;
+                    if (!is_null($pathPart)) {
+                        $thisNamespace = $pathPart;
+                    }
                     break;
                 case ':controller':
-                    $thisController = !is_null($pathPart) ? $pathPart : $thisController;
+                    if (!is_null($pathPart)) {
+                        $thisController = $pathPart;
+                    }
                     break;
                 case ':action':
-                    $thisAction = !is_null($pathPart) ? $pathPart : $thisAction;
+                    if (!is_null($pathPart)) {
+                        $thisAction = $pathPart;
+                    }
                     break;
                 default:
                     if ($routePart != $pathPart) {
