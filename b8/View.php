@@ -36,6 +36,17 @@ class View
         return true;
     }
 
+    public function set($key, $val)
+    {
+        $this->vars[$key] = $val;
+        return $this;
+    }
+
+    public function get($key)
+    {
+        return $this->vars[$key];
+    }
+
     public function __isset($var)
     {
         return isset($this->vars[$var]);
@@ -43,12 +54,12 @@ class View
 
     public function __get($var)
     {
-        return $this->vars[$var];
+        return $this->get($var);
     }
 
     public function __set($var, $val)
     {
-        $this->vars[$var] = $val;
+        return $this->set($var, $val);
     }
 
     public function __call($method, $params = array())
@@ -64,7 +75,7 @@ class View
                 throw new HttpException('Helper class does not exist: ' . $class);
             }
 
-            self::$helpers[$method] = new $class();
+            self::$helpers[$method] = new $class($params);
         }
 
         return self::$helpers[$method];
