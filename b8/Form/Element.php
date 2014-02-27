@@ -8,7 +8,7 @@ use b8\Config;
 abstract class Element
 {
     protected $name;
-    protected $id;
+    protected $elementId;
     protected $label;
     protected $css;
     protected $ccss;
@@ -33,12 +33,12 @@ abstract class Element
 
     public function getId()
     {
-        return !$this->id ? 'element-' . $this->name : $this->id;
+        return !$this->elementId ? 'element-' . $this->name : $this->elementId;
     }
 
-    public function setId($id)
+    public function setId($elementId)
     {
-        $this->id = $id;
+        $this->elementId = $elementId;
     }
 
     public function getLabel()

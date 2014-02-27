@@ -4,6 +4,19 @@ namespace b8\Http;
 
 class Response
 {
+    protected static $codes = array(
+        200 => 'OK',
+        301 => 'Moved Permanently',
+        302 => 'Moved Temporarily',
+        400 => 'Bad Request',
+        401 => 'Not Authorized',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        410 => 'Gone',
+        500 => 'Internal Server Error',
+        503 => 'Service Temporarily Unavailable',
+    );
+
     protected $data = array();
 
     public function __construct(Response $createFrom = null)
@@ -73,46 +86,19 @@ class Response
 
     protected function sendResponseCode()
     {
-        if (!isset($this->data['code'])) {
-            $this->data['code'] = 200;
+        $code = 200;
+
+        if (isset($this->data['code'])) {
+            $code = $this->data['code'];
         }
 
-        switch ($this->data['code']) {
-            // 300 class
-            case 301:
-                $text = 'Moved Permanently';
-                break;
-            case 302:
-                $text = 'Moved Temporarily';
-                break;
-
-            // 400 class errors
-            case 400:
-                $text = 'Bad Request';
-                break;
-            case 401:
-                $text = 'Not Authorized';
-                break;
-            case 403:
-                $text = 'Forbidden';
-                break;
-            case 404:
-                $text = 'Not Found';
-                break;
-
-            // 500 class errors
-            case 500:
-                $text = 'Internal Server Error';
-                break;
-
-            // OK
-            case 200:
-            default:
-                $text = 'OK';
-                break;
+        if (!isset(self::$codes[$code])) {
+            $code = 500;
         }
 
-        header('HTTP/1.1 ' . $this->data['code'] . ' ' . $text, true, $this->data['code']);
+        $text = self::$codes[$code];
+
+        header('HTTP/1.1 ' . $code . ' ' . $text, true, $code);
     }
 
     protected function flushBody()

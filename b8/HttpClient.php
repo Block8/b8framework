@@ -27,6 +27,42 @@ class HttpClient
 
     public function request($method, $uri, $params = array())
     {
+        list($response, $headers) = $this->makeRequest($method, $uri, $params);
+
+        return $this->processResponse($response, $headers);
+    }
+
+    protected function processResponse($response, $headers)
+    {
+        $return = array();
+        $return['headers'] = $headers;
+        $return['code'] = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $headers[0]);
+        $return['success'] = false;
+        $return['body'] = $this->decodeResponse($response);
+
+        if ($return['code'] >= 200 && $return['code'] < 300) {
+            $return['success'] = true;
+        }
+
+        $this->processHeaders($headers, $return);
+
+        return $return;
+    }
+
+    protected function processHeaders($headers, &$return)
+    {
+        foreach ($headers as $header) {
+            if (stripos($header, 'Content-Type') !== false) {
+                if (stripos($header, 'application/json') !== false) {
+                    $return['text_body'] = $return['body'];
+                    $return['body'] = json_decode($return['body'], true);
+                }
+            }
+        }
+    }
+
+    protected function makeRequest($method, $uri, $params = array())
+    {
         // Clean incoming:
         $method = strtoupper($method);
         $getParams = $this->params;
@@ -58,29 +94,9 @@ class HttpClient
         $uri .= '?' . $getParams;
 
         $context = stream_context_create($context);
-        $result = file_get_contents($this->base . $uri, false, $context);
+        $response = file_get_contents($this->base . $uri, false, $context);
 
-        $res = array();
-        $res['headers'] = $http_response_header;
-        $res['code'] = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $res['headers'][0]);
-        $res['success'] = false;
-        $res['body'] = $this->decodeResponse($result);
-
-        if ($res['code'] >= 200 && $res['code'] < 300) {
-            $res['success'] = true;
-        }
-
-        // Handle JSON responses:
-        foreach ($res['headers'] as $header) {
-            if (stripos($header, 'Content-Type') !== false || stripos($header, 'b8-Type') !== false) {
-                if (stripos($header, 'application/json') !== false) {
-                    $res['text_body'] = $res['body'];
-                    $res['body'] = json_decode($res['body'], true);
-                }
-            }
-        }
-
-        return $res;
+        return array($response, $http_response_header);
     }
 
     public function get($uri, $params = array())
