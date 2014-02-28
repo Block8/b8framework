@@ -14,6 +14,16 @@ class Input extends Element
     protected $error;
     protected $customError = false;
 
+    public static function create($name, $label, $required = false)
+    {
+        $el = new static();
+        $el->setName($name);
+        $el->setLabel($label);
+        $el->setRequired($required);
+
+        return $el;
+    }
+
     public function getValue()
     {
         return $this->value;
@@ -22,6 +32,7 @@ class Input extends Element
     public function setValue($value)
     {
         $this->value = $value;
+        return $this;
     }
 
     public function getRequired()
@@ -32,6 +43,7 @@ class Input extends Element
     public function setRequired($required)
     {
         $this->required = (bool)$required;
+        return $this;
     }
 
     public function getValidator()
@@ -44,6 +56,8 @@ class Input extends Element
         if (is_callable($validator) || $validator instanceof \Closure) {
             $this->validator = $validator;
         }
+
+        return $this;
     }
 
     public function getPattern()
@@ -54,6 +68,7 @@ class Input extends Element
     public function setPattern($pattern)
     {
         $this->pattern = $pattern;
+        return $this;
     }
 
     public function validate()
