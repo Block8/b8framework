@@ -94,6 +94,7 @@ class HttpClient
         $uri .= '?' . $getParams;
 
         $context = stream_context_create($context);
+        $http_response_header = null; // Creating this purely to stop PHPCS complaining.
         $response = file_get_contents($this->base . $uri, false, $context);
 
         return array($response, $http_response_header);
@@ -119,65 +120,38 @@ class HttpClient
         return $this->request('DELETE', $uri, $params);
     }
 
-    protected function decodeResponse($originalResponse)
+    protected function decodeResponse($chunk)
     {
-        $response = $originalResponse;
-        $body = '';
+        $pos = 0;
+        $len = strlen($chunk);
+        $dechunk = null;
 
-        do {
-            $line = $this->readChunk($response);
-
-            if ($line == PHP_EOL) {
-                continue;
+        while (($pos < $len)
+            && ($chunkLenHex = substr($chunk,$pos, ($newlineAt = strpos($chunk,"\n",$pos+1))-$pos)))
+        {
+            if (!$this->isHex($chunkLenHex)) {
+                trigger_error('Value is not properly chunk encoded', E_USER_WARNING);
+                return $chunk;
             }
 
-            $length = hexdec(trim($line));
-
-            if (!is_int($length) || empty($response) || $line === false || $length < 1) {
-                break;
-            }
-
-            do {
-                $data = $this->readChunk($response, $length);
-
-                // remove the amount received from the total length on the next loop
-                // it'll attempt to read that much less data
-                $length -= strlen($data);
-
-                // store in string for later use
-                $body .= $data;
-
-                // zero or less or end of connection break
-                if ($length <= 0 || empty($response)) {
-                    break;
-                }
-            } while (true);
-        } while (true);
-
-        if (empty($body)) {
-            $body = $originalResponse;
+            $pos = $newlineAt + 1;
+            $chunkLen = hexdec(rtrim($chunkLenHex,"\r\n"));
+            $dechunk .= substr($chunk, $pos, $chunkLen);
+            $pos = strpos($chunk, "\n", $pos + $chunkLen) + 1;
         }
 
-        return $body;
+        return $dechunk;
     }
 
-    protected function readChunk(&$string, $len = 4096)
+    function isHex($hex)
     {
-        $rtn = '';
-        for ($i = 0; $i <= $len; $i++) {
-            if (empty($string)) {
-                break;
-            }
+        $hex = strtolower(trim(ltrim($hex,"0")));
 
-            $char = $string[0];
-            $string = substr($string, 1);
-            $rtn .= $char;
+        if (empty($hex)) {
+            $hex = 0;
+        };
 
-            if ($char == PHP_EOL) {
-                break;
-            }
-        }
-
-        return $rtn;
+        $dec = hexdec($hex);
+        return ($hex == dechex($dec));
     }
 }
