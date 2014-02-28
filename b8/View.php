@@ -76,6 +76,7 @@ class View
             }
 
             self::$helpers[$method] = new $class($params);
+            self::$helpers[$method]->view = $this;
         }
 
         return self::$helpers[$method];
