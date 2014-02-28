@@ -1,108 +1,102 @@
 <?php
 
 namespace b8\Form;
-use b8\Form\Element,
-	b8\View;
+
+use b8\Form\Element;
+use b8\View;
 
 class Input extends Element
 {
-	protected $_required = false;
-	protected $_pattern;
-	protected $_validator;
-	protected $_value;
-	protected $_error;
-    protected $_customError = false;
+    protected $required = false;
+    protected $pattern;
+    protected $validator;
+    protected $value;
+    protected $error;
+    protected $customError = false;
 
-	public function getValue()
-	{
-		return $this->_value;
-	}
+    public function getValue()
+    {
+        return $this->value;
+    }
 
-	public function setValue($value)
-	{
-		$this->_value = $value;
-	}
+    public function setValue($value)
+    {
+        $this->value = $value;
+    }
 
-	public function getRequired()
-	{
-		return $this->_required;
-	}
+    public function getRequired()
+    {
+        return $this->required;
+    }
 
-	public function setRequired($required)
-	{
-		$this->_required = (bool)$required;
-	}
+    public function setRequired($required)
+    {
+        $this->required = (bool)$required;
+    }
 
-	public function getValidator()
-	{
-		return $this->_validator;
-	}
+    public function getValidator()
+    {
+        return $this->validator;
+    }
 
-	public function setValidator($validator)
-	{
-		if(is_callable($validator) || $validator instanceof \Closure)
-		{
-			$this->_validator = $validator;
-		}
-	}
+    public function setValidator($validator)
+    {
+        if (is_callable($validator) || $validator instanceof \Closure) {
+            $this->validator = $validator;
+        }
+    }
 
-	public function getPattern()
-	{
-		return $this->_pattern;
-	}
+    public function getPattern()
+    {
+        return $this->pattern;
+    }
 
-	public function setPattern($pattern)
-	{
-		$this->_pattern = $pattern;
-	}
+    public function setPattern($pattern)
+    {
+        $this->pattern = $pattern;
+    }
 
-	public function validate()
-	{
-		if($this->getRequired() && empty($this->_value))
-		{
-			$this->_error = $this->getLabel() . ' is required.';
-			return false;
-		}
-
-		if($this->getPattern() && !preg_match('/'.$this->getPattern().'/', $this->_value))
-		{
-			$this->_error = 'Invalid value entered.';
-			return false;
-		}
-
-		$validator = $this->getValidator();
-
-		if(is_callable($validator))
-		{
-			try
-			{
-				call_user_func_array($validator, array($this->_value));
-			}
-			catch(\Exception $ex)
-			{
-				$this->_error = $ex->getMessage();
-				return false;
-			}
-		}
-
-        if ($this->_customError) {
+    public function validate()
+    {
+        if ($this->getRequired() && empty($this->value)) {
+            $this->error = $this->getLabel() . ' is required.';
             return false;
         }
 
-		return true;
-	}
+        if ($this->getPattern() && !preg_match('/' . $this->getPattern() . '/', $this->value)) {
+            $this->error = 'Invalid value entered.';
+            return false;
+        }
+
+        $validator = $this->getValidator();
+
+        if (is_callable($validator)) {
+            try {
+                call_user_func_array($validator, array($this->value));
+            } catch (\Exception $ex) {
+                $this->error = $ex->getMessage();
+                return false;
+            }
+        }
+
+        if ($this->customError) {
+            return false;
+        }
+
+        return true;
+    }
 
     public function setError($message)
     {
-        $this->_customError = true;
-        $this->_error = $message;
+        $this->customError = true;
+        $this->error = $message;
     }
 
-	protected function _onPreRender(View &$view)
-	{
-		$view->value    = $this->getValue();
-		$view->error    = $this->_error;
-		$view->pattern  = $this->_pattern;
-		$view->required = $this->_required;
-	}
+    protected function onPreRender(View &$view)
+    {
+        $view->value = $this->getValue();
+        $view->error = $this->error;
+        $view->pattern = $this->pattern;
+        $view->required = $this->required;
+    }
 }

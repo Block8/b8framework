@@ -7,106 +7,101 @@ use b8\Config;
 
 abstract class Element
 {
-	protected $_name;
-	protected $_id;
-	protected $_label;
-	protected $_css;
-	protected $_ccss;
-	protected $_parent;
+    protected $name;
+    protected $elementId;
+    protected $label;
+    protected $css;
+    protected $ccss;
+    protected $parent;
 
-	public function __construct($name = null)
-	{
-		if(!is_null($name))
-		{
-			$this->setName($name);
-		}
-	}
+    public function __construct($name = null)
+    {
+        if (!is_null($name)) {
+            $this->setName($name);
+        }
+    }
 
-	public function getName()
-	{
-		return $this->_name;
-	}
+    public function getName()
+    {
+        return $this->name;
+    }
 
-	public function setName($name)
-	{
-		$this->_name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
-	}
+    public function setName($name)
+    {
+        $this->name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
+    }
 
-	public function getId()
-	{
-		return !$this->_id ? 'element-'.$this->_name : $this->_id;
-	}
+    public function getId()
+    {
+        return !$this->elementId ? 'element-' . $this->name : $this->elementId;
+    }
 
-	public function setId($id)
-	{
-		$this->_id = $id;
-	}
+    public function setId($elementId)
+    {
+        $this->elementId = $elementId;
+    }
 
-	public function getLabel()
-	{
-		return $this->_label;
-	}
+    public function getLabel()
+    {
+        return $this->label;
+    }
 
-	public function setLabel($label)
-	{
-		$this->_label = $label;
-	}
+    public function setLabel($label)
+    {
+        $this->label = $label;
+    }
 
-	public function getClass()
-	{
-		return $this->_css;
-	}
+    public function getClass()
+    {
+        return $this->css;
+    }
 
-	public function setClass($class)
-	{
-		$this->_css = $class;
-	}
+    public function setClass($class)
+    {
+        $this->css = $class;
+    }
 
-	public function getContainerClass()
-	{
-		return $this->_ccss;
-	}
+    public function getContainerClass()
+    {
+        return $this->ccss;
+    }
 
-	public function setContainerClass($class)
-	{
-		$this->_ccss = $class;
-	}
+    public function setContainerClass($class)
+    {
+        $this->ccss = $class;
+    }
 
-	public function setParent(Element $parent)
-	{
-		$this->_parent = $parent;
-	}
+    public function setParent(Element $parent)
+    {
+        $this->parent = $parent;
+    }
 
-	public function render($viewFile = null)
-	{
-		$viewPath = Config::getInstance()->get('b8.view.path');
+    public function render($viewFile = null)
+    {
+        $viewPath = Config::getInstance()->get('b8.view.path');
 
-		if(is_null($viewFile))
-		{
-			$class = explode('\\', get_called_class());
-			$viewFile = end($class);
-		}
+        if (is_null($viewFile)) {
+            $class = explode('\\', get_called_class());
+            $viewFile = end($class);
+        }
 
-		if(file_exists($viewPath . 'Form/' . $viewFile . '.phtml'))
-		{
-			$view = new View('Form/' . $viewFile);
-		}
-		else
-		{
-			$view = new View($viewFile, B8_PATH . 'Form/View/');
-		}
+        if (file_exists($viewPath . 'Form/' . $viewFile . '.phtml')) {
+            $view = new View('Form/' . $viewFile);
+        } else {
+            $view = new View($viewFile, B8_PATH . 'Form/View/');
+        }
 
-		$view->name     = $this->getName();
-		$view->id       = $this->getId();
-		$view->label    = $this->getLabel();
-		$view->css      = $this->getClass();
-		$view->ccss     = $this->getContainerClass();
-		$view->parent   = $this->_parent;
+        $view->name = $this->getName();
+        $view->id = $this->getId();
+        $view->label = $this->getLabel();
+        $view->css = $this->getClass();
+        $view->ccss = $this->getContainerClass();
+        $view->parent = $this->parent;
 
-		$this->_onPreRender($view);
+        $this->onPreRender($view);
 
-		return $view->render();
-	}
+        return $view->render();
+    }
 
-	abstract protected function _onPreRender(View &$view);
+    abstract protected function onPreRender(View &$view);
 }

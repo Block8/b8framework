@@ -1,272 +1,220 @@
 <?php
 
 namespace b8;
+
+use b8\Database;
 use b8\Exception\HttpException;
-use b8\Database,
-	b8\Model;
 
 abstract class Store
 {
-	protected $modelName   = null;
-	protected $tableName   = null;
-	protected $primaryKey  = null;
+    protected $modelName = null;
+    protected $tableName = null;
+    protected $primaryKey = null;
 
-	/**
-	 * @return \b8\Model
-	 */
-	abstract public function getByPrimaryKey($key, $useConnection = 'read');
 
-	public function getWhere($where = array(), $limit = 25, $offset = 0, $joins = array(), $order = array(), $manualJoins = array(), $group = null, $manualWheres = array(), $whereType = 'AND')
-	{
-		$query      = 'SELECT ' . $this->tableName . '.* FROM ' . $this->tableName;
-		$countQuery = 'SELECT COUNT(*) AS cnt FROM ' . $this->tableName;
+    abstract public function getByPrimaryKey($key, $useConnection = 'read');
 
-		$wheres = array();
-		$params = array();
-		foreach($where as $key => $value)
-		{
-			$key = $this->fieldCheck($key);
+    public function getWhere(
+        $where = array(),
+        $limit = 25,
+        $offset = 0,
+        $joins = array(),
+        $order = array(),
+        $manualJoins = array(),
+        $group = null,
+        $manualWheres = array(),
+        $whereType = 'AND'
+    ) {
+        $query = 'SELECT ' . $this->tableName . '.* FROM ' . $this->tableName;
+        $countQuery = 'SELECT COUNT(*) AS cnt FROM ' . $this->tableName;
 
-			if(!is_array($value))
-			{
-				$params[] = $value;
-				$wheres[] = $key . ' = ?';
-			}
-			else
-			{
-				if(isset($value['operator']))
-				{
-					if(is_array($value['value']))
-					{
-						if($value['operator'] == 'between')
-						{
-							$params[] = $value['value'][0];
-							$params[] = $value['value'][1];
-							$wheres[] = $key . ' BETWEEN ? AND ?';
-						}
-						elseif($value['operator'] == 'IN')
-						{
-							$in = array();
+        $wheres = array();
+        $params = array();
+        foreach ($where as $key => $value) {
+            $key = $this->fieldCheck($key);
 
-							foreach($value['value'] as $item)
-							{
-								$params[] = $item;
-								$in[]     = '?';
-							}
+            if (!is_array($value)) {
+                $params[] = $value;
+                $wheres[] = $key . ' = ?';
+            } else {
+                if (isset($value['operator'])) {
+                    if (is_array($value['value'])) {
+                        if ($value['operator'] == 'between') {
+                            $params[] = $value['value'][0];
+                            $params[] = $value['value'][1];
+                            $wheres[] = $key . ' BETWEEN ? AND ?';
+                        } elseif ($value['operator'] == 'IN') {
+                            $in = array();
 
-							$wheres[] = $key . ' IN (' . implode(', ', $in) . ') ';
-						}
-						else
-						{
-							$ors = array();
-							foreach($value['value'] as $item)
-							{
-								if($item == 'null')
-								{
-									switch($value['operator'])
-									{
-										case '!=':
-											$ors[] = $key . ' IS NOT NULL';
-											break;
+                            foreach ($value['value'] as $item) {
+                                $params[] = $item;
+                                $in[] = '?';
+                            }
 
-										case '==':
-										default:
-											$ors[] = $key . ' IS NULL';
-											break;
-									}
-								}
-								else
-								{
-									$params[] = $item;
-									$ors[]    = $this->fieldCheck($key) . ' ' . $value['operator'] . ' ?';
-								}
-							}
-							$wheres[] = '(' . implode(' OR ', $ors) . ')';
-						}
-					}
-					else
-					{
-						if($value['operator'] == 'like')
-						{
-							$params[] = '%' . $value['value'] . '%';
-							$wheres[] = $key . ' ' . $value['operator'] . ' ?';
-						}
-						else
-						{
-							if($value['value'] === 'null')
-							{
-								switch($value['operator'])
-								{
-									case '!=':
-										$wheres[] = $key . ' IS NOT NULL';
-										break;
+                            $wheres[] = $key . ' IN (' . implode(', ', $in) . ') ';
+                        } else {
+                            $ors = array();
+                            foreach ($value['value'] as $item) {
+                                if ($item == 'null') {
+                                    switch ($value['operator']) {
+                                        case '!=':
+                                            $ors[] = $key . ' IS NOT NULL';
+                                            break;
 
-									case '==':
-									default:
-										$wheres[] = $key . ' IS NULL';
-										break;
-								}
-							}
-							else
-							{
-								$params[] = $value['value'];
-								$wheres[] = $key . ' ' . $value['operator'] . ' ?';
-							}
-						}
-					}
-				}
-				else
-				{
-					$wheres[] = $key . ' IN (' . implode(', ', array_map(array(Database::getConnection('read'), 'quote'), $value)) . ')';
-				}
-			}
-		}
+                                        case '==':
+                                        default:
+                                            $ors[] = $key . ' IS NULL';
+                                            break;
+                                    }
+                                } else {
+                                    $params[] = $item;
+                                    $ors[] = $this->fieldCheck($key) . ' ' . $value['operator'] . ' ?';
+                                }
+                            }
+                            $wheres[] = '(' . implode(' OR ', $ors) . ')';
+                        }
+                    } else {
+                        if ($value['operator'] == 'like') {
+                            $params[] = '%' . $value['value'] . '%';
+                            $wheres[] = $key . ' ' . $value['operator'] . ' ?';
+                        } else {
+                            if ($value['value'] === 'null') {
+                                switch ($value['operator']) {
+                                    case '!=':
+                                        $wheres[] = $key . ' IS NOT NULL';
+                                        break;
 
-		if(count($joins))
-		{
-			foreach($joins as $table => $join)
-			{
-				$query .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
-				$countQuery .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
-			}
-		}
+                                    case '==':
+                                    default:
+                                        $wheres[] = $key . ' IS NULL';
+                                        break;
+                                }
+                            } else {
+                                $params[] = $value['value'];
+                                $wheres[] = $key . ' ' . $value['operator'] . ' ?';
+                            }
+                        }
+                    }
+                } else {
+                    $func = array(Database::getConnection('read'), 'quote');
+                    $wheres[] = $key . ' IN (' . implode(', ', array_map($func, $value)) . ')';
+                }
+            }
+        }
 
-		if(count($manualJoins))
-		{
-			foreach($manualJoins as $join)
-			{
-				$query .= ' ' . $join . ' ';
-				$countQuery .= ' ' . $join . ' ';
-			}
-		}
+        if (count($joins)) {
+            foreach ($joins as $table => $join) {
+                $query .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
+                $countQuery .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
+            }
+        }
 
-		$hasWhere = false;
-		if(count($wheres))
-		{
-			$hasWhere = true;
-			$query .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
-			$countQuery .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
-		}
+        if (count($manualJoins)) {
+            foreach ($manualJoins as $join) {
+                $query .= ' ' . $join . ' ';
+                $countQuery .= ' ' . $join . ' ';
+            }
+        }
 
-		if(count($manualWheres))
-		{
-			foreach($manualWheres as $where)
-			{
-				if(!$hasWhere)
-				{
-					$hasWhere = true;
-					$query .= ' WHERE ';
-					$countQuery .= ' WHERE ';
-				}
-				else
-				{
-					$query .= ' ' . $where['type'] . ' ';
-					$countQuery .= ' ' . $where['type'] . ' ';
-				}
+        $hasWhere = false;
+        if (count($wheres)) {
+            $hasWhere = true;
+            $query .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
+            $countQuery .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
+        }
 
-				$query .= ' ' . $where['query'];
-				$countQuery .= ' ' . $where['query'];
+        if (count($manualWheres)) {
+            foreach ($manualWheres as $where) {
+                if (!$hasWhere) {
+                    $hasWhere = true;
+                    $query .= ' WHERE ';
+                    $countQuery .= ' WHERE ';
+                } else {
+                    $query .= ' ' . $where['type'] . ' ';
+                    $countQuery .= ' ' . $where['type'] . ' ';
+                }
 
-				if(isset($where['params']))
-				{
-					foreach($where['params'] as $param)
-					{
-						$params[] = $param;
-					}
-				}
-			}
-		}
+                $query .= ' ' . $where['query'];
+                $countQuery .= ' ' . $where['query'];
 
-		if(!is_null($group))
-		{
-			$query .= ' GROUP BY ' . $group . ' ';
-		}
+                if (isset($where['params'])) {
+                    foreach ($where['params'] as $param) {
+                        $params[] = $param;
+                    }
+                }
+            }
+        }
 
-		if(count($order))
-		{
-			$orders = array();
-			if(is_string($order) && $order == 'rand')
-			{
-				$query .= ' ORDER BY RAND() ';
-			}
-			else
-			{
-				foreach($order as $key => $value)
-				{
-					$orders[] = $this->fieldCheck($key) . ' ' . $value;
-				}
+        if (!is_null($group)) {
+            $query .= ' GROUP BY ' . $group . ' ';
+        }
 
-				$query .= ' ORDER BY ' . implode(', ', $orders);
-			}
-		}
+        if (count($order)) {
+            $orders = array();
+            if (is_string($order) && $order == 'rand') {
+                $query .= ' ORDER BY RAND() ';
+            } else {
+                foreach ($order as $key => $value) {
+                    $orders[] = $this->fieldCheck($key) . ' ' . $value;
+                }
 
-		if($limit)
-		{
-			$query .= ' LIMIT ' . $limit;
-		}
+                $query .= ' ORDER BY ' . implode(', ', $orders);
+            }
+        }
 
-		if($offset)
-		{
-			$query .= ' OFFSET ' . $offset;
-		}
+        if ($limit) {
+            $query .= ' LIMIT ' . $limit;
+        }
 
-		try
-		{
-			$stmt = Database::getConnection('read')->prepare($countQuery);
-			$stmt->execute($params);
-			$res   = $stmt->fetch(\PDO::FETCH_ASSOC);
-			$count = (int)$res['cnt'];
-		}
-		catch(\PDOException $ex)
-		{
-			$count = 0;
-		}
+        if ($offset) {
+            $query .= ' OFFSET ' . $offset;
+        }
 
-		try
-		{
-			$stmt = Database::getConnection('read')->prepare($query);
-			$stmt->execute($params);
-			$res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-			$rtn = array();
+        try {
+            $stmt = Database::getConnection('read')->prepare($countQuery);
+            $stmt->execute($params);
+            $res = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $count = (int)$res['cnt'];
+        } catch (\PDOException $ex) {
+            $count = 0;
+        }
 
-			foreach($res as $data)
-			{
-				$rtn[] = new $this->modelName($data);
-			}
+        try {
+            $stmt = Database::getConnection('read')->prepare($query);
+            $stmt->execute($params);
+            $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $rtn = array();
 
-			return array('items' => $rtn, 'count' => $count);
-		}
-		catch(\PDOException $ex)
-		{
-			throw $ex;
-		}
-	}
+            foreach ($res as $data) {
+                $rtn[] = new $this->modelName($data);
+            }
 
-	public function save(Model $obj, $saveAllColumns = false)
-	{
-	    if(!isset($this->primaryKey))
-	    {
-			throw new HttpException\BadRequestException('Save not implemented for this store.');
-	    }
+            return array('items' => $rtn, 'count' => $count);
+        } catch (\PDOException $ex) {
+            throw $ex;
+        }
+    }
 
-	    if(!($obj instanceof $this->modelName))
-	    {
-			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
-	    }
+    public function save(Model $obj, $saveAllColumns = false)
+    {
+        if (!isset($this->primaryKey)) {
+            throw new HttpException\BadRequestException('Save not implemented for this store.');
+        }
+
+        if (!($obj instanceof $this->modelName)) {
+            throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
+        }
 
         $data = $obj->getDataArray();
 
-        if(isset($data[$this->primaryKey]))
-	    {
-			$rtn = $this->saveByUpdate($obj, $saveAllColumns);
-		}
-		else
-		{
-			$rtn = $this->saveByInsert($obj, $saveAllColumns);
-		}
+        if (isset($data[$this->primaryKey])) {
+            $rtn = $this->saveByUpdate($obj, $saveAllColumns);
+        } else {
+            $rtn = $this->saveByInsert($obj, $saveAllColumns);
+        }
 
-		return $rtn;
-	}
+        return $rtn;
+    }
 
     public function saveByUpdate(Model $obj, $saveAllColumns = false)
     {
@@ -276,21 +224,18 @@ abstract class Store
 
         $updates = array();
         $update_params = array();
-        foreach($modified as $key)
-        {
-            $updates[]       = $key . ' = :' . $key;
+        foreach ($modified as $key) {
+            $updates[] = $key . ' = :' . $key;
             $update_params[] = array($key, $data[$key]);
         }
 
-        if(count($updates))
-        {
+        if (count($updates)) {
             $qs = 'UPDATE ' . $this->tableName . '
 											SET ' . implode(', ', $updates) . '
 											WHERE ' . $this->primaryKey . ' = :primaryKey';
-            $q  = Database::getConnection('write')->prepare($qs);
+            $q = Database::getConnection('write')->prepare($qs);
 
-            foreach($update_params as $update_param)
-            {
+            foreach ($update_params as $update_param) {
                 $q->bindValue(':' . $update_param[0], $update_param[1]);
             }
 
@@ -298,9 +243,7 @@ abstract class Store
             $q->execute();
 
             $rtn = $this->getByPrimaryKey($data[$this->primaryKey], 'write');
-        }
-        else
-        {
+        } else {
             $rtn = $obj;
         }
 
@@ -313,24 +256,26 @@ abstract class Store
         $data = $obj->getDataArray();
         $modified = ($saveAllColumns) ? array_keys($data) : $obj->getModified();
 
-        $cols    = array();
-        $values  = array();
+        $cols = array();
+        $values = array();
         $qParams = array();
-        foreach($modified as $key)
-        {
-            $cols[]              = $key;
-            $values[]            = ':' . $key;
+        foreach ($modified as $key) {
+            $cols[] = $key;
+            $values[] = ':' . $key;
             $qParams[':' . $key] = $data[$key];
         }
 
-        if(count($cols))
-        {
-            $qs = 'INSERT INTO ' . $this->tableName . ' (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $values) . ')';
-            $q  = Database::getConnection('write')->prepare($qs);
+        if (count($cols)) {
+            $colString = implode(', ', $cols);
+            $valString = implode(', ', $values);
 
-            if($q->execute($qParams))
-            {
-                $id = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection('write')->lastInsertId();
+            $qs = 'INSERT INTO ' . $this->tableName . ' (' . $colString . ') VALUES (' . $valString . ')';
+            $q = Database::getConnection('write')->prepare($qs);
+
+            if ($q->execute($qParams)) {
+                $id = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection(
+                    'write'
+                )->lastInsertId();
                 $rtn = $this->getByPrimaryKey($id, 'write');
             }
         }
@@ -338,42 +283,40 @@ abstract class Store
         return $rtn;
     }
 
-	public function delete(Model $obj)
-	{
-	    if(!isset($this->primaryKey))
-	    {
-			throw new HttpException\BadRequestException('Delete not implemented for this store.');
-	    }
+    public function delete(Model $obj)
+    {
+        if (!isset($this->primaryKey)) {
+            throw new HttpException\BadRequestException('Delete not implemented for this store.');
+        }
 
-	    if(!($obj instanceof $this->modelName))
-	    {
-			throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
-	    }
+        if (!($obj instanceof $this->modelName)) {
+            throw new HttpException\BadRequestException(get_class($obj) . ' is an invalid model type for this store.');
+        }
 
-		$data = $obj->getDataArray();
+        $data = $obj->getDataArray();
 
-		$q = Database::getConnection('write')->prepare('DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKey . ' = :primaryKey');
-		$q->bindValue(':primaryKey', $data[$this->primaryKey]);
-		$q->execute();
+        $q = Database::getConnection('write')->prepare(
+            'DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKey . ' = :primaryKey'
+        );
+        $q->bindValue(':primaryKey', $data[$this->primaryKey]);
+        $q->execute();
 
-		return true;
-	}
+        return true;
+    }
 
-	/**
-	 *
-	 */
-	protected function fieldCheck($field)
-	{
-		if(empty($field))
-		{
-			throw new HttpException('You cannot have an empty field name.');
-		}
+    /**
+     *
+     */
+    protected function fieldCheck($field)
+    {
+        if (empty($field)) {
+            throw new HttpException('You cannot have an empty field name.');
+        }
 
-		if(strpos($field, '.') === false)
-		{
-			return $this->tableName . '.' . $field;
-		}
+        if (strpos($field, '.') === false) {
+            return $this->tableName . '.' . $field;
+        }
 
-		return $field;
-	}
-}	
+        return $field;
+    }
+}

@@ -1,21 +1,22 @@
 <?php
 
 namespace b8\Form\Element;
-use b8\View,
-	b8\Form\Input;
+
+use b8\View;
+use b8\Form\Input;
 
 class Select extends Input
 {
-	protected $_options = array();
+    protected $options = array();
 
-	public function setOptions(array $options)
-	{
-		$this->_options = $options;
-	}
+    public function setOptions(array $options)
+    {
+        $this->options = $options;
+    }
 
-	protected function _onPreRender(View &$view)
-	{
-		parent::_onPreRender($view);
-		$view->options = $this->_options;
-	}
+    protected function onPreRender(View &$view)
+    {
+        parent::onPreRender($view);
+        $view->options = $this->options;
+    }
 }

@@ -2,13 +2,15 @@ build_settings:
   ignore:
     - "vendor"
     - "tests"
+    - "b8/Controller/RestController.php" # Legacy
+    - "b8/Database/Generator.php" # Legacy
+    - "b8/Database/Map.php" # Temporary
 
 test:
   lint:
   php_mess_detector:
     allow_failures: true
   php_code_sniffer:
-    allow_failures: true
     standard: "PSR2"
   php_loc:
 

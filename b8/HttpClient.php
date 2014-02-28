@@ -4,185 +4,154 @@ namespace b8;
 
 class HttpClient
 {
-	protected $_base = '';
-	protected $_params = array();
-	protected $_headers = array();
+    protected $base = '';
+    protected $params = array();
+    protected $headers = array();
 
-	public function __construct($base = null)
-	{		
-		$settings      = Config::getInstance()->get('b8.http.client', array('base_url' => '', 'params' => array()));
-		$this->_base   = $settings['base_url'];
-		$this->_params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
-		$this->_headers = array('Content-Type: application/x-www-form-urlencoded');
+    public function __construct($base = null)
+    {
+        $settings = Config::getInstance()->get('b8.http.client', array('base_url' => '', 'params' => array()));
+        $this->base = $settings['base_url'];
+        $this->params = isset($settings['params']) && is_array($settings['params']) ? $settings['params'] : array();
+        $this->headers = array('Content-Type: application/x-www-form-urlencoded');
 
-		if(!is_null($base))
-		{
-			$this->_base = $base;
-		}
-	}
+        if (!is_null($base)) {
+            $this->base = $base;
+        }
+    }
 
-	public function setHeaders(array $headers)
-	{
-		$this->_headers = $headers;
-	}
+    public function setHeaders(array $headers)
+    {
+        $this->headers = $headers;
+    }
 
-	public function request($method, $uri, $params = array())
-	{
-		// Clean incoming:
-		$method     = strtoupper($method);
-		$getParams  = $this->_params;
+    public function request($method, $uri, $params = array())
+    {
+        list($response, $headers) = $this->makeRequest($method, $uri, $params);
 
-		if($method == 'GET' || $method == 'DELETE')
-		{
-			$getParams = array_merge($getParams, $params);
-		}
-		else
-		{
-			$bodyParams = is_array($params) ? http_build_query($params) : $params;
-		}
+        return $this->processResponse($response, $headers);
+    }
 
-		$getParams  = http_build_query($getParams);
+    protected function processResponse($response, $headers)
+    {
+        $return = array();
+        $return['headers'] = $headers;
+        $return['code'] = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $headers[0]);
+        $return['success'] = false;
+        $return['body'] = $this->decodeResponse($response);
 
-		if(substr($uri, 0, 1) != '/' && !empty($this->_base))
-		{
-			$uri = '/' . $uri;
-		}
+        if ($return['code'] >= 200 && $return['code'] < 300) {
+            $return['success'] = true;
+        }
 
-		// Build HTTP context array:
-		$context                          = array();
-		$context['http']['user_agent']    = 'b8/1.0';
-		$context['http']['timeout']       = 30;
-		$context['http']['method']        = $method;
-		$context['http']['ignore_errors'] = true;
-		$context['http']['header']        = implode(PHP_EOL, $this->_headers);
+        $this->processHeaders($headers, $return);
 
-		if(in_array($method, array('PUT', 'POST')))
-		{
-			$context['http']['content'] = $bodyParams;
-		}
+        return $return;
+    }
 
-		$uri .= '?' . $getParams;
+    protected function processHeaders($headers, &$return)
+    {
+        foreach ($headers as $header) {
+            if (stripos($header, 'Content-Type') !== false) {
+                if (stripos($header, 'application/json') !== false) {
+                    $return['text_body'] = $return['body'];
+                    $return['body'] = json_decode($return['body'], true);
+                }
+            }
+        }
+    }
 
-		$context = stream_context_create($context);
-		$result  = file_get_contents($this->_base . $uri, false, $context);
+    protected function makeRequest($method, $uri, $params = array())
+    {
+        // Clean incoming:
+        $method = strtoupper($method);
+        $getParams = $this->params;
 
-		$res            = array();
-		$res['headers'] = $http_response_header;
-		$res['code']    = (int)preg_replace('/HTTP\/1\.[0-1] ([0-9]+)/', '$1', $res['headers'][0]);
-		$res['success'] = false;
-		$res['body']    = $this->_decodeResponse($result);
+        if ($method == 'GET' || $method == 'DELETE') {
+            $getParams = array_merge($getParams, $params);
+        } else {
+            $bodyParams = is_array($params) ? http_build_query($params) : $params;
+        }
 
-		if($res['code'] >= 200 && $res['code'] < 300)
-		{
-			$res['success'] = true;
-		}
+        $getParams = http_build_query($getParams);
 
-		// Handle JSON responses:
-		foreach($res['headers'] as $header)
-		{
-			if(stripos($header, 'Content-Type') !== false || stripos($header, 'b8-Type') !== false)
-			{
-				if(stripos($header, 'application/json') !== false)
-				{
-					$res['text_body'] = $res['body'];
-					$res['body']      = json_decode($res['body'], true);
-				}
-			}
-		}
+        if (substr($uri, 0, 1) != '/' && !empty($this->base)) {
+            $uri = '/' . $uri;
+        }
 
-		return $res;
-	}
+        // Build HTTP context array:
+        $context = array();
+        $context['http']['user_agent'] = 'b8/1.0';
+        $context['http']['timeout'] = 30;
+        $context['http']['method'] = $method;
+        $context['http']['ignore_errors'] = true;
+        $context['http']['header'] = implode(PHP_EOL, $this->headers);
 
-	public function get($uri, $params = array())
-	{
-		return $this->request('GET', $uri, $params);
-	}
+        if (in_array($method, array('PUT', 'POST'))) {
+            $context['http']['content'] = $bodyParams;
+        }
 
-	public function put($uri, $params = array())
-	{
-		return $this->request('PUT', $uri, $params);
-	}
+        $uri .= '?' . $getParams;
 
-	public function post($uri, $params = array())
-	{
-		return $this->request('POST', $uri, $params);
-	}
+        $context = stream_context_create($context);
+        $http_response_header = null; // Creating this purely to stop PHPCS complaining.
+        $response = file_get_contents($this->base . $uri, false, $context);
 
-	public function delete($uri, $params = array())
-	{
-		return $this->request('DELETE', $uri, $params);
-	}
+        return array($response, $http_response_header);
+    }
 
-	protected function _decodeResponse($originalResponse)
-	{
-		$response = $originalResponse;
-		$body     = '';
+    public function get($uri, $params = array())
+    {
+        return $this->request('GET', $uri, $params);
+    }
 
-		do
-		{
-			$line = $this->_readChunk($response);
+    public function put($uri, $params = array())
+    {
+        return $this->request('PUT', $uri, $params);
+    }
 
-			if($line == PHP_EOL)
-			{
-				continue;
-			}
+    public function post($uri, $params = array())
+    {
+        return $this->request('POST', $uri, $params);
+    }
 
-			$length = hexdec(trim($line));
+    public function delete($uri, $params = array())
+    {
+        return $this->request('DELETE', $uri, $params);
+    }
 
-			if(!is_int($length) || empty($response) || $line === false || $length < 1)
-			{
-				break;
-			}
+    protected function decodeResponse($chunk)
+    {
+        $pos = 0;
+        $len = strlen($chunk);
+        $dechunk = null;
 
-			do
-			{
-				$data = $this->_readChunk($response, $length);
+        while (($pos < $len)
+            && ($chunkLenHex = substr($chunk,$pos, ($newlineAt = strpos($chunk,"\n",$pos+1))-$pos)))
+        {
+            if (!$this->isHex($chunkLenHex)) {
+                trigger_error('Value is not properly chunk encoded', E_USER_WARNING);
+                return $chunk;
+            }
 
-				// remove the amount received from the total length on the next loop
-				// it'll attempt to read that much less data
-				$length -= strlen($data);
+            $pos = $newlineAt + 1;
+            $chunkLen = hexdec(rtrim($chunkLenHex,"\r\n"));
+            $dechunk .= substr($chunk, $pos, $chunkLen);
+            $pos = strpos($chunk, "\n", $pos + $chunkLen) + 1;
+        }
 
-				// store in string for later use
-				$body .= $data;
+        return $dechunk;
+    }
 
-				// zero or less or end of connection break
-				if($length <= 0 || empty($response))
-				{
-					break;
-				}
-			}
-			while(true);
-		}
-		while(true);
+    function isHex($hex)
+    {
+        $hex = strtolower(trim(ltrim($hex,"0")));
 
-		if(empty($body))
-		{
-			$body = $originalResponse;
-		}
+        if (empty($hex)) {
+            $hex = 0;
+        };
 
-		return $body;
-	}
-
-	function _readChunk(&$string, $len = 4096)
-	{
-		$rtn = '';
-		for($i = 0; $i <= $len; $i++)
-		{
-			if(empty($string))
-			{
-				break;
-			}
-
-			$char   = $string[0];
-			$string = substr($string, 1);
-			$rtn .= $char;
-
-			if($char == PHP_EOL)
-			{
-				break;
-			}
-		}
-
-		return $rtn;
-	}
+        $dec = hexdec($hex);
+        return ($hex == dechex($dec));
+    }
 }

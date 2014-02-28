@@ -20,18 +20,18 @@ class Application
     protected $controller;
 
     /**
-    * @var b8\Http\Request
-    */
+     * @var b8\Http\Request
+     */
     protected $request;
 
     /**
-    * @var b8\Http\Response
-    */
+     * @var b8\Http\Response
+     */
     protected $response;
 
     /**
-    * @var b8\Config
-    */
+     * @var b8\Config
+     */
     protected $config;
 
     public function __construct(Config $config, Http\Request $request = null)
@@ -67,7 +67,9 @@ class Application
         $action = lcfirst($this->toPhpName($this->route['action']));
 
         if (!$this->getController()->hasAction($action)) {
-            throw new NotFoundException('Controller ' . $this->toPhpName($this->route['controller']) . ' does not have action ' . $action);
+            throw new NotFoundException('Controller ' . $this->toPhpName(
+                $this->route['controller']
+            ) . ' does not have action ' . $action);
         }
 
         return $this->getController()->handleAction($action, $this->route['args']);
@@ -81,7 +83,8 @@ class Application
         if (empty($this->controller)) {
             $namespace = $this->toPhpName($this->route['namespace']);
             $controller = $this->toPhpName($this->route['controller']);
-            $controllerClass = $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
+            $appNs = $this->config->get('b8.app.namespace');
+            $controllerClass = $appNs . '\\' . $namespace . '\\' . $controller . 'Controller';
             $this->controller = $this->loadController($controllerClass);
         }
 
@@ -101,7 +104,8 @@ class Application
         $namespace = $this->toPhpName($route['namespace']);
         $controller = $this->toPhpName($route['controller']);
 
-        $controllerClass = $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
+        $appNs = $this->config->get('b8.app.namespace');
+        $controllerClass = $appNs . '\\' . $namespace . '\\' . $controller . 'Controller';
 
         return class_exists($controllerClass);
     }

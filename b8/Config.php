@@ -18,8 +18,8 @@ class Config
     }
 
     /**
-    * @var array
-    */
+     * @var array
+     */
     protected $config = array();
 
     public function __construct($settings = null)
@@ -45,26 +45,26 @@ class Config
     }
 
     /**
-    * Get a configuration value by key, returning a default value if not set.
-    * @param $key string
-    * @param $default mixed
-    * @return mixed
-    */
+     * Get a configuration value by key, returning a default value if not set.
+     * @param $key string
+     * @param $default mixed
+     * @return mixed
+     */
     public function get($key, $default = null)
     {
         $keyParts = explode('.', $key);
         $selected = $this->config;
 
-        $i = -1;
-        $last_part = count($keyParts) - 1;
+        $partDepth = -1;
+        $partCount = count($keyParts) - 1;
         while ($part = array_shift($keyParts)) {
-            $i++;
+            $partDepth++;
 
             if (!array_key_exists($part, $selected)) {
                 return $default;
             }
 
-            if ($i === $last_part) {
+            if ($partDepth === $partCount) {
                 return $selected[$part];
             } else {
                 $selected = $selected[$part];
@@ -75,52 +75,52 @@ class Config
     }
 
     /**
-    * Set a value by key.
-    * @param $key string
-    * @param $value mixed
-    */
+     * Set a value by key.
+     * @param $key string
+     * @param $value mixed
+     */
     public function set($key, $value = null)
     {
         $this->config[$key] = $value;
     }
 
     /**
-    * Set an array of values.
-    */
+     * Set an array of values.
+     */
     public function setArray($array)
     {
         self::deepMerge($this->config, $array);
     }
 
     /**
-    * Short-hand syntax for get()
-    * @see Config::get()
-    */
+     * Short-hand syntax for get()
+     * @see Config::get()
+     */
     public function __get($key)
     {
         return $this->get($key);
     }
 
     /**
-    * Short-hand syntax for set()
-    * @see Config::set()
-    */
+     * Short-hand syntax for set()
+     * @see Config::set()
+     */
     public function __set($key, $value = null)
     {
         return $this->set($key, $value);
     }
 
     /**
-    * Is set
-    */
+     * Is set
+     */
     public function __isset($key)
     {
         return isset($this->config[$key]);
     }
 
     /**
-    * Unset
-    */
+     * Unset
+     */
     public function __unset($key)
     {
         unset($this->config[$key]);

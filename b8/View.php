@@ -1,86 +1,96 @@
 <?php
 
 namespace b8;
+
 use b8\Exception\HttpException;
 
 class View
 {
-	protected $_vars = array();
-	protected static $_helpers = array();
+    protected $vars = array();
+    protected static $helpers = array();
     protected static $extension = 'phtml';
 
-	public function __construct($file, $path = null)
-	{
-		if (!self::exists($file, $path)) {
-			throw new \Exception('View file does not exist: ' . $file);
-		}
+    public function __construct($file, $path = null)
+    {
+        if (!self::exists($file, $path)) {
+            throw new \Exception('View file does not exist: ' . $file);
+        }
 
-		$this->viewFile = self::getViewFile($file, $path);
-	}
+        $this->viewFile = self::getViewFile($file, $path);
+    }
 
-	protected static function getViewFile($file, $path = null)
-	{
-		$viewPath = is_null($path) ? Config::getInstance()->get('b8.view.path') : $path;
-		$fullPath = $viewPath . $file . '.' . static::$extension;
+    protected static function getViewFile($file, $path = null)
+    {
+        $viewPath = is_null($path) ? Config::getInstance()->get('b8.view.path') : $path;
+        $fullPath = $viewPath . $file . '.' . static::$extension;
 
         return $fullPath;
-	}
+    }
 
-	public static function exists($file, $path = null)
-	{
-		if (!file_exists(self::getViewFile($file, $path))) {
-			return false;
-		}
+    public static function exists($file, $path = null)
+    {
+        if (!file_exists(self::getViewFile($file, $path))) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	public function __isset($var)
-	{
-		return isset($this->_vars[$var]);
-	}
+    public function set($key, $val)
+    {
+        $this->vars[$key] = $val;
+        return $this;
+    }
 
-	public function __get($var)
-	{
-		return $this->_vars[$var];
-	}
+    public function get($key)
+    {
+        return $this->vars[$key];
+    }
 
-	public function __set($var, $val)
-	{
-		$this->_vars[$var] = $val;
-	}
+    public function __isset($var)
+    {
+        return isset($this->vars[$var]);
+    }
 
-	public function __call($method, $params = array())
-	{
-		if(!isset(self::$_helpers[$method]))
-		{
-			$class = '\\' . Config::getInstance()->get('b8.app.namespace') . '\\Helper\\' . $method;
+    public function __get($var)
+    {
+        return $this->get($var);
+    }
 
-			if(!class_exists($class))
-			{
-				$class = '\\b8\\View\\Helper\\' . $method;
-			}
+    public function __set($var, $val)
+    {
+        return $this->set($var, $val);
+    }
 
-			if(!class_exists($class))
-			{
-				throw new HttpException('Helper class does not exist: ' . $class);
-			}
+    public function __call($method, $params = array())
+    {
+        if (!isset(self::$helpers[$method])) {
+            $class = '\\' . Config::getInstance()->get('b8.app.namespace') . '\\Helper\\' . $method;
 
-			self::$_helpers[$method] = new $class();
-		}
+            if (!class_exists($class)) {
+                $class = '\\b8\\View\\Helper\\' . $method;
+            }
 
-		return self::$_helpers[$method];
-	}
+            if (!class_exists($class)) {
+                throw new HttpException('Helper class does not exist: ' . $class);
+            }
 
-	public function render()
-	{
-		extract($this->_vars);
+            self::$helpers[$method] = new $class($params);
+            self::$helpers[$method]->view = $this;
+        }
 
-		ob_start();
-		require($this->viewFile);
-		$html = ob_get_contents();
-		ob_end_clean();
+        return self::$helpers[$method];
+    }
 
-		return $html;
-	}
+    public function render()
+    {
+        extract($this->vars);
+
+        ob_start();
+        require($this->viewFile);
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        return $html;
+    }
 }
