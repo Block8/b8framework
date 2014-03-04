@@ -2,6 +2,7 @@
 
 namespace b8\View;
 
+use b8\Config;
 use b8\View;
 
 class Template extends View
@@ -457,6 +458,11 @@ class Template extends View
 
             if ($thisPart == 'isNumeric') {
                 return is_numeric($working);
+            }
+
+            if ($thisPart == 'formatted' && $working instanceof \DateTime) {
+                $format = Config::getInstance()->get('app.date_format', 'Y-m-d H:i');
+                return $working->format($format);
             }
 
             return null;
