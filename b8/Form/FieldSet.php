@@ -34,23 +34,38 @@ class FieldSet extends Element
 
     public function setValues(array $values)
     {
-        foreach ($this->children as $field) {
+        $vals = [];
+
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $subKey => $subVal) {
+                    $vals[$key . '[' . $subKey . ']'] = $subVal;
+                }
+
+                continue;
+            }
+
+            $vals[$key] = $value;
+        }
+
+        foreach ($this->children as &$field) {
             if ($field instanceof FieldSet) {
                 $fieldName = $field->getName();
 
-                if (empty($fieldName) || !isset($values[$fieldName])) {
-                    $field->setValues($values);
+                if (empty($fieldName) || !isset($vals[$fieldName])) {
+                    $field->setValues($vals);
                 } else {
-                    $field->setValues($values[$fieldName]);
+                    $field->setValues($vals[$fieldName]);
                 }
             } elseif ($field instanceof Input) {
                 $fieldName = $field->getName();
 
-                if (isset($values[$fieldName])) {
-                    $field->setValue($values[$fieldName]);
+                if (isset($vals[$fieldName])) {
+                    $field->setValue($vals[$fieldName]);
                 }
             }
         }
+        
     }
 
     public function addField(Element $field)

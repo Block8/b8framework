@@ -456,6 +456,11 @@ class Template extends View
                 continue;
             }
 
+            if ($thisPart == 'toUcWords') {
+                $working = ucwords($working);
+                continue;
+            }
+
             if ($thisPart == 'isNumeric') {
                 return is_numeric($working);
             }
@@ -463,6 +468,10 @@ class Template extends View
             if ($thisPart == 'formatted' && $working instanceof \DateTime) {
                 $format = Config::getInstance()->get('app.date_format', 'Y-m-d H:i');
                 return $working->format($format);
+            }
+
+            if ($thisPart == 'yesNo') {
+                return $working ? 'Yes' : 'No';
             }
 
             return null;

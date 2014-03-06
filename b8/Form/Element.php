@@ -2,6 +2,7 @@
 
 namespace b8\Form;
 
+use b8\Form;
 use b8\View;
 use b8\Config;
 
@@ -13,6 +14,7 @@ abstract class Element
     protected $css;
     protected $ccss;
     protected $parent;
+    protected $viewLoader;
 
     public function __construct($name = null)
     {
@@ -28,7 +30,7 @@ abstract class Element
 
     public function setName($name)
     {
-        $this->name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
+        $this->name = strtolower(preg_replace('/([^a-zA-Z0-9_\-\[\]])/', '', $name));
     }
 
     public function getId()
@@ -74,23 +76,19 @@ abstract class Element
     public function setParent(Element $parent)
     {
         $this->parent = $parent;
+        $this->viewLoader = $parent->getViewLoader();
     }
 
     public function render($viewFile = null)
     {
-        $viewPath = Config::getInstance()->get('b8.view.path');
 
         if (is_null($viewFile)) {
             $class = explode('\\', get_called_class());
             $viewFile = end($class);
         }
 
-        if (file_exists($viewPath . 'Form/' . $viewFile . '.phtml')) {
-            $view = new View('Form/' . $viewFile);
-        } else {
-            $view = new View($viewFile, B8_PATH . 'Form/View/');
-        }
-
+        $viewLoader = $this->viewLoader;
+        $view = $viewLoader($viewFile);
         $view->name = $this->getName();
         $view->id = $this->getId();
         $view->label = $this->getLabel();
@@ -101,6 +99,39 @@ abstract class Element
         $this->onPreRender($view);
 
         return $view->render();
+    }
+
+    /**
+     * @param $viewFile
+     * @return View
+     */
+    public function getView($viewFile)
+    {
+        $viewPath = Config::getInstance()->get('b8.view.path');
+
+        if (file_exists($viewPath . 'Form/' . $viewFile . '.phtml')) {
+            $view = new View('Form/' . $viewFile);
+        } else {
+            $view = new View($viewFile, B8_PATH . 'Form/View/');
+        }
+
+        return $view;
+    }
+
+    /**
+     * @param callable $viewLoader
+     */
+    public function setViewLoader(callable $viewLoader)
+    {
+        $this->viewLoader = $viewLoader;
+    }
+
+    /**
+     * @return callable
+     */
+    public function getViewLoader()
+    {
+        return $this->viewLoader;
     }
 
     abstract protected function onPreRender(View &$view);

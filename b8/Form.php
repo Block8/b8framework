@@ -10,6 +10,12 @@ class Form extends FieldSet
     protected $action = '';
     protected $method = 'POST';
 
+    public function __construct($name = null)
+    {
+        parent::__construct($name);
+        $this->setViewLoader([$this, 'getView']);
+    }
+
     public function getAction()
     {
         return $this->action;
