@@ -40,8 +40,17 @@ class Router
         $this->routes = array();
     }
 
-    public function register($route, $options = array(), callable $callback = null)
+    /**
+     * @param $route
+     * @param array $options
+     * @param callable $callback
+     * @throws \InvalidArgumentException
+     */
+    public function register($route, $options = array(), $callback = null)
     {
+        if (!is_callable($callback)) {
+            throw new \InvalidArgumentException('$callback must be callable.');
+        }
         array_unshift($this->routes, array('route' => $route, 'callback' => $callback, 'defaults' => $options));
     }
 
