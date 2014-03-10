@@ -7,6 +7,7 @@ class HttpClient
     protected $base = '';
     protected $params = array();
     protected $headers = array();
+    protected $auth;
 
     public function __construct($base = null)
     {
@@ -18,6 +19,11 @@ class HttpClient
         if (!is_null($base)) {
             $this->base = $base;
         }
+    }
+
+    public function setBasicAuth($username, $password)
+    {
+        $this->headers[] = 'Authorization: Basic ' . base64_encode($username . ':' . $password);
     }
 
     public function setHeaders(array $headers)
