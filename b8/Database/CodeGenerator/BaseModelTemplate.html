@@ -254,21 +254,6 @@ return $this->set{@item.from_col_php}($value->get{@item.col_php}());
 }
 
 {/loop}
-{loop table.relationships.toMany}
-/**
-* Get {@item.table_php} models by {@item.from_col_php} for this {@parent.table.php_name}.
-*
-* @uses \{@parent.appNamespace}\Store\{@item.table_php}Store::getBy{@item.from_col_php}()
-* @uses \{@parent.appNamespace}\Model\{@item.table_php}
-* @return \{@parent.appNamespace}\Model\{@item.table_php}[]
-*/
-public function get{@item.php_name}()
-{
-return Factory::getStore('{@item.table_php}', '{get_namespace model: item.table_php_name}')->getBy{@item.from_col_php}($this->get{@item.col_php}());
-}
-
-{/loop}
-
 
 public static function getByPrimaryKey($value, $useConnection = 'read')
 {
