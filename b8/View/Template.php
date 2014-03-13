@@ -4,6 +4,7 @@ namespace b8\View;
 
 use b8\Config;
 use b8\View;
+use b8\View\Template\Variables;
 
 class Template extends View
 {
@@ -12,6 +13,7 @@ class Template extends View
 
     public function __construct($viewCode)
     {
+        $this->variables = new Variables($this);
         $this->viewCode = $viewCode;
 
         if (!count(self::$templateFunctions)) {
@@ -383,106 +385,7 @@ class Template extends View
 
     public function processVariableName($varName)
     {
-        // Case one - Test for function calls:
-        if (substr($varName, 0, 1) == '(' && substr($varName, -1) == ')') {
-
-            $functionCall = substr($varName, 1, -1);
-            $parts = explode(' ', $functionCall, 2);
-            $functionName = $parts[0];
-            $arguments = isset($parts[1]) ? $parts[1] : null;
-
-            return $this->executeTemplateFunction($functionName, $arguments);
-        }
-
-        // Case two - Test if it is just a string:
-        if (substr($varName, 0, 1) == '"' && substr($varName, -1) == '"') {
-            return substr($varName, 1, -1);
-        }
-
-        // Case three - Test if it is just a number:
-        if (is_numeric($varName)) {
-            return $varName;
-        }
-
-        // Case four - Test for helper calls:
-        if (strpos($varName, ':') !== false) {
-            list($helper, $property) = explode(':', $varName);
-
-            $helper = $this->{$helper}();
-
-            if (property_exists($helper, $property) || method_exists($helper, '__get')) {
-                return $helper->{$property};
-            }
-
-            return null;
-        }
-
-        // Case five - Process as a variable:
-        $varPart = explode('.', $varName);
-        $thisPart = array_shift($varPart);
-
-
-        if (!array_key_exists($thisPart, $this->vars)) {
-            return null;
-        }
-
-        $working = $this->{$thisPart};
-
-        while (count($varPart)) {
-            $thisPart = array_shift($varPart);
-
-            if (is_object($working)) {
-                // Check if we're working with an actual property:
-                if (property_exists($working, $thisPart)) {
-                    $working = $working->{$thisPart};
-                    continue;
-                }
-
-                // Check if the object has a magic __get method:
-                if (method_exists($working, '__get')) {
-                    $working = $working->{$thisPart};
-                    continue;
-                }
-            }
-
-
-            if (is_array($working) && array_key_exists($thisPart, $working)) {
-                $working = $working[$thisPart];
-                continue;
-            }
-
-            if ($thisPart == 'toLowerCase') {
-                $working = strtolower($working);
-                continue;
-            }
-
-            if ($thisPart == 'toUpperCase') {
-                $working = strtoupper($working);
-                continue;
-            }
-
-            if ($thisPart == 'toUcWords') {
-                $working = ucwords($working);
-                continue;
-            }
-
-            if ($thisPart == 'isNumeric') {
-                return is_numeric($working);
-            }
-
-            if ($thisPart == 'formatted' && $working instanceof \DateTime) {
-                $format = Config::getInstance()->get('app.date_format', 'Y-m-d H:i');
-                return $working->format($format);
-            }
-
-            if ($thisPart == 'yesNo') {
-                return $working ? 'Yes' : 'No';
-            }
-
-            return null;
-        }
-
-        return $working;
+        return $this->variables->processVariableName($varName);
     }
 
     protected function doParseFunction($stack)
@@ -490,7 +393,7 @@ class Template extends View
         return $this->executeTemplateFunction($stack['function_name'], $stack['cond']);
     }
 
-    protected function executeTemplateFunction($function, $args)
+    public function executeTemplateFunction($function, $args)
     {
         if (array_key_exists($function, self::$templateFunctions)) {
             $handler = self::$templateFunctions[$function];

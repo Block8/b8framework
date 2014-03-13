@@ -3,15 +3,19 @@
 namespace b8;
 
 use b8\Exception\HttpException;
+use b8\View\Template\Variables;
 
 class View
 {
-    protected $vars = array();
     protected static $helpers = array();
     protected static $extension = 'phtml';
 
+    protected $variables;
+
     public function __construct($file, $path = null)
     {
+        $this->variables = new Variables($this);
+
         if (!self::exists($file, $path)) {
             throw new \Exception('View file does not exist: ' . $file);
         }
@@ -38,28 +42,27 @@ class View
 
     public function set($key, $val)
     {
-        $this->vars[$key] = $val;
-        return $this;
+        $this->variables->set($key, $val);
     }
 
     public function get($key)
     {
-        return $this->vars[$key];
+        return $this->variables->get($key);
     }
 
     public function __isset($var)
     {
-        return isset($this->vars[$var]);
+        return $this->variables->contains($this->vars[$var]);
     }
 
     public function __get($var)
     {
-        return $this->get($var);
+        return $this->variables->get($var);
     }
 
     public function __set($var, $val)
     {
-        return $this->set($var, $val);
+        return $this->variables->set($var, $val);
     }
 
     public function __call($method, $params = array())
@@ -84,7 +87,7 @@ class View
 
     public function render()
     {
-        extract($this->vars);
+        extract($this->variables->getVariables());
 
         ob_start();
         require($this->viewFile);
