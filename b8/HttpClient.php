@@ -133,8 +133,7 @@ class HttpClient
         $dechunk = null;
 
         while (($pos < $len)
-            && ($chunkLenHex = substr($chunk,$pos, ($newlineAt = strpos($chunk,"\n",$pos+1))-$pos)))
-        {
+            && ($chunkLenHex = substr($chunk, $pos, ($newlineAt = strpos($chunk, "\n", $pos+1))-$pos))) {
             if (!$this->isHex($chunkLenHex)) {
                 trigger_error('Value is not properly chunk encoded', E_USER_WARNING);
                 return $chunk;
@@ -149,7 +148,7 @@ class HttpClient
         return $dechunk;
     }
 
-    function isHex($hex)
+    protected function isHex($hex)
     {
         $hex = strtolower(trim(ltrim($hex,"0")));
 
