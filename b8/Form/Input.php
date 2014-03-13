@@ -13,6 +13,7 @@ class Input extends Element
     protected $value;
     protected $error;
     protected $customError = false;
+    protected $enabled = true;
 
     public static function create($name, $label, $required = false)
     {
@@ -43,6 +44,17 @@ class Input extends Element
     public function setRequired($required)
     {
         $this->required = (bool)$required;
+        return $this;
+    }
+
+    public function getEnabled()
+    {
+        return $this->enabled;
+    }
+
+    public function setEnabled($enabled)
+    {
+        $this->enabled = (bool)$enabled;
         return $this;
     }
 
@@ -113,5 +125,6 @@ class Input extends Element
         $view->error = $this->error;
         $view->pattern = $this->pattern;
         $view->required = $this->required;
+        $view->enabled = $this->enabled;
     }
 }
