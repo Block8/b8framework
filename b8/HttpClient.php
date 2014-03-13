@@ -140,7 +140,7 @@ class HttpClient
             }
 
             $pos = $newlineAt + 1;
-            $chunkLen = hexdec(rtrim($chunkLenHex,"\r\n"));
+            $chunkLen = hexdec(rtrim($chunkLenHex, "\r\n"));
             $dechunk .= substr($chunk, $pos, $chunkLen);
             $pos = strpos($chunk, "\n", $pos + $chunkLen) + 1;
         }
@@ -150,7 +150,7 @@ class HttpClient
 
     protected function isHex($hex)
     {
-        $hex = strtolower(trim(ltrim($hex,"0")));
+        $hex = strtolower(trim(ltrim($hex, "0")));
 
         if (empty($hex)) {
             $hex = 0;
