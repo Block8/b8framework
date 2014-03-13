@@ -19,7 +19,7 @@ class Criteria
 
     }
 
-    public function setWhere($where)
+    public function where($where)
     {
         if (count($this->children)) {
             throw new \Exception('Cannot set where value when child criteria have been added.');
@@ -29,7 +29,7 @@ class Criteria
         return $this;
     }
 
-    public function addChild(Criteria $criteria)
+    public function add(Criteria $criteria)
     {
         if (!empty($this->where)) {
             throw new \Exception('Cannot add child criteria when where value is set.');
@@ -55,7 +55,7 @@ class Criteria
 
         if ($this->where) {
             $rtn .= $this->where;
-        } else {
+        } elseif (count($this->children)) {
             $type = ($this->type == self::TYPE_AND) ? ' AND ' : ' OR ';
             $rtn .= '(' . implode($type, $this->children) . ')';
         }

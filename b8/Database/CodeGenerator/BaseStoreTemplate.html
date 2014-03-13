@@ -2,12 +2,16 @@
 
 /**
  * {@table.php_name} base store for table: {@name}
+
  */
 
 namespace {@appNamespace}\Store\Base;
 
+use PDOException;
 use b8\Database;
-use b8\Exception\HttpException;
+use b8\Database\Query;
+use b8\Database\Query\Criteria;
+use b8\Exception\StoreException;
 use {@appNamespace}\Store;
 use {@appNamespace}\Model\{@table.php_name};
 
@@ -18,90 +22,125 @@ class {@table.php_name}StoreBase extends Store
 {
     protected $tableName   = '{@name}';
     protected $modelName   = '\{@appNamespace}\Model\{@table.php_name}';
+
 {if table.primary_key}
     protected $primaryKey  = '{@table.primary_key.column}';
 
+    /**
+    * @param $value
+    * @param string $useConnection Connection type to use.
+    * @throws StoreException
+    * @return {@table.php_name}
+
+    */
     public function getByPrimaryKey($value, $useConnection = 'read')
     {
         return $this->getBy{@table.primary_key.php_name}($value, $useConnection);
-}
+    }
+
+
 {/if}
 {ifnot table.primary_key}
+    /**
+     * @param $value
+     * @param $useConnection
+     * @deprecated
+     * @throws StoreException
+     */
+    public function getByPrimaryKey($value, $useConnection = 'read')
+    {
+        throw new StoreException('getByPrimaryKey is not implemented for this store, as the table has no primary key.');
+    }
 
-public function getByPrimaryKey($value, $useConnection = 'read')
-{
-throw new \Exception('getByPrimaryKey is not implemented for this store, as the table has no primary key.');
-}
+
 {/ifnot}
 {loop table.columns}
 {if item.unique_indexed}
 
-public function getBy{@item.php_name}($value, $useConnection = 'read')
-{
-if (is_null($value)) {
-throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
-}
+    /**
+    * @param $value
+    * @param string $useConnection Connection type to use.
+    * @throws StoreException
+    * @return {@parent.table.php_name}
 
-$query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name} LIMIT 1';
-$stmt = Database::getConnection($useConnection)->prepare($query);
-$stmt->bindValue(':{@item.name}', $value);
+    */
+    public function getBy{@item.php_name}($value, $useConnection = 'read')
+    {
+        if (is_null($value)) {
+            throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
+        }
 
-if ($stmt->execute()) {
-if ($data = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-return new {@parent.table.php_name}($data);
-}
-}
+        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query->select('*')->from('{@parent.name}')->limit(1);
+        $query->where('`{@item.name}` = :{@item.name}');
+        $query->bind(':{@item.name}', $value);
 
-return null;
-}
-{/if}
+        try {
+            $query->execute();
+            return $query->fetch();
+        } catch (PDOException $ex) {
+            throw new StoreException('Could not get {@parent.table.php_name} by {@parent.table.php_name}', 0, $ex);
+        }
+    }{/if}
 {if item.many_indexed}
 
-public function getBy{@item.php_name}($value, $limit = null, $useConnection = 'read')
-{
-if (is_null($value)) {
-throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
-}
-
-$add = '';
-
-if ($limit) {
-$add .= ' LIMIT ' . $limit;
-}
-
 {if counts}
-$query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
-$stmt = Database::getConnection($useConnection)->prepare($query);
-$stmt->bindValue(':{@item.name}', $value);
 
-if ($stmt->execute()) {
-$res    = $stmt->fetch(\PDO::FETCH_ASSOC);
-$count  = (int)$res['cnt'];
-} else {
-$count = 0;
-}
+
+    /**
+     * @param $value
+     * @param array $options Offsets, limits, etc.
+     * @param string $useConnection Connection type to use.
+     * @throws StoreException
+     * @return int
+     */
+    public function getTotalFor{@item.php_name}($value, $options = [], $useConnection = 'read')
+    {
+        if (is_null($value)) {
+            throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
+        }
+
+        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query->from('{@parent.name}')->where('`{@item.name}` = :{@item.name}');
+        $query->bind(':{@item.name}', $value);
+
+        $this->handleQueryOptions($query, $options);
+
+        try {
+            return $query->getCount();
+        } catch (PDOException $ex) {
+            throw new StoreException('Could not get count of {@parent.table.php_name} by {@item.php_name}', 0, $ex);
+        }
+    }
+
 {/if}
-{ifnot counts}
-$count = null;
-{/ifnot}
 
-$query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
-$stmt = Database::getConnection($useConnection)->prepare($query);
-$stmt->bindValue(':{@item.name}', $value);
+    /**
+     * @param $value
+     * @param array $options Limits, offsets, etc.
+     * @param string $useConnection Connection type to use.
+     * @throws StoreException
+     * @return {@parent.table.php_name}[]
+     */
+    public function getBy{@item.php_name}($value, $options = [], $useConnection = 'read')
+    {
+        if (is_null($value)) {
+            throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
+        }
 
-if ($stmt->execute()) {
-$res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query->from('{@parent.name}')->where('`{@item.name}` = :{@item.name}');
+        $query->bind(':{@item.name}', $value);
 
-$map = function ($item) {
-return new {@parent.table.php_name}($item);
-};
-$rtn = array_map($map, $res);
+        $this->handleQueryOptions($query, $options);
 
-return array('items' => $rtn, 'count' => $count);
-} else {
-return array('items' => array(), 'count' => 0);
-}
-}
-{/if}
-{/loop}
+        try {
+            $query->execute();
+            return $query->fetchAll();
+        } catch (PDOException $ex) {
+            throw new StoreException('Could not get {@parent.table.php_name} by {@item.php_name}', 0, $ex);
+        }
+
+    }{/if}{/loop}
+
 }

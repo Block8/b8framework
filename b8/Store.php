@@ -3,6 +3,7 @@
 namespace b8;
 
 use b8\Database;
+use b8\Database\Query;
 use b8\Exception\HttpException;
 
 abstract class Store
@@ -13,187 +14,6 @@ abstract class Store
 
 
     abstract public function getByPrimaryKey($key, $useConnection = 'read');
-
-    public function getWhere(
-        $where = array(),
-        $limit = 25,
-        $offset = 0,
-        $joins = array(),
-        $order = array(),
-        $manualJoins = array(),
-        $group = null,
-        $manualWheres = array(),
-        $whereType = 'AND'
-    ) {
-        $query = 'SELECT ' . $this->tableName . '.* FROM ' . $this->tableName;
-        $countQuery = 'SELECT COUNT(*) AS cnt FROM ' . $this->tableName;
-
-        $wheres = array();
-        $params = array();
-        foreach ($where as $key => $value) {
-            $key = $this->fieldCheck($key);
-
-            if (!is_array($value)) {
-                $params[] = $value;
-                $wheres[] = $key . ' = ?';
-            } else {
-                if (isset($value['operator'])) {
-                    if (is_array($value['value'])) {
-                        if ($value['operator'] == 'between') {
-                            $params[] = $value['value'][0];
-                            $params[] = $value['value'][1];
-                            $wheres[] = $key . ' BETWEEN ? AND ?';
-                        } elseif ($value['operator'] == 'IN') {
-                            $in = array();
-
-                            foreach ($value['value'] as $item) {
-                                $params[] = $item;
-                                $in[] = '?';
-                            }
-
-                            $wheres[] = $key . ' IN (' . implode(', ', $in) . ') ';
-                        } else {
-                            $ors = array();
-                            foreach ($value['value'] as $item) {
-                                if ($item == 'null') {
-                                    switch ($value['operator']) {
-                                        case '!=':
-                                            $ors[] = $key . ' IS NOT NULL';
-                                            break;
-
-                                        case '==':
-                                        default:
-                                            $ors[] = $key . ' IS NULL';
-                                            break;
-                                    }
-                                } else {
-                                    $params[] = $item;
-                                    $ors[] = $this->fieldCheck($key) . ' ' . $value['operator'] . ' ?';
-                                }
-                            }
-                            $wheres[] = '(' . implode(' OR ', $ors) . ')';
-                        }
-                    } else {
-                        if ($value['operator'] == 'like') {
-                            $params[] = '%' . $value['value'] . '%';
-                            $wheres[] = $key . ' ' . $value['operator'] . ' ?';
-                        } else {
-                            if ($value['value'] === 'null') {
-                                switch ($value['operator']) {
-                                    case '!=':
-                                        $wheres[] = $key . ' IS NOT NULL';
-                                        break;
-
-                                    case '==':
-                                    default:
-                                        $wheres[] = $key . ' IS NULL';
-                                        break;
-                                }
-                            } else {
-                                $params[] = $value['value'];
-                                $wheres[] = $key . ' ' . $value['operator'] . ' ?';
-                            }
-                        }
-                    }
-                } else {
-                    $func = array(Database::getConnection('read'), 'quote');
-                    $wheres[] = $key . ' IN (' . implode(', ', array_map($func, $value)) . ')';
-                }
-            }
-        }
-
-        if (count($joins)) {
-            foreach ($joins as $table => $join) {
-                $query .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
-                $countQuery .= ' LEFT JOIN ' . $table . ' ' . $join['alias'] . ' ON ' . $join['on'] . ' ';
-            }
-        }
-
-        if (count($manualJoins)) {
-            foreach ($manualJoins as $join) {
-                $query .= ' ' . $join . ' ';
-                $countQuery .= ' ' . $join . ' ';
-            }
-        }
-
-        $hasWhere = false;
-        if (count($wheres)) {
-            $hasWhere = true;
-            $query .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
-            $countQuery .= ' WHERE (' . implode(' ' . $whereType . ' ', $wheres) . ')';
-        }
-
-        if (count($manualWheres)) {
-            foreach ($manualWheres as $where) {
-                if (!$hasWhere) {
-                    $hasWhere = true;
-                    $query .= ' WHERE ';
-                    $countQuery .= ' WHERE ';
-                } else {
-                    $query .= ' ' . $where['type'] . ' ';
-                    $countQuery .= ' ' . $where['type'] . ' ';
-                }
-
-                $query .= ' ' . $where['query'];
-                $countQuery .= ' ' . $where['query'];
-
-                if (isset($where['params'])) {
-                    foreach ($where['params'] as $param) {
-                        $params[] = $param;
-                    }
-                }
-            }
-        }
-
-        if (!is_null($group)) {
-            $query .= ' GROUP BY ' . $group . ' ';
-        }
-
-        if (count($order)) {
-            $orders = array();
-            if (is_string($order) && $order == 'rand') {
-                $query .= ' ORDER BY RAND() ';
-            } else {
-                foreach ($order as $key => $value) {
-                    $orders[] = $this->fieldCheck($key) . ' ' . $value;
-                }
-
-                $query .= ' ORDER BY ' . implode(', ', $orders);
-            }
-        }
-
-        if ($limit) {
-            $query .= ' LIMIT ' . $limit;
-        }
-
-        if ($offset) {
-            $query .= ' OFFSET ' . $offset;
-        }
-
-        try {
-            $stmt = Database::getConnection('read')->prepare($countQuery);
-            $stmt->execute($params);
-            $res = $stmt->fetch(\PDO::FETCH_ASSOC);
-            $count = (int)$res['cnt'];
-        } catch (\PDOException $ex) {
-            $count = 0;
-        }
-
-        try {
-            $stmt = Database::getConnection('read')->prepare($query);
-            $stmt->execute($params);
-            $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            $rtn = array();
-
-            foreach ($res as $data) {
-                $rtn[] = new $this->modelName($data);
-            }
-
-            return array('items' => $rtn, 'count' => $count);
-        } catch (\PDOException $ex) {
-            throw $ex;
-        }
-    }
 
     public function save(Model $obj, $saveAllColumns = false)
     {
@@ -318,5 +138,30 @@ abstract class Store
         }
 
         return $field;
+    }
+
+    /**
+     * @param Query $query
+     * @param array $options
+     */
+    public function handleQueryOptions(Query &$query, array $options)
+    {
+        if (array_key_exists('limit', $options)) {
+            $query->limit($options['limit']);
+        }
+
+        if (array_key_exists('offset', $options)) {
+            $query->offset($options['offset']);
+        }
+
+        if (array_key_exists('order', $options)) {
+            if (is_string($options['order'])) {
+                $options['order'] = array($options['order']);
+            }
+
+            foreach ($options['order'] as $order) {
+                $query->order($order[0], $order[1]);
+            }
+        }
     }
 }

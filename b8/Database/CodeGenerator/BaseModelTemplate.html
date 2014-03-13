@@ -2,6 +2,7 @@
 
 /**
  * {@table.php_name} base model for table: {@name}
+
  */
 
 namespace {@appNamespace}\Model\Base;
@@ -17,7 +18,7 @@ class {@table.php_name}Base extends Model
     /**
     * @var array
     */
-    public static $sleepable = array();
+    public static $sleepable = [];
 
     /**
     * @var string
@@ -32,250 +33,270 @@ class {@table.php_name}Base extends Model
     /**
     * @var array
     */
-    protected $data = array(
+    protected $data = [
+
 {loop table.columns}
         '{@item.name}' => null,
-{/loop}
-);
 
-/**
-* @var array
-*/
-protected $getters = array(
-// Direct property getters:
+{/loop}
+    ];
+
+    /**
+    * @var array
+    */
+    protected $getters = [
+        // Direct property getters:
+
 {loop table.columns}
-'{@item.name}' => 'get{@item.php_name}',
+        '{@item.name}' => 'get{@item.php_name}',
+
 {/loop}
 
-// Foreign key getters:
+        // Foreign key getters:
+
 {loop table.relationships.toOne}
-'{@item.php_name}' => 'get{@item.php_name}',
-{/loop}
-);
+        '{@item.php_name}' => 'get{@item.php_name}',
 
-/**
-* @var array
-*/
-protected $setters = array(
-// Direct property setters:
+{/loop}
+    ];
+
+    /**
+    * @var array
+    */
+    protected $setters = [
+        // Direct property setters:
+
 {loop table.columns}
-'{@item.name}' => 'set{@item.php_name}',
+        '{@item.name}' => 'set{@item.php_name}',
+
 {/loop}
 
-// Foreign key setters:
+        // Foreign key setters:
+
 {loop table.relationships.toOne}
-'{@item.php_name}' => 'set{@item.php_name}',
-{/loop}
-);
+        '{@item.php_name}' => 'set{@item.php_name}',
 
-/**
-* @var array
-*/
-public $columns = array(
+{/loop}
+    ];
+
+    /**
+    * @var array
+    */
+    public $columns = [
+
 {loop table.columns}
-'{@item.name}' => array(
-'type' => '{@item.type}',
+        '{@item.name}' => [
+            'type' => '{@item.type}',
+
 {if item.length}
-'length' => {@item.length},
+            'length' => {@item.length},
+
 {/if}
 {if item.null}
-'nullable' => true,
+            'nullable' => true,
+
 {/if}
 {if item.is_primary_key}
-'primary_key' => true,
+            'primary_key' => true,
+
 {/if}
 {if item.auto}
-'auto_increment' => true,
+            'auto_increment' => true,
+
 {/if}
 {if item.default_is_null}
-'default' => null,
+            'default' => null,
+
 {/if}
-{ifnot item.default_is_null}
-{if item.default}
-'default' => {if item.default.isNumeric}{@item.default}{/if}{ifnot item.default.isNumeric}'{@item.default}'{/ifnot},
-{/if}
-{/ifnot}
-),
-{/loop}
-);
+{ifnot item.default_is_null}{if item.default}
+            'default' => {if item.default.isNumeric}{@item.default}{/if}{ifnot item.default.isNumeric}'{@item.default}'{/ifnot},
+{/if}{/ifnot}
+        ],
 
-/**
-* @var array
-*/
-public $indexes = array(
-{loop table.indexes}
-'{@item.name}' => array({if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'),
 {/loop}
-);
+    ];
 
-/**
-* @var array
-*/
-public $foreignKeys = array(
-{loop table.relationships.toOne}
-'{@item.fk_name}' => array(
-'local_col' => '{@item.from_col}',
-'update' => '{@item.fk_update}',
-'delete' => '{@item.fk_delete}',
-'table' => '{@item.table}',
-'col' => '{@item.col}'
-),
-{/loop}
-);
+    /**
+    * @var array
+    */
+    public $indexes = [
 
-{loop table.columns}
-/**
-* Get the value of {@item.php_name} / {@item.name}.
-*
+{for table.indexes}
+        '{@item.name}' => [{if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'],
+
+{/for}
+    ];
+
+    /**
+    * @var array
+    */
+    public $foreignKeys = [
+
+{for table.relationships.toOne}
+        '{@item.fk_name}' => [
+            'local_col' => '{@item.from_col}',
+            'update' => '{@item.fk_update}',
+            'delete' => '{@item.fk_delete}',
+            'table' => '{@item.table}',
+            'col' => '{@item.col}'
+        ],
+
+{/for}
+    ];
+
+
+{for table.columns}
+    /**
+    * Get the value of {@item.php_name} / {@item.name}.
+    *
+
 {if item.validate_int}
-* @return int
-{/if}{if item.validate_string}
-* @return string
-{/if}{if item.validate_float}
-* @return float
-{/if}{if item.validate_date}
-* @return \DateTime
-{/if}
-*/
-public function get{@item.php_name}()
-{
-$rtn    = $this->data['{@item.name}'];
+    * @return int
 
-{if item.validate_date}
-if (!empty($rtn)) {
-$rtn    = new \DateTime($rtn);
-}
-
-{/if}
-return $rtn;
-}
-
-{/loop}
-{loop table.columns}
-/**
-* Set the value of {@item.php_name} / {@item.name}.
-*
-{if item.validate_null}
-* Must not be null.
-{/if}{if item.validate_int}
-* @param $value int
-{/if}{if item.validate_string}
-* @param $value string
-{/if}{if item.validate_float}
-* @param $value float
-{/if}{if item.validate_date}
-* @param $value \DateTime
-{/if}
-*/
-public function set{@item.php_name}($value)
-{
-{if item.validate_null}
-$this->validateNotNull('{@item.php_name}', $value);
-{/if}
-{if item.validate_int}
-$this->validateInt('{@item.php_name}', $value);
 {/if}
 {if item.validate_string}
-$this->validateString('{@item.php_name}', $value);
+    * @return string
+
 {/if}
 {if item.validate_float}
-$this->validateFloat('{@item.php_name}', $value);
+    * @return float
+
 {/if}
 {if item.validate_date}
-$this->validateDate('{@item.php_name}', $value);
+    * @return \DateTime
+
+{/if}
+    */
+    public function get{@item.php_name}()
+    {
+        $rtn = $this->data['{@item.name}'];
+
+{if item.validate_date}
+
+        if (!empty($rtn)) {
+            $rtn = new \DateTime($rtn);
+        }
+
 {/if}
 
-if ($this->data['{@item.name}'] === $value) {
-return;
-}
+        return $rtn;
+    }
 
-$this->data['{@item.name}'] = $value;
 
-$this->setModified('{@item.name}');
-}
+{/for}
+{for table.columns}
+    /**
+    * Set the value of {@item.php_name} / {@item.name}.
+    *
 
-{/loop}
-{loop table.relationships.toOne}
-/**
-* Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
-*
-* @uses \{@parent.appNamespace}\Store\{@item.table_php_name}Store::getBy{@item.col_php}()
-* @uses \{@parent.appNamespace}\Model\{@item.table_php_name}
-* @return \{@parent.appNamespace}\Model\{@item.table_php_name}
-*/
-public function get{@item.php_name}()
-{
-$key = $this->get{@item.from_col_php}();
+{if item.validate_null}
+    * Must not be null.
 
-if (empty($key)) {
-return null;
-}
-
-$cacheKey   = 'Cache.{@item.table_php_name}.' . $key;
-$rtn        = $this->cache->get($cacheKey, null);
-
-if (empty($rtn)) {
-$rtn    = Factory::getStore('{@item.table_php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.col_php}($key);
-$this->cache->set($cacheKey, $rtn);
-}
-
-return $rtn;
-}
-
-/**
-* Set {@item.php_name} - Accepts an ID, an array representing a {@item.table_php_name} or a {@item.table_php_name} model.
-*
-* @param $value mixed
-*/
-public function set{@item.php_name}($value)
-{
-// Is this an instance of {@item.table_php_name}?
-if ($value instanceof \{@parent.appNamespace}\Model\{@item.table_php_name}) {
-return $this->set{@item.php_name}Object($value);
-}
-
-// Is this an array representing a {@item.table_php_name} item?
-if (is_array($value) && !empty($value['{@item.col}'])) {
-return $this->set{@item.from_col_php}($value['{@item.col}']);
-}
-
-// Is this a scalar value representing the ID of this foreign key?
-return $this->set{@item.from_col_php}($value);
-}
-
-/**
-* Set {@item.php_name} - Accepts a {@item.table_php_name} model.
-*
-* @param $value \{@parent.appNamespace}\Model\{@item.table_php_name}
-*/
-public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
-{
-return $this->set{@item.from_col_php}($value->get{@item.col_php}());
-}
-
-{/loop}
-
-public static function getByPrimaryKey($value, $useConnection = 'read')
-{
-return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getByPrimaryKey($value, $useConnection);
-}
-
-{loop table.columns}
-{if item.unique_indexed}
-
-public static function getBy{@item.php_name}($value, $useConnection = 'read')
-{
-return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $useConnection);
-}
 {/if}
-{if item.many_indexed}
+{if item.validate_int}
+    * @param $value int
 
-public static function getBy{@item.php_name}($value, $limit = null, $useConnection = 'read')
-{
-return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $limit, $useConnection);
-}
 {/if}
-{/loop}
+{if item.validate_string}
+    * @param $value string
+
+{/if}
+{if item.validate_float}
+    * @param $value float
+
+{/if}
+{if item.validate_date}
+    * @param $value \DateTime
+
+{/if}
+    */
+    public function set{@item.php_name}($value)
+    {
+
+{if item.validate_null}
+        $this->validateNotNull('{@item.php_name}', $value);
+
+{/if}
+
+{if item.validate_int}
+        $this->validateInt('{@item.php_name}', $value);
+
+{/if}
+{if item.validate_string}
+        $this->validateString('{@item.php_name}', $value);
+
+{/if}
+{if item.validate_float}
+        $this->validateFloat('{@item.php_name}', $value);
+
+{/if}
+{if item.validate_date}
+        $this->validateDate('{@item.php_name}', $value);
+
+{/if}
+
+        if ($this->data['{@item.name}'] === $value) {
+            return;
+        }
+
+        $this->data['{@item.name}'] = $value;
+        $this->setModified('{@item.name}');
+    }
 
 
+{/for}
+{for table.relationships.toOne}
+    /**
+    * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
+    *
+    * @uses \{@parent.appNamespace}\Store\{@item.table_php_name}Store::getBy{@item.col_php}()
+    * @uses \{@parent.appNamespace}\Model\{@item.table_php_name}
+
+    * @return \{@parent.appNamespace}\Model\{@item.table_php_name}
+
+    */
+    public function get{@item.php_name}()
+    {
+        $key = $this->get{@item.from_col_php}();
+
+        if (empty($key)) {
+            return null;
+        }
+
+        return Factory::getStore('{@item.table_php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.col_php}($key);
+    }
+
+    /**
+    * Set {@item.php_name} - Accepts an ID, an array representing a {@item.table_php_name} or a {@item.table_php_name} model.
+    *
+    * @param $value mixed
+    */
+    public function set{@item.php_name}($value)
+    {
+        // Is this an instance of {@item.table_php_name}?
+        if ($value instanceof \{@parent.appNamespace}\Model\{@item.table_php_name}) {
+            return $this->set{@item.php_name}Object($value);
+        }
+
+        // Is this an array representing a {@item.table_php_name} item?
+        if (is_array($value) && !empty($value['{@item.col}'])) {
+            return $this->set{@item.from_col_php}($value['{@item.col}']);
+        }
+
+        // Is this a scalar value representing the ID of this foreign key?
+        return $this->set{@item.from_col_php}($value);
+    }
+
+    /**
+    * Set {@item.php_name} - Accepts a {@item.table_php_name} model.
+    *
+    * @param $value \{@parent.appNamespace}\Model\{@item.table_php_name}
+
+    */
+    public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
+    {
+        return $this->set{@item.from_col_php}($value->get{@item.col_php}());
+    }
+
+{/for}
 }

@@ -80,9 +80,14 @@ class Template extends View
                         $string = substr($string, $kwLen);
 
                         $cond = trim($this->readUntil('}', $string));
+
                         $item['cond'] = $cond;
                         $lastCond = $cond;
                         $string = substr($string, 1);
+
+                        if (substr($string, 0, 1) == "\n") {
+                            $string = substr($string, 1);
+                        }
 
                         if (array_key_exists($keyword, self::$templateFunctions)) {
                             $item['function_name'] = $keyword;
