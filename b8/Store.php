@@ -2,18 +2,53 @@
 
 namespace b8;
 
+use b8\Cache;
 use b8\Database;
 use b8\Database\Query;
 use b8\Exception\HttpException;
 
 abstract class Store
 {
-    protected $modelName = null;
-    protected $tableName = null;
-    protected $primaryKey = null;
+    protected $cacheEnabled = true;
+    protected $cacheType = Cache::TYPE_REQUEST;
+    protected $modelName;
+    protected $tableName;
+    protected $primaryKey;
 
+    public function __construct()
+    {
+        if (method_exists($this, 'init')) {
+            $this->init();
+        }
+    }
 
     abstract public function getByPrimaryKey($key, $useConnection = 'read');
+
+    protected function setCache($id, Model $obj)
+    {
+        if (!$this->cacheEnabled) {
+            return null;
+        }
+
+        if (!is_null($this->cacheType)) {
+            $cache = Cache::getCache($this->cacheType);
+            $cache->set($this->modelName . '::' . $id, $obj);
+        }
+    }
+
+    protected function getFromCache($id)
+    {
+        if (!$this->cacheEnabled) {
+            return null;
+        }
+
+        if (!is_null($this->cacheType)) {
+            $cache = Cache::getCache($this->cacheType);
+            return $cache->get($this->modelName . '::' . $id, null);
+        }
+
+        return null;
+    }
 
     public function save(Model $obj, $saveAllColumns = false)
     {
@@ -62,7 +97,12 @@ abstract class Store
             $q->bindValue(':primaryKey', $data[$this->primaryKey]);
             $q->execute();
 
+            $enabled = $this->cacheEnabled;
+            $this->cacheEnabled = false;
             $rtn = $this->getByPrimaryKey($data[$this->primaryKey], 'write');
+            $this->cacheEnabled = $enabled;
+
+            $this->setCache($data[$this->primaryKey], $rtn);
         } else {
             $rtn = $obj;
         }
@@ -96,7 +136,13 @@ abstract class Store
                 $id = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection(
                     'write'
                 )->lastInsertId();
+
+                $enabled = $this->cacheEnabled;
+                $this->cacheEnabled = false;
                 $rtn = $this->getByPrimaryKey($id, 'write');
+
+                $this->cacheEnabled = $enabled;
+                $this->setCache($id, $rtn);
             }
         }
 
@@ -120,6 +166,8 @@ abstract class Store
         );
         $q->bindValue(':primaryKey', $data[$this->primaryKey]);
         $q->execute();
+
+        $this->setCache($data[$this->primaryKey], null);
 
         return true;
     }

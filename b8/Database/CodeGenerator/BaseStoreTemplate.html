@@ -8,6 +8,7 @@
 namespace {@appNamespace}\Store\Base;
 
 use PDOException;
+use b8\Cache;
 use b8\Database;
 use b8\Database\Query;
 use b8\Database\Query\Criteria;
@@ -18,14 +19,16 @@ use {@appNamespace}\Model\{@table.php_name};
 /**
  * {@table.php_name} Base Store
  */
-class {@table.php_name}StoreBase extends Store
+trait {@table.php_name}StoreBase
 {
-    protected $tableName   = '{@name}';
-    protected $modelName   = '\{@appNamespace}\Model\{@table.php_name}';
+    protected function init()
+    {
+        $this->tableName = '{@name}';
+        $this->modelName = '\{@appNamespace}\Model\{@table.php_name}';
+        $this->primaryKey = '{@table.primary_key.column}';
+    }
 
 {if table.primary_key}
-    protected $primaryKey  = '{@table.primary_key.column}';
-
     /**
     * @param $value
     * @param string $useConnection Connection type to use.
