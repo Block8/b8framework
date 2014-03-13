@@ -17,3 +17,4 @@ test:
 failure:
   email:
     committer: true
+    cc: ["dan@block8.co.uk"]

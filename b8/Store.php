@@ -24,7 +24,7 @@ abstract class Store
 
     abstract public function getByPrimaryKey($key, $useConnection = 'read');
 
-    protected function setCache($id, Model $obj)
+    protected function setCache($modelId, Model $obj)
     {
         if (!$this->cacheEnabled) {
             return null;
@@ -32,11 +32,11 @@ abstract class Store
 
         if (!is_null($this->cacheType)) {
             $cache = Cache::getCache($this->cacheType);
-            $cache->set($this->modelName . '::' . $id, $obj);
+            $cache->set($this->modelName . '::' . $modelId, $obj);
         }
     }
 
-    protected function getFromCache($id)
+    protected function getFromCache($modelId)
     {
         if (!$this->cacheEnabled) {
             return null;
@@ -44,7 +44,7 @@ abstract class Store
 
         if (!is_null($this->cacheType)) {
             $cache = Cache::getCache($this->cacheType);
-            return $cache->get($this->modelName . '::' . $id, null);
+            return $cache->get($this->modelName . '::' . $modelId, null);
         }
 
         return null;
@@ -85,17 +85,17 @@ abstract class Store
         }
 
         if (count($updates)) {
-            $qs = 'UPDATE ' . $this->tableName . '
+            $query = 'UPDATE ' . $this->tableName . '
 											SET ' . implode(', ', $updates) . '
 											WHERE ' . $this->primaryKey . ' = :primaryKey';
-            $q = Database::getConnection('write')->prepare($qs);
+            $stmt = Database::getConnection('write')->prepare($query);
 
             foreach ($update_params as $update_param) {
-                $q->bindValue(':' . $update_param[0], $update_param[1]);
+                $stmt->bindValue(':' . $update_param[0], $update_param[1]);
             }
 
-            $q->bindValue(':primaryKey', $data[$this->primaryKey]);
-            $q->execute();
+            $stmt->bindValue(':primaryKey', $data[$this->primaryKey]);
+            $stmt->execute();
 
             $enabled = $this->cacheEnabled;
             $this->cacheEnabled = false;
@@ -129,20 +129,20 @@ abstract class Store
             $colString = implode(', ', $cols);
             $valString = implode(', ', $values);
 
-            $qs = 'INSERT INTO ' . $this->tableName . ' (' . $colString . ') VALUES (' . $valString . ')';
-            $q = Database::getConnection('write')->prepare($qs);
+            $query = 'INSERT INTO ' . $this->tableName . ' (' . $colString . ') VALUES (' . $valString . ')';
+            $stmt = Database::getConnection('write')->prepare($query);
 
-            if ($q->execute($qParams)) {
-                $id = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection(
+            if ($stmt->execute($qParams)) {
+                $modelId = !empty($data[$this->primaryKey]) ? $data[$this->primaryKey] : Database::getConnection(
                     'write'
                 )->lastInsertId();
 
                 $enabled = $this->cacheEnabled;
                 $this->cacheEnabled = false;
-                $rtn = $this->getByPrimaryKey($id, 'write');
+                $rtn = $this->getByPrimaryKey($modelId, 'write');
 
                 $this->cacheEnabled = $enabled;
-                $this->setCache($id, $rtn);
+                $this->setCache($modelId, $rtn);
             }
         }
 
@@ -161,11 +161,11 @@ abstract class Store
 
         $data = $obj->getDataArray();
 
-        $q = Database::getConnection('write')->prepare(
+        $stmt = Database::getConnection('write')->prepare(
             'DELETE FROM ' . $this->tableName . ' WHERE ' . $this->primaryKey . ' = :primaryKey'
         );
-        $q->bindValue(':primaryKey', $data[$this->primaryKey]);
-        $q->execute();
+        $stmt->bindValue(':primaryKey', $data[$this->primaryKey]);
+        $stmt->execute();
 
         $this->setCache($data[$this->primaryKey], null);
 

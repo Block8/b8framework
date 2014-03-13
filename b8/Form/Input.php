@@ -17,12 +17,12 @@ class Input extends Element
 
     public static function create($name, $label, $required = false)
     {
-        $el = new static();
-        $el->setName($name);
-        $el->setLabel($label);
-        $el->setRequired($required);
+        $element = new static();
+        $element->setName($name);
+        $element->setLabel($label);
+        $element->setRequired($required);
 
-        return $el;
+        return $element;
     }
 
     public function getValue()

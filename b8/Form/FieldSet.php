@@ -34,19 +34,7 @@ class FieldSet extends Element
 
     public function setValues(array $values)
     {
-        $vals = [];
-
-        foreach ($values as $key => $value) {
-            if (is_array($value)) {
-                foreach ($value as $subKey => $subVal) {
-                    $vals[$key . '[' . $subKey . ']'] = $subVal;
-                }
-
-                continue;
-            }
-
-            $vals[$key] = $value;
-        }
+        $vals = $this->flattenValues($values);
 
         foreach ($this->children as &$field) {
             if ($field instanceof FieldSet) {
@@ -66,6 +54,25 @@ class FieldSet extends Element
             }
         }
         
+    }
+
+    protected function flattenValues($values)
+    {
+        $vals = [];
+
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $subKey => $subVal) {
+                    $vals[$key . '[' . $subKey . ']'] = $subVal;
+                }
+
+                continue;
+            }
+
+            $vals[$key] = $value;
+        }
+
+        return $vals;
     }
 
     public function addField(Element $field)

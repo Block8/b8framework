@@ -207,9 +207,9 @@ class Query
         return $this;
     }
 
-    public function join($table, $alias, $on, $type = 'LEFT')
+    public function join($table, $alias, $joinOn, $type = 'LEFT')
     {
-        $this->joins[] = ['table' => $table, 'alias' => $alias, 'on' => $on, 'type' => $type];
+        $this->joins[] = ['table' => $table, 'alias' => $alias, 'on' => $joinOn, 'type' => $type];
         return $this;
     }
 

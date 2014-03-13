@@ -57,7 +57,7 @@ class Template extends View
         $lastCond = null;
         $keywords = array('ifnot', 'if', 'else', 'for', 'loop', '@', '/ifnot', '/if', '/for', '/loop');
 
-        foreach (self::$templateFunctions as $function => $handler) {
+        foreach (array_keys(self::$templateFunctions) as $function) {
             $keywords[] = $function;
         }
 
