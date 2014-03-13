@@ -20,7 +20,7 @@ class Variables
         $this->template = $template;
     }
 
-    public function processVariableName($name)
+    public function getVariable($name)
     {
         // Check if we're calling a function:
         $rtn = $this->isFunctionCall($name);
@@ -132,6 +132,8 @@ class Variables
                 break;
             }
 
+            var_dump('NOTHING: ', $thisPart);
+
             return null;
         }
 
@@ -140,20 +142,17 @@ class Variables
 
     protected function isModifier($thisPart, $working)
     {
-        if ($thisPart == 'toLowerCase') {
-            return strtolower($working);
-        }
+        $operations = [
+            'toLowerCase' => 'strtolower',
+            'toUpperCase' => 'strtoupper',
+            'toUcWords' => 'ucwords',
+            'isNumeric' => 'is_numeric',
+        ];
 
-        if ($thisPart == 'toUpperCase') {
-            return strtoupper($working);
-        }
+        if (array_key_exists($thisPart, $operations)) {
+            $func = $operations[$thisPart];
+            return $func($working);
 
-        if ($thisPart == 'toUcWords') {
-            return ucwords($working);
-        }
-
-        if ($thisPart == 'isNumeric') {
-            return is_numeric($working);
         }
 
         if ($thisPart == 'formatted' && $working instanceof \DateTime) {
