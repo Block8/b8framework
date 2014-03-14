@@ -73,7 +73,7 @@ trait {@table.php_name}StoreBase
             throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query = new Query($this->getNamespace('{@table.php_name}').'\Model\{@table.php_name}', $useConnection);
         $query->select('*')->from('{@parent.name}')->limit(1);
         $query->where('`{@item.name}` = :{@item.name}');
         $query->bind(':{@item.name}', $value);
@@ -103,7 +103,7 @@ trait {@table.php_name}StoreBase
             throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query = new Query($this->getNamespace('{@table.php_name}').'\Model\{@table.php_name}', $useConnection);
         $query->from('{@parent.name}')->where('`{@item.name}` = :{@item.name}');
         $query->bind(':{@item.name}', $value);
 
@@ -131,7 +131,7 @@ trait {@table.php_name}StoreBase
             throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $query = new Query('{@appNamespace}\Model\{@table.php_name}', $useConnection);
+        $query = new Query($this->getNamespace('{@table.php_name}').'\Model\{@table.php_name}', $useConnection);
         $query->from('{@parent.name}')->where('`{@item.name}` = :{@item.name}');
         $query->bind(':{@item.name}', $value);
 

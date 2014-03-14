@@ -3,6 +3,7 @@
 namespace b8;
 
 use b8\Cache;
+use b8\Config;
 use b8\Database;
 use b8\Database\Query;
 use b8\Exception\HttpException;
@@ -211,5 +212,17 @@ abstract class Store
                 $query->order($order[0], $order[1]);
             }
         }
+    }
+
+    protected function getNamespace($class)
+    {
+        $config = Config::getInstance();
+        $namespaces = $config->get('app.namespaces', ['default' => $config->get('b8.app.namespace')]);
+
+        if (array_key_exists($class, $namespaces)) {
+            return $namespaces[$class];
+        }
+
+        return $namespaces['default'];
     }
 }
