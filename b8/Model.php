@@ -2,7 +2,7 @@
 
 namespace b8;
 
-use b8\Exception\HttpException;
+use b8\Exception\ValidationException;
 use b8\Cache;
 
 class Model
@@ -128,7 +128,7 @@ class Model
     protected function validateString($name, $value)
     {
         if (!is_string($value) && !is_null($value)) {
-            throw new HttpException\ValidationException($name . ' must be a string.');
+            throw new ValidationException($name . ' must be a string.');
         }
     }
 
@@ -139,7 +139,7 @@ class Model
         }
 
         if (!is_numeric($value) && !is_null($value)) {
-            throw new HttpException\ValidationException($name . ' must be an integer.');
+            throw new ValidationException($name . ' must be an integer.');
         }
 
         if (!is_int($value) && !is_null($value)) {
@@ -150,7 +150,7 @@ class Model
     protected function validateFloat($name, &$value)
     {
         if (!is_numeric($value) && !is_null($value)) {
-            throw new HttpException\ValidationException($name . ' must be a float.');
+            throw new ValidationException($name . ' must be a float.');
         }
 
         if (!is_float($value) && !is_null($value)) {
@@ -165,7 +165,7 @@ class Model
         }
 
         if ((!is_object($value) || !($value instanceof \DateTime)) && !is_null($value)) {
-            throw new HttpException\ValidationException($name . ' must be a date object.');
+            throw new ValidationException($name . ' must be a date object.');
         }
 
 
@@ -175,7 +175,7 @@ class Model
     protected function validateNotNull($name, &$value)
     {
         if (is_null($value)) {
-            throw new HttpException\ValidationException($name . ' must not be null.');
+            throw new ValidationException($name . ' must not be null.');
         }
     }
 
