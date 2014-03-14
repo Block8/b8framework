@@ -11,9 +11,15 @@ class Parser
      */
     protected $template;
 
-    public function __construct(Template $template)
+    /**
+     * @var Variables
+     */
+    protected $variables;
+
+    public function __construct(Template $template, Variables $variables)
     {
         $this->template = $template;
+        $this->variables = $variables;
     }
 
     public function parse($string)
@@ -201,7 +207,9 @@ class Parser
 
 
             // Set up the necessary variables within the stack:
-            $this->template->set('parent', $this);
+            $parent = $this->variables->getVariables();
+
+            $this->template->set('parent', $parent);
             $this->template->set('item', $val);
             $this->template->set('key', $key);
             $this->template->set('value', $val);
@@ -209,6 +217,7 @@ class Parser
             $rtn .= $this->processStack($stack);
 
             // Restore state for any parent nested loops:
+            $this->template->set('parent', null);
             $this->template->set('item', $itemWas);
             $this->template->set('key', $keyWas);
             $this->template->set('value', $valueWas);

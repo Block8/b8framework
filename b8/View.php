@@ -10,6 +10,9 @@ class View
     protected static $helpers = array();
     protected static $extension = 'phtml';
 
+    /**
+     * @var View\Template\Variables
+     */
     protected $variables;
 
     public function __construct($file, $path = null)

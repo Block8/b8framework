@@ -11,10 +11,20 @@ class Template extends View
     public static $templateFunctions = array();
     protected static $extension = 'html';
 
+    /**
+     * @var Template\Parser
+     */
+    protected $parser;
+
+    /**
+     * @var string
+     */
+    protected $viewCode;
+
     public function __construct($viewCode)
     {
         $this->variables = new Variables($this);
-        $this->parser = new Parser($this);
+        $this->parser = new Parser($this, $this->variables);
         $this->viewCode = $viewCode;
 
         if (!count(self::$templateFunctions)) {
