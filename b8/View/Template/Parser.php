@@ -119,11 +119,11 @@ class Parser
                     break;
 
                 case 'if':
-                    $res .= $this->doParseIf($current['cond'], $current);
+                    $res .= $this->doParseIf($current['cond'], $current, true);
                     break;
 
                 case 'ifnot':
-                    $res .= $this->doParseIfNot($current['cond'], $current);
+                    $res .= $this->doParseIf($current['cond'], $current, false);
                     break;
 
                 case 'loop':
@@ -135,7 +135,7 @@ class Parser
                     break;
 
                 case 'function':
-                    $res .= $this->doParseFunction($current);
+                    $res .= $this->template->executeTemplateFunction($current['function_name'], $current['cond']);
                     break;
             }
         }
@@ -171,18 +171,9 @@ class Parser
         return $val;
     }
 
-    protected function doParseIf($condition, $stack)
+    protected function doParseIf($condition, $stack, $type = true)
     {
-        if ($this->ifConditionIsTrue($condition)) {
-            return $this->processStack($stack);
-        } else {
-            return '';
-        }
-    }
-
-    protected function doParseIfNot($condition, $stack)
-    {
-        if (!$this->ifConditionIsTrue($condition)) {
+        if ($this->ifConditionIsTrue($condition) == $type) {
             return $this->processStack($stack);
         } else {
             return '';
@@ -306,11 +297,6 @@ class Parser
         }
 
         throw new \Exception('Invalid range in for loop: ' . $part);
-    }
-
-    protected function doParseFunction($stack)
-    {
-        return $this->template->executeTemplateFunction($stack['function_name'], $stack['cond']);
     }
 
     protected function ifConditionIsTrue($condition)
