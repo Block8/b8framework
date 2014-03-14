@@ -41,7 +41,12 @@ class Config
         // Path to a YAML file.
         $parser = new YamlParser();
         $yaml = file_get_contents($yamlFile);
-        $this->setArray($parser->parse($yaml));
+        $config = (array)$parser->parse($yaml);
+        if (empty($config)) {
+            return;
+        }
+
+        $this->setArray($config);
     }
 
     /**
