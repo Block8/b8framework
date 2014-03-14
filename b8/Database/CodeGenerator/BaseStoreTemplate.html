@@ -82,7 +82,7 @@ trait {@table.php_name}StoreBase
             $query->execute();
             return $query->fetch();
         } catch (PDOException $ex) {
-            throw new StoreException('Could not get {@parent.table.php_name} by {@parent.table.php_name}', 0, $ex);
+            throw new StoreException('Could not get {@parent.table.php_name} by {@item.php_name}', 0, $ex);
         }
     }{/if}
 {if item.many_indexed}

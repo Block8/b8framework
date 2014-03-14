@@ -132,8 +132,6 @@ class Variables
                 break;
             }
 
-            var_dump('NOTHING: ', $thisPart);
-
             return null;
         }
 
