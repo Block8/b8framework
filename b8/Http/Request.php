@@ -27,19 +27,23 @@ class Request
 
     protected function getRequestPath()
     {
-        $path = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
+        $path = '';
 
-        if (isset($_SERVER['REDIRECT_PATH_INFO']) && $_SERVER['REDIRECT_PATH_INFO'] != '') {
-            $path = $_SERVER['REDIRECT_PATH_INFO'];
-        } elseif (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] != '') {
-            $path = $_SERVER['PATH_INFO'];
-        } elseif ($_SERVER['DOCUMENT_ROOT'] != dirname($_SERVER['SCRIPT_FILENAME'])) {
+        // Start out with the REQUEST_URI:
+        if (!empty($_SERVER['REQUEST_URI'])) {
+            $path = $_SERVER['REQUEST_URI'];
+        }
+
+        // This should fix things if we're not in the document root:
+        if ($_SERVER['DOCUMENT_ROOT'] != dirname($_SERVER['SCRIPT_FILENAME'])) {
             $basePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']));
             $path = substr($path, strlen($basePath));
         }
 
+        // Remove index.php from the URL if it is present:
         $path = str_replace(array('/index.php', 'index.php'), '', $path);
 
+        // Also cut out the query string:
         $path = explode('?', $path);
         $path = array_shift($path);
 
