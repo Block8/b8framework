@@ -7,6 +7,8 @@ use b8\Config;
 use b8\Database;
 use b8\Database\Query;
 use b8\Exception\HttpException;
+use b8\Exception\StoreException;
+use b8\Model;
 
 abstract class Store
 {
@@ -25,10 +27,14 @@ abstract class Store
 
     abstract public function getByPrimaryKey($key, $useConnection = 'read');
 
-    protected function setCache($modelId, Model $obj)
+    protected function setCache($modelId, $obj)
     {
         if (!$this->cacheEnabled) {
             return null;
+        }
+
+        if (!is_null($obj) && !($obj instanceof Model)) {
+            throw new StoreException('Invalid type passed to cache');
         }
 
         if (!is_null($this->cacheType)) {
