@@ -173,6 +173,10 @@ class Query
     {
         $rtn = $this->stmt->fetch(Database::FETCH_ASSOC);
 
+        if ($rtn === false) {
+            return null;
+        }
+
         if ($this->returnType != 'array') {
             $type = $this->returnType;
             $rtn = new $type($rtn);
