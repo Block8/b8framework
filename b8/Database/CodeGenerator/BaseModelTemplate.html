@@ -14,135 +14,28 @@ use b8\Store\Factory;
  */
 trait {@table.php_name}Base
 {
-    /**
-    * @var array
-    */
-    public static $sleepable = [];
+    protected function init()
+    {
+        $this->tableName = '{@name}';
+        $this->modelName = '{@table.php_name}';
 
-    /**
-    * @var string
-    */
-    protected $tableName = '{@name}';
+        // Columns:
 
-    /**
-    * @var string
-    */
-    protected $modelName = '{@table.php_name}';
-
-    /**
-    * @var array
-    */
-    protected $data = [
-
-{loop table.columns}
-        '{@item.name}' => null,
-
-{/loop}
-    ];
-
-    /**
-    * @var array
-    */
-    protected $getters = [
-        // Direct property getters:
-
-{loop table.columns}
-        '{@item.name}' => 'get{@item.php_name}',
-
-{/loop}
-
-        // Foreign key getters:
-
-{loop table.relationships.toOne}
-        '{@item.php_name}' => 'get{@item.php_name}',
-
-{/loop}
-    ];
-
-    /**
-    * @var array
-    */
-    protected $setters = [
-        // Direct property setters:
-
-{loop table.columns}
-        '{@item.name}' => 'set{@item.php_name}',
-
-{/loop}
-
-        // Foreign key setters:
-
-{loop table.relationships.toOne}
-        '{@item.php_name}' => 'set{@item.php_name}',
-
-{/loop}
-    ];
-
-    /**
-    * @var array
-    */
-    public $columns = [
-
-{loop table.columns}
-        '{@item.name}' => [
-            'type' => '{@item.type}',
-
-{if item.length}
-            'length' => {@item.length},
-
-{/if}
-{if item.null}
-            'nullable' => true,
-
-{/if}
-{if item.is_primary_key}
-            'primary_key' => true,
-
-{/if}
-{if item.auto}
-            'auto_increment' => true,
-
-{/if}
-{if item.default_is_null}
-            'default' => null,
-
-{/if}
-{ifnot item.default_is_null}{if item.default}
-            'default' => {if item.default.isNumeric}{@item.default}{/if}{ifnot item.default.isNumeric}'{@item.default}'{/ifnot},
-{/if}{/ifnot}
-        ],
-
-{/loop}
-    ];
-
-    /**
-    * @var array
-    */
-    public $indexes = [
-
-{for table.indexes}
-        '{@item.name}' => [{if item.unique}'unique' => true, {/if}'columns' => '{@item.columns}'],
+{for table.columns}
+        $this->data['{@item.name}'] = null;
+        $this->getters['{@item.name}'] = 'get{@item.php_name}';
+        $this->setters['{@item.name}'] = 'set{@item.php_name}';
 
 {/for}
-    ];
 
-    /**
-    * @var array
-    */
-    public $foreignKeys = [
+        // Foreign keys:
 
 {for table.relationships.toOne}
-        '{@item.fk_name}' => [
-            'local_col' => '{@item.from_col}',
-            'update' => '{@item.fk_update}',
-            'delete' => '{@item.fk_delete}',
-            'table' => '{@item.table}',
-            'col' => '{@item.col}'
-        ],
+        $this->getters['{@item.php_name}'] = 'get{@item.php_name}';
+        $this->setters['{@item.php_name}'] = 'set{@item.php_name}';
 
 {/for}
-    ];
-
+    }
 
 {for table.columns}
     /**

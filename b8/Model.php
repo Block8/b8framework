@@ -17,11 +17,13 @@ class Model
 
     public function __construct($initialData = array())
     {
+        if (method_exists($this, 'init')) {
+            $this->init();
+        }
+
         if (is_array($initialData)) {
             $this->data = array_merge($this->data, $initialData);
         }
-
-        $this->cache = Cache::getCache(Cache::TYPE_REQUEST);
     }
 
     public function getTableName()
