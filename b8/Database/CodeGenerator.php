@@ -72,7 +72,7 @@ class CodeGenerator
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
-            $modelPath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Model/';
+            $modelPath = $this->getPath($namespace) . 'Model/';
             $basePath = $modelPath . 'Base/';
             $modelFile = $modelPath . $table['php_name'] . '.php';
             $baseFile = $basePath . $table['php_name'] . 'Base.php';
@@ -87,11 +87,14 @@ class CodeGenerator
             print '-- ' . $table['php_name'] . PHP_EOL;
 
             if (!is_file($modelFile)) {
-                print '-- -- Writing new Model' . PHP_EOL;
+                print '-- -- Writing new Model: ' . $table['php_name'] . PHP_EOL;
+                print '-- -- -- ' . $modelFile . PHP_EOL;
+
                 file_put_contents($modelFile, $model);
             }
 
-            print '-- -- Writing base Model' . PHP_EOL;
+            print '-- -- Writing base Model: ' . $table['php_name'] . PHP_EOL;
+            print '-- -- -- ' . $baseFile . PHP_EOL;
             file_put_contents($baseFile, $base);
         }
     }
@@ -102,7 +105,7 @@ class CodeGenerator
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
-            $storePath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Store/';
+            $storePath = $this->getPath($namespace) . 'Store/';
             $basePath = $storePath . 'Base/';
             $storeFile = $storePath . $table['php_name'] . 'Store.php';
             $baseFile = $basePath . $table['php_name'] . 'StoreBase.php';
@@ -134,7 +137,7 @@ class CodeGenerator
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
-            $controllerPath = $this->getPath($namespace) . str_replace('\\', '/', $namespace) . '/Controller/';
+            $controllerPath = $this->getPath($namespace) . 'Controller/';
             $basePath = $controllerPath . 'Base/';
             $controllerFile = $controllerPath . $table['php_name'] . 'Controller.php';
             $baseFile = $basePath . $table['php_name'] . 'ControllerBase.php';
