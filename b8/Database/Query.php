@@ -76,7 +76,7 @@ class Query
         $this->returnType = $returnType;
 
         if ($returnType != 'array' && !class_exists($returnType)) {
-            throw new \Exception('Invalid return type.');
+            throw new \Exception('Invalid return type: ' . $returnType);
         }
     }
 
