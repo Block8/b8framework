@@ -85,7 +85,7 @@ class Input extends Element
 
     public function validate()
     {
-        if ($this->getRequired() && empty($this->value)) {
+        if ($this->getRequired() && (is_null($this->value) || $this->value == '')) {
             $this->error = $this->getLabel() . ' is required.';
             return false;
         }
