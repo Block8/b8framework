@@ -151,17 +151,14 @@ class Parser
 
     protected function readUntil($until, &$string)
     {
-        $read = '';
+        $parts = explode($until, $string, 2);
 
-        while (!empty($string)) {
-            $char = substr($string, 0, 1);
+        $read = array_shift($parts);
 
-            if ($char == $until) {
-                break;
-            }
-
-            $read .= $char;
-            $string = substr($string, 1);
+        if (count($parts) > 0) {
+            $string = $until . array_shift($parts);
+        } else {
+            $string = '';
         }
 
         return $read;
