@@ -106,7 +106,7 @@ class Query
             $order = [];
 
             foreach ($this->order as $item) {
-                $order[] = '`' . $item[0] . '` ' . $item[1];
+                $order[] = '' . $item[0] . ' ' . $item[1];
             }
 
             $query .= ' ORDER BY ' . implode(', ', $order) . ' ';
@@ -236,16 +236,19 @@ class Query
     public function order($column, $direction = 'DESC')
     {
         $this->order[] = [$column, $direction];
+        return $this;
     }
 
     public function limit($limit)
     {
         $this->limit = (int)$limit;
+        return $this;
     }
 
     public function offset($offset)
     {
         $this->offset = (int)$offset;
+        return $this;
     }
 
     public function bind($key, $value)
