@@ -141,10 +141,10 @@ trait {@table.php_name}Base
     /**
     * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
     *
-    * @uses \{@parent.appNamespace}\Store\{@item.table_php_name}Store::getBy{@item.col_php}()
-    * @uses \{@parent.appNamespace}\Model\{@item.table_php_name}
+    * @uses \{get_namespace model: item.table_php_name}\Store\{@item.table_php_name}Store::getBy{@item.col_php}()
+    * @uses \{get_namespace model: item.table_php_name}\Model\{@item.table_php_name}
 
-    * @return \{@parent.appNamespace}\Model\{@item.table_php_name}
+    * @return \{get_namespace model: item.table_php_name}\Model\{@item.table_php_name}
 
     */
     public function get{@item.php_name}()
@@ -166,7 +166,7 @@ trait {@table.php_name}Base
     public function set{@item.php_name}($value)
     {
         // Is this an instance of {@item.table_php_name}?
-        if ($value instanceof \{@parent.appNamespace}\Model\{@item.table_php_name}) {
+        if ($value instanceof \{get_namespace model: item.table_php_name}\Model\{@item.table_php_name}) {
             return $this->set{@item.php_name}Object($value);
         }
 
@@ -185,7 +185,7 @@ trait {@table.php_name}Base
     * @param $value \{@parent.appNamespace}\Model\{@item.table_php_name}
 
     */
-    public function set{@item.php_name}Object(\{@parent.appNamespace}\Model\{@item.table_php_name} $value)
+    public function set{@item.php_name}Object(\{get_namespace model: item.table_php_name}\Model\{@item.table_php_name} $value)
     {
         return $this->set{@item.from_col_php}($value->get{@item.col_php}());
     }

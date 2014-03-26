@@ -89,7 +89,6 @@ class Image
         $source->scaleImage($resizeWidth, $resizeHeight);
 
         list($cropX, $cropY) = $this->getCropPosition($useQuad, $width, $height, $resizeWidth, $resizeHeight);
-
         $source->cropImage($width, $height, $cropX, $cropY);
         $source->setImageFormat($format);
 
