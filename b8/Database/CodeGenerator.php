@@ -72,13 +72,20 @@ class CodeGenerator
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
+
+            if (is_null($namespace)) {
+                $msg = 'No namespace defined for ' . $table['php_name'] . ' - What namespace should it go in?';
+                $namespace = $this->ask($msg, array_keys($this->paths));
+                $this->namespaces[$table['php_name']] = $namespace;
+            }
+
             $modelPath = $this->getPath($namespace) . 'Model/';
             $basePath = $modelPath . 'Base/';
             $modelFile = $modelPath . $table['php_name'] . '.php';
             $baseFile = $basePath . $table['php_name'] . 'Base.php';
 
             if (!is_dir($basePath)) {
-                @mkdir($basePath, 0777, true);
+                @mkdir($basePath, 2775, true);
             }
 
             $model = $this->processTemplate($tableName, $table, 'ModelTemplate');
@@ -105,13 +112,20 @@ class CodeGenerator
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
+
+            if (is_null($namespace)) {
+                $msg = 'No namespace defined for ' . $table['php_name'] . ' - What namespace should it go in?';
+                $namespace = $this->ask($msg, array_keys($this->paths));
+                $this->namespaces[$table['php_name']] = $namespace;
+            }
+
             $storePath = $this->getPath($namespace) . 'Store/';
             $basePath = $storePath . 'Base/';
             $storeFile = $storePath . $table['php_name'] . 'Store.php';
             $baseFile = $basePath . $table['php_name'] . 'StoreBase.php';
 
             if (!is_dir($basePath)) {
-                @mkdir($basePath, 0777, true);
+                @mkdir($basePath, 2775, true);
             }
 
             $model = $this->processTemplate($tableName, $table, 'StoreTemplate');
@@ -133,7 +147,7 @@ class CodeGenerator
     {
         print PHP_EOL . 'GENERATING CONTROLLERS' . PHP_EOL . PHP_EOL;
 
-        @mkdir($this->paths . 'Controller/Base/', 0777, true);
+        @mkdir($this->paths . 'Controller/Base/', 2775, true);
 
         foreach ($this->tables as $tableName => $table) {
             $namespace = $this->getNamespace($table['php_name']);
@@ -143,7 +157,7 @@ class CodeGenerator
             $baseFile = $basePath . $table['php_name'] . 'ControllerBase.php';
 
             if (!is_dir($basePath)) {
-                @mkdir($basePath, 0777, true);
+                @mkdir($basePath, 2775, true);
             }
 
             $model = $this->processTemplate($tableName, $table, 'ControllerTemplate');
@@ -176,5 +190,28 @@ class CodeGenerator
         $tpl->addFunction('get_namespace', $callback);
 
         return $tpl->render();
+    }
+
+    protected function ask($question, $options)
+    {
+        print $question . PHP_EOL;
+        foreach ($options as $key => $value) {
+            print ($key + 1) . '. ' . $value . PHP_EOL;
+        }
+
+        print 'Enter the number representing your choice: ';
+
+        $stdin = fopen('php://stdin', 'r');
+        $rtn = fgets($stdin);
+        fclose($stdin);
+
+        $rtn = intval(trim($rtn));
+
+
+        if ($rtn == 0 || !array_key_exists($rtn - 1, $options)) {
+            return $this->ask($question, $options);
+        }
+
+        return $options[$rtn - 1];
     }
 }
