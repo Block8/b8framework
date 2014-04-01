@@ -92,7 +92,7 @@ class Image
         $source->cropImage($width, $height, $cropX, $cropY);
         $source->setImageFormat($format);
 
-        return $source;
+        return $source->getImageBlob();
     }
 
     protected function getCropPosition($useQuad, $width, $height, $resizeWidth, $resizeHeight)
