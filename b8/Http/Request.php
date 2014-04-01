@@ -35,7 +35,7 @@ class Request
         }
 
         // This should fix things if we're not in the document root:
-        if ($_SERVER['DOCUMENT_ROOT'] != dirname($_SERVER['SCRIPT_FILENAME'])) {
+        if (realpath($_SERVER['DOCUMENT_ROOT']) != dirname($_SERVER['SCRIPT_FILENAME'])) {
             $basePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']));
             $path = substr($path, strlen($basePath));
         }
