@@ -55,10 +55,13 @@ class CodeGenerator
 
     protected function getNamespace($modelName)
     {
-        return array_key_exists(
-            $modelName,
-            $this->namespaces
-        ) ? $this->namespaces[$modelName] : $this->namespaces['default'];
+        if (array_key_exists($modelName, $this->namespaces)) {
+            return $this->namespaces[$modelName];
+        } elseif (isset($this->namespaces['default'])) {
+            return $this->namespaces['default'];
+        } else {
+            return null;
+        }
     }
 
     public function getPath($namespace)
@@ -85,7 +88,9 @@ class CodeGenerator
             $baseFile = $basePath . $table['php_name'] . 'Base.php';
 
             if (!is_dir($basePath)) {
-                @mkdir($basePath, 2775, true);
+                $old = umask(0);
+                @mkdir($basePath, 02775, true);
+                umask($old);
             }
 
             $model = $this->processTemplate($tableName, $table, 'ModelTemplate');
@@ -125,7 +130,9 @@ class CodeGenerator
             $baseFile = $basePath . $table['php_name'] . 'StoreBase.php';
 
             if (!is_dir($basePath)) {
-                @mkdir($basePath, 2775, true);
+                $old = umask(0);
+                @mkdir($basePath, 02775, true);
+                umask($old);
             }
 
             $model = $this->processTemplate($tableName, $table, 'StoreTemplate');
