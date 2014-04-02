@@ -5,7 +5,7 @@
 
  */
 
-namespace {@appNamespace}\Store\Base;
+namespace {@itemNamespace}\Store\Base;
 
 use PDOException;
 use b8\Cache;
@@ -14,7 +14,7 @@ use b8\Database\Query;
 use b8\Database\Query\Criteria;
 use b8\Exception\StoreException;
 use {@appNamespace}\Store;
-use {@appNamespace}\Model\{@table.php_name};
+use {@itemNamespace}\Model\{@table.php_name};
 
 /**
  * {@table.php_name} Base Store
@@ -24,7 +24,7 @@ trait {@table.php_name}StoreBase
     protected function init()
     {
         $this->tableName = '{@name}';
-        $this->modelName = '\{@appNamespace}\Model\{@table.php_name}';
+        $this->modelName = '\{@itemNamespace}\Model\{@table.php_name}';
         $this->primaryKey = '{@table.primary_key.column}';
     }
 

@@ -2,6 +2,7 @@
 
 namespace b8\Database;
 
+use b8\Config;
 use b8\Database;
 use b8\View\Template;
 
@@ -184,8 +185,16 @@ class CodeGenerator
 
     protected function processTemplate($tableName, $table, $template)
     {
+        $config = Config::getInstance();
+        $appNamespace = $config->get('b8.app.namespace');
+
+        if (!class_exists($appNamespace . '\\Model')) {
+            $appNamespace = 'b8';
+        }
+
         $tpl = Template::createFromFile($template, B8_PATH . 'Database/CodeGenerator/');
-        $tpl->appNamespace = $this->getNamespace($table['php_name']);
+        $tpl->appNamespace = $appNamespace;
+        $tpl->itemNamespace = $this->getNamespace($table['php_name']);
         $tpl->name = $tableName;
         $tpl->table = $table;
         $tpl->counts = $this->counts;

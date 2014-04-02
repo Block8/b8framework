@@ -5,7 +5,7 @@
 
  */
 
-namespace {@appNamespace}\Model\Base;
+namespace {@itemNamespace}\Model\Base;
 
 use b8\Store\Factory;
 
@@ -182,7 +182,7 @@ trait {@table.php_name}Base
     /**
     * Set {@item.php_name} - Accepts a {@item.table_php_name} model.
     *
-    * @param $value \{@parent.appNamespace}\Model\{@item.table_php_name}
+    * @param $value \{get_namespace model: item.table_php_name}\Model\{@item.table_php_name}
 
     */
     public function set{@item.php_name}Object(\{get_namespace model: item.table_php_name}\Model\{@item.table_php_name} $value)
