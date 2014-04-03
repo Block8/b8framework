@@ -71,7 +71,7 @@ class Image
         $sourceRatio = $sourceWidth / $sourceHeight;
         $targetRatio = $height != 'auto' ? $width / $height : $sourceRatio;
 
-        $useQuad = $this->getQuadrant($sourceWidth, $sourceHeight);
+        $quad = $this->getQuadrant($sourceWidth, $sourceHeight);
 
         if ($sourceRatio <= $targetRatio) {
             $scale = $sourceWidth / $width;
@@ -88,45 +88,41 @@ class Image
 
         $source->scaleImage($resizeWidth, $resizeHeight);
 
-        list($cropX, $cropY) = $this->getCropPosition($useQuad, $width, $height, $resizeWidth, $resizeHeight);
+        list($cropX, $cropY) = $this->getCropPosition($quad, $scale, $width, $height, $resizeWidth, $resizeHeight);
         $source->cropImage($width, $height, $cropX, $cropY);
         $source->setImageFormat($format);
 
         return $source->getImageBlob();
     }
 
-    protected function getCropPosition($useQuad, $width, $height, $resizeWidth, $resizeHeight)
+    protected function getCropPosition($quad, $scale, $width, $height, $resizeWidth, $resizeHeight)
     {
-        switch ($useQuad) {
-            case 'top_left':
-                $cropX = 0;
-                $cropY = 0;
-                break;
+        $quadLeft = round($quad[1][0] / $scale);
+        $quadRight = round($quad[1][1] / $scale);
+        $quadTop = round($quad[1][2] / $scale);
+        $quadBottom = round($quad[1][3] / $scale);
 
-            case 'top_right':
-                $cropX = ($resizeWidth - $width);
-                $cropY = 0;
-                break;
+        $centerX = round($resizeWidth / 2);
+        $centerY = round($resizeHeight / 2);
 
-            case 'middle_left':
-                $cropX = 0;
-                $cropY = ($resizeHeight - $height) / 2;
-                break;
 
-            case 'middle-right':
-                $cropX = ($resizeWidth - $width);
-                $cropY = ($resizeHeight - $height) / 2;
-                break;
+        $halfWidth = ($resizeWidth - $width) / 2;
+        $halfHeight = ($resizeHeight - $height) / 2;
 
-            case 'bottom_left':
-                $cropX = 0;
-                $cropY = ($resizeHeight - $height);
-                break;
+        if ($quadLeft <= $centerX && $quadRight >= $centerX) {
+            $cropX = $halfWidth;
+        } elseif ($quadLeft <= $centerX && $quadRight <= $centerX) {
+            $cropX = $quadLeft;
+        } else {
+            $cropX = $quadRight;
+        }
 
-            case 'bottom_right':
-                $cropX = ($resizeWidth - $width);
-                $cropY = ($resizeHeight - $height);
-                break;
+        if ($quadTop <= $centerY && $quadBottom >= $centerY) {
+            $cropY = $halfHeight;
+        } elseif ($quadTop <= $centerY && $quadBottom <= $centerY) {
+            $cropY = $quadTop;
+        } else {
+            $cropY = $quadBottom;
         }
 
         return array($cropX, $cropY);
@@ -134,7 +130,7 @@ class Image
 
     protected function getQuadrant($sourceWidth, $sourceHeight)
     {
-        $focal = array(0, 0);
+        $focal = array(round($sourceWidth / 2), round($sourceHeight / 2));
 
         if (!empty($this->focalPoint)) {
             $focal = $this->focalPoint;
@@ -142,12 +138,13 @@ class Image
 
         $focalX = (int)$focal[0];
         $focalY = (int)$focal[1];
-
         $quads = $this->getQuadrants($sourceWidth, $sourceHeight);
+        $useQuad = null;
 
         foreach ($quads as $name => $l) {
             if ($focalX >= $l[0] && $focalX <= $l[1] && $focalY >= $l[2] && $focalY <= $l[3]) {
-                $useQuad = $name;
+                $useQuad = [$name, $l];
+                break;
             }
         }
 
@@ -156,13 +153,18 @@ class Image
 
     protected function getQuadrants($imageX, $imageY)
     {
-        $rtn = array();
-        $rtn['top_left'] = array(0, $imageX / 2, 0, $imageY / 3);
-        $rtn['top_right'] = array(($imageX / 2) + 1, $imageX, 0, $imageY / 3);
-        $rtn['middle_left'] = array(0, $imageY / 2, ($imageY / 3) + 1, (($imageY / 3) * 2));
-        $rtn['middle_right'] = array(($imageX / 2) + 1, $imageX, ($imageY / 3) + 1, (($imageY / 3) * 2));
-        $rtn['bottom_left'] = array(0, $imageY / 2, (($imageY / 3) * 2) + 1, $imageY);
-        $rtn['bottom_right'] = array(($imageX / 2) + 1, $imageX, (($imageY / 3) * 2) + 1, $imageY);
+        $split = 4;
+
+        $rtn = [];
+
+        $quadrantWidth = round($imageX / $split);
+        $quadrantHeight = round($imageY / $split);
+
+        for ($i = 0; $i < $split; $i++) {
+            for ($j = 0; $j < $split; $j++) {
+                $rtn[$i . 'x' . $j] = [$quadrantWidth * $i, $quadrantWidth * ($i + 1), $quadrantHeight * $j, $quadrantHeight * ($j+1)];
+            }
+        }
 
         return $rtn;
     }
