@@ -158,6 +158,10 @@ class Variables
             return $working->format($format);
         }
 
+        if ($thisPart == 'currency' && is_numeric($working)) {
+            return number_format($working, 2);
+        }
+
         if ($thisPart == 'yesNo') {
             return $working ? 'Yes' : 'No';
         }
