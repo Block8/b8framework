@@ -194,8 +194,7 @@ class {@table.php_name}Base extends Model
         $this->_setModified('{@item.name}');
     }
 
-{/loop}
-{loop table.relationships.toOne}
+{/loop}{loop table.relationships.toOne}
     /**
      * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
      *
@@ -253,8 +252,7 @@ class {@table.php_name}Base extends Model
         return $this->set{@item.from_col_php}($value->get{@item.col_php}());
     }
 
-{/loop}
-{loop table.relationships.toMany}
+{/loop}{loop table.relationships.toMany}
     /**
      * Get {@item.table_php} models by {@item.from_col_php} for this {@parent.table.php_name}.
      *
@@ -267,32 +265,4 @@ class {@table.php_name}Base extends Model
         return Factory::getStore('{@item.table_php}', '{get_namespace model: item.table_php_name}')->getBy{@item.from_col_php}($this->get{@item.col_php}());
     }
 
-{/loop}
-
-
-
-    public static function getByPrimaryKey($value, $useConnection = 'read')
-    {
-        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getByPrimaryKey($value, $useConnection);
-    }
-
-{loop table.columns}
-{if item.unique_indexed}
-
-    public static function getBy{@item.php_name}($value, $useConnection = 'read')
-    {
-        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $useConnection);
-    }
-{/if}
-{if item.many_indexed}
-
-    public static function getBy{@item.php_name}($value, $limit = null, $useConnection = 'read')
-    {
-        return Factory::getStore('{@table.php_name}', '{get_namespace model: item.table_php_name}')->getBy{@item.php_name}($value, $limit, $useConnection);
-    }
-{/if}
-{/loop}
-
-
-
-}
+{/loop}}
