@@ -77,6 +77,7 @@ trait {@table.php_name}Base
 
 {/for}
 {for table.columns}
+
     /**
     * Set the value of {@item.php_name} / {@item.name}.
     *
@@ -135,9 +136,7 @@ trait {@table.php_name}Base
         $this->setModified('{@item.name}');
     }
 
-
-{/for}
-{for table.relationships.toOne}
+{/for}{for table.relationships.toOne}
     /**
     * Get the {@item.table_php_name} model for this {@parent.table.php_name} by {@item.col_php}.
     *
@@ -190,5 +189,4 @@ trait {@table.php_name}Base
         return $this->set{@item.from_col_php}($value->get{@item.col_php}());
     }
 
-{/for}
-}
+{/for}}
