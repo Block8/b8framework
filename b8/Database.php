@@ -2,8 +2,6 @@
 
 namespace b8;
 
-use b8\Config;
-
 class Database extends \PDO
 {
     protected static $initialised = false;
