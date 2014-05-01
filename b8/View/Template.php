@@ -112,7 +112,7 @@ class Template extends View
         return $rtn;
     }
 
-    public function includeTemplate($args, $view)
+    public function includeTemplate($args, &$view)
     {
         $template = static::createFromFile($view->getVariable($args['template']));
 
