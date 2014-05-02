@@ -3,6 +3,7 @@
 namespace b8;
 
 use b8\Config;
+use b8\Exception\Handler;
 use b8\Exception\HttpException\NotFoundException;
 use b8\Http;
 use b8\View;
@@ -34,6 +35,15 @@ class Application
      */
     protected $config;
 
+    /**
+     * @var Exception\Handler
+     */
+    protected $exceptionHandler;
+
+    /**
+     * @param Config $config
+     * @param Http\Request $request
+     */
     public function __construct(Config $config, Http\Request $request = null)
     {
         $this->config = $config;
@@ -45,6 +55,7 @@ class Application
             $this->request = new Http\Request();
         }
 
+        $this->exceptionHandler = new Handler($this->config, $this->request, $this->response);
         $this->router = new Http\Router($this, $this->request, $this->config);
 
         if (method_exists($this, 'init')) {

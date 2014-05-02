@@ -1,0 +1,128 @@
+<html>
+    <head>
+        <title>b8: Uncaught Exception</title>
+
+        <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+        <style>
+            .code .line {
+                display: block;
+                padding: 3px;
+            }
+
+                .code .line:nth-child(odd) {
+                    background: #fafafa;
+                }
+
+            .code .error,
+            .code .line:nth-child(odd).error {
+                background: #ffc;
+                color: red;
+                display: block;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 style="border-bottom: 1px solid #ddd; padding: 10px;">b8: Uncaught Exception</h1>
+
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        {@message}
+                    </h2>
+                </div>
+
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <th>File:</th>
+                            <td>{@file}</td>
+                        </tr>
+                        <tr>
+                            <th>Line:</th>
+                            <td>{@line}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Stack Trace
+                    </h3>
+                </div>
+
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>File</th>
+                            <th width="1">Line</th>
+                            <th>Call</th>
+                            <th>Args</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {for trace}
+                        <tr>
+                            <td>
+                                {if value.b8_file}
+                                <span class="label label-primary">b8</span>
+                                {/if}
+
+                                {@value.file}
+                            </td>
+                            <td>{@value.line}</td>
+                            <td>{@value.class}{@value.type}{@value.function}</td>
+                            <td>
+                                <ul>
+                                {for value.args}
+                                <li><strong>({@value.type})</strong> {@value.value}</li>
+                                {/for}
+                                </ul>
+                            </td>
+                        </tr>
+                        {/for}
+                    </tbody>
+                </table>
+            </div>
+
+            {if app_code}
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Exception Call Site</h3>
+                </div>
+                <div class="panel-body">
+<pre class="code">
+{for app_code}
+{if value.is_error_line}<span class="line error">{/if}
+{ifnot value.is_error_line}<span class="line">{/ifnot}
+{@value.line}: {@value.code}
+</span>
+{/for}
+</pre>
+                </div>
+            </div>
+            {/if}
+
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Exception Throw Site</h3>
+                </div>
+                <div class="panel-body">
+<pre class="code">
+{for code}
+{if value.is_error_line}<span class="line error">{/if}
+{ifnot value.is_error_line}<span class="line">{/ifnot}
+{@value.line}: {@value.code}
+</span>
+{/for}
+</pre>
+                </div>
+            </div>
+
+        </div>
+    </body>
+</html>
