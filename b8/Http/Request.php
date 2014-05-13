@@ -34,13 +34,9 @@ class Request
             $path = $_SERVER['REQUEST_URI'];
         }
 
-        // This should fix things if we're not in the document root:
-        if (realpath($_SERVER['DOCUMENT_ROOT']) != dirname($_SERVER['SCRIPT_FILENAME'])) {
-            $basePath = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($_SERVER['SCRIPT_FILENAME']));
-
-            if (substr($path, 0, strlen($basePath)) == $basePath) {
-                $path = substr($path, strlen($basePath));
-            }
+        if ($_SERVER['SCRIPT_NAME'] != $_SERVER['REQUEST_URI']) {
+            $scriptPath = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
+            $path = str_replace($scriptPath, '', $path);
         }
 
         // Remove index.php from the URL if it is present:
