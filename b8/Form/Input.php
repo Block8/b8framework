@@ -15,13 +15,13 @@ class Input extends Element
     protected $customError = false;
     protected $enabled = true;
 
-    public static function create($name, $label, $required = false)
+    public static function create($name, $label, $required = false, $class = "")
     {
         $element = new static();
         $element->setName($name);
         $element->setLabel($label);
         $element->setRequired($required);
-
+        $element->setClass($class);
         return $element;
     }
 
