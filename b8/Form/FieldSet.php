@@ -102,6 +102,7 @@ class FieldSet extends Element
             $rendered[] = $child->render();
         }
 
+        $view->childFields = $this->children;
         $view->children = $rendered;
     }
 
