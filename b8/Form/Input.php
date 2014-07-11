@@ -13,6 +13,16 @@ class Input extends Element
 	protected $_error;
     protected $_customError = false;
 
+    public static function create($name, $label, $required = false)
+    {
+        $el = new static();
+        $el->setName($name);
+        $el->setLabel($label);
+        $el->setRequired($required);
+
+        return $el;
+    }
+
 	public function getValue()
 	{
 		return $this->_value;
@@ -21,6 +31,7 @@ class Input extends Element
 	public function setValue($value)
 	{
 		$this->_value = $value;
+        return $this;
 	}
 
 	public function getRequired()
@@ -31,6 +42,7 @@ class Input extends Element
 	public function setRequired($required)
 	{
 		$this->_required = (bool)$required;
+        return $this;
 	}
 
 	public function getValidator()
@@ -44,6 +56,8 @@ class Input extends Element
 		{
 			$this->_validator = $validator;
 		}
+
+        return $this;
 	}
 
 	public function getPattern()
@@ -54,6 +68,7 @@ class Input extends Element
 	public function setPattern($pattern)
 	{
 		$this->_pattern = $pattern;
+        return $this;
 	}
 
 	public function validate()
@@ -96,6 +111,7 @@ class Input extends Element
     {
         $this->_customError = true;
         $this->_error = $message;
+        return $this;
     }
 
 	protected function _onPreRender(View &$view)
