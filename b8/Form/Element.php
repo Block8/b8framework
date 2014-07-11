@@ -30,6 +30,7 @@ abstract class Element
 	public function setName($name)
 	{
 		$this->_name = strtolower(preg_replace('/([^a-zA-Z0-9_\-])/', '', $name));
+        return $this;
 	}
 
 	public function getId()
@@ -40,6 +41,7 @@ abstract class Element
 	public function setId($id)
 	{
 		$this->_id = $id;
+        return $this;
 	}
 
 	public function getLabel()
@@ -50,6 +52,7 @@ abstract class Element
 	public function setLabel($label)
 	{
 		$this->_label = $label;
+        return $this;
 	}
 
 	public function getClass()
@@ -60,6 +63,7 @@ abstract class Element
 	public function setClass($class)
 	{
 		$this->_css = $class;
+        return $this;
 	}
 
 	public function getContainerClass()
@@ -70,11 +74,13 @@ abstract class Element
 	public function setContainerClass($class)
 	{
 		$this->_ccss = $class;
+        return $this;
 	}
 
 	public function setParent(Element $parent)
 	{
 		$this->_parent = $parent;
+        return $this;
 	}
 
 	public function render($viewFile = null)
