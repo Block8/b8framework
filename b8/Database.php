@@ -70,6 +70,11 @@ class Database extends \PDO
             self::init();
         }
 
+        // Clear the connection and re-connect if we have a non-zero error code:
+        if (!is_null(self::$connections[$type]) && self::$connections[$type]->errorCode() !== '00000') {
+            self::$connections[$type] = null;
+        }
+
         if (is_null(self::$connections[$type])) {
             if (is_array(self::$servers[$type])) {
                 // Shuffle, so we pick a random server:
