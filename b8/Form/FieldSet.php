@@ -115,4 +115,9 @@ class FieldSet extends Element
     {
         return $this->children[$fieldName];
     }
+
+    public function removeChild($fieldName)
+    {
+        unset($this->children[$fieldName]);
+    }
 }
