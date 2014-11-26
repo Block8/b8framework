@@ -52,13 +52,11 @@ class Variables
 
     protected function isFunctionCall($varName)
     {
-        if (substr($varName, 0, 1) === '(' && substr($varName, -1) === ')') {
-            $functionCall = substr($varName, 1, -1);
-            $parts = explode(' ', $functionCall, 2);
-            $functionName = $parts[0];
-            $arguments = isset($parts[1]) ? $parts[1] : null;
+        if (preg_match('/^([a-zA-Z0-9_-]+)\(/', $varName, $matches)) {
+            $varName = substr($varName, strlen($matches[0]));
+            $args = $this->template->processFunctionArguments($varName);
 
-            return $this->template->executeTemplateFunction($functionName, $arguments);
+            return $this->template->executeTemplateFunction($matches[1], $args);
         }
 
         return null;

@@ -30,7 +30,8 @@ class Template extends View
         if (!count(self::$templateFunctions)) {
             self::$templateFunctions = array(
                 'include' => array($this, 'includeTemplate'),
-                'call' => array($this, 'callHelperFunction')
+                'call' => array($this, 'callHelperFunction'),
+                'define' => array($this, 'defineVariable'),
             );
         }
     }
@@ -79,7 +80,10 @@ class Template extends View
     {
         if (array_key_exists($function, self::$templateFunctions)) {
             $handler = self::$templateFunctions[$function];
-            $args = $this->processFunctionArguments($args);
+
+            if (!is_array($args)) {
+                $args = $this->processFunctionArguments($args);
+            }
 
             return $handler($args, $this);
         }
@@ -87,51 +91,40 @@ class Template extends View
         return null;
     }
 
-    protected function processFunctionArguments($args)
+    public function processFunctionArguments(&$args)
     {
-        $rtn = array();
+        $matches = array();
+        $returnArgs = array();
 
-        $args = explode(';', $args);
+        do {
+            if (preg_match('/^([a-zA-Z0-9_-]+)\:\s*([a-zA-Z0-9_-]+)\(/', $args, $matches)) {
+                $args = substr($args, strlen($matches[0]));
 
-        foreach ($args as $arg) {
-            $arg = explode(':', $arg);
+                $returnArgs[$matches[1]] = $this->executeTemplateFunction($matches[2], $this->processFunctionArguments($args));
 
-            if (count($arg) == 2) {
-
-                $key = trim($arg[0]);
-                $val = trim($arg[1]);
-
-                if (strpos($val, ',') !== false) {
-                    $val = explode(',', $val);
+                if (strlen($args) && substr($args, 0, 1) == ')') {
+                    $args = substr($args, 1);
                 }
-
-                $rtn[$key] = $val;
+            } elseif (preg_match('/^([a-zA-Z0-9_-]+)\:\s*(true|false|[0-9]+|\"[^\"]+\"|[a-zA-Z0-9\._-]+);?\s*/', $args, $matches)) {
+                $returnArgs[$matches[1]] = $this->variables->getVariable($matches[2]);
+                $args = substr($args, strlen($matches[0]));
+            } else {
+                break;
             }
-        }
 
-        return $rtn;
+        } while (!empty($args));
+
+        return $returnArgs;
     }
 
     public function includeTemplate($args, &$view)
     {
-        $template = static::createFromFile($view->getVariable($args['template']));
+        $template = static::createFromFile($args['template']);
 
-        if (isset($args['variables'])) {
-            if (!is_array($args['variables'])) {
-                $args['variables'] = array($args['variables']);
-            }
+        unset($args['template']);
 
-            foreach ($args['variables'] as $variable) {
-
-                $variable = explode('=>', $variable);
-                $variable = array_map('trim', $variable);
-
-                if (count($variable) == 1) {
-                    $template->{$variable[0]} = $view->getVariable($variable[0]);
-                } else {
-                    $template->{$variable[1]} = $view->getVariable($variable[0]);
-                }
-            }
+        foreach ($args as $key => $val) {
+            $template->variables->set($key, $val);
         }
 
         return $template->render();
@@ -143,5 +136,12 @@ class Template extends View
         $function = $args['method'];
 
         return $this->{$helper}()->{$function}();
+    }
+
+    public function defineVariable($args)
+    {
+        foreach ($args as $key => $val) {
+            $this->variables->set($key, $val);
+        }
     }
 }

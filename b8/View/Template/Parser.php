@@ -149,7 +149,7 @@ class Parser
         return $res;
     }
 
-    protected function readUntil($until, &$string)
+    public function readUntil($until, &$string)
     {
         $parts = explode($until, $string, 2);
 
@@ -232,14 +232,6 @@ class Parser
      * {/for}
      * </code>
      *
-     * Or:
-     *
-     * <code>
-     * {for 0:pages.count; i++}
-     *     <a href="/item/{@i}">{@i}</a>
-     * {/for}
-     * </code>
-     *
      * @param $cond string The condition string for the loop.
      * @param $stack string The child stack for this loop, to be processed for each item.
      * @return string
@@ -247,62 +239,7 @@ class Parser
      */
     protected function doParseFor($cond, $stack)
     {
-        // If this is a simple foreach loop, jump over to parse loop:
-        if (strpos($cond, ';') === false) {
-            return $this->doParseLoop($cond, $stack);
-        }
-
-        // Otherwise, process as a for loop:
-        $parts = explode(';', $cond);
-        $range = explode(':', trim($parts[0]));
-
-        // Process range:
-        $rangeLeft = $this->getForRangePart($range[0]);
-        $rangeRight = $this->getForRangePart($range[1]);
-
-        // Process variable & incrementor / decrementor:
-        $parts[1] = trim($parts[1]);
-
-        $matches = array();
-        if (preg_match('/([a-zA-Z0-9_]+)(\+\+|\-\-)/', $parts[1], $matches)) {
-            $varName = $matches[1];
-            $direction = $matches[2] == '++' ? 'increment' : 'decrement';
-        } else {
-            throw new \Exception('Syntax error in for loop: ' . $cond);
-        }
-
-        $rtn = '';
-
-        if ($direction == 'increment') {
-            for ($i = $rangeLeft; $i < $rangeRight; $i++) {
-                $this->parent = $this;
-                $this->{$varName} = $i;
-                $rtn .= $this->processStack($stack);
-            }
-        } else {
-            for ($i = $rangeLeft; $i > $rangeRight; $i--) {
-                $this->parent = $this;
-                $this->{$varName} = $i;
-                $rtn .= $this->processStack($stack);
-            }
-        }
-
-        return $rtn;
-    }
-
-    protected function getForRangePart($part)
-    {
-        if (is_numeric($part)) {
-            return intval($part);
-        }
-
-        $varPart = $this->template->getVariable($part);
-
-        if (is_numeric($varPart)) {
-            return intval($varPart);
-        }
-
-        throw new \Exception('Invalid range in for loop: ' . $part);
+        return $this->doParseLoop($cond, $stack);
     }
 
     protected function ifConditionIsTrue($condition)
