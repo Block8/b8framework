@@ -106,11 +106,6 @@ trait {@table.php_name}Base
     public function set{@item.php_name}($value)
     {
 
-{if item.validate_null}
-        $this->validateNotNull('{@item.php_name}', $value);
-
-{/if}
-
 {if item.validate_int}
         $this->validateInt('{@item.php_name}', $value);
 
@@ -125,6 +120,19 @@ trait {@table.php_name}Base
 {/if}
 {if item.validate_date}
         $this->validateDate('{@item.php_name}', $value);
+
+{/if}
+{if item.is_foreign_key}
+
+        // As this is a foreign key, empty values should be treated as null:
+        if (empty($value)) {
+            $value = null;
+        }
+
+
+{/if}
+{if item.validate_null}
+        $this->validateNotNull('{@item.php_name}', $value);
 
 {/if}
 

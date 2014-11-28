@@ -24,8 +24,8 @@ class Map
             $this->tables[$table]['php_name'] = $this->generatePhpName($table);
         }
 
-        $this->getRelationships();
         $this->getColumns();
+        $this->getRelationships();
         $this->getIndexes();
 
         return $this->tables;
@@ -80,6 +80,8 @@ class Map
 
                         if (isset($this->tables[$fromTable]) && isset($this->tables[$toTable])) {
                             $phpName = $this->generateFkName($fromCol, $this->tables[$fromTable]['php_name']);
+
+                            $this->tables[$fromTable]['columns'][$fromCol]['is_foreign_key'] = true;
 
                             $this->tables[$fromTable]['relationships']['toOne'][$fromCol] = array(
                                 'fk_name' => $fkName,
