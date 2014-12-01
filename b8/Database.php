@@ -10,6 +10,7 @@ class Database extends \PDO
 	protected static $servers       = array('read' => array(), 'write' => array());
 	protected static $connections   = array('read' => null, 'write' => null);
 	protected static $details       = array();
+    	protected static $lastUsed	= array('read' => null, 'write' => null);
 
 	/**
 	* @deprecated
@@ -72,10 +73,10 @@ class Database extends \PDO
 			self::init();
 		}
 
-        // Clear the connection and re-connect if we have a non-zero error code:
-        if (!is_null(self::$connections[$type]) && self::$connections[$type]->errorCode() !== '00000') {
-            self::$connections[$type] = null;
-        }
+        	// If the connection hasn't been used for 5 minutes, force a reconnection:
+	        if (!is_null(self::$lastUsed[$type]) && (time() - self::$lastUsed[$type]) > 300) {
+	            self::$connections[$type] = null;
+	        }
 
 		if(is_null(self::$connections[$type]))
 		{
@@ -130,6 +131,7 @@ class Database extends \PDO
 			self::$connections[$type] = $connection;
 		}
 
+		self::$lastUsed[$type] = time();
 		return self::$connections[$type];
 	}
 
