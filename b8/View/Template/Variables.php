@@ -156,6 +156,10 @@ class Variables
             return $working->format($format);
         }
 
+        if ($thisPart == 'asJson') {
+            return json_encode($working);
+        }
+
         if ($thisPart == 'currency' && is_numeric($working)) {
             return number_format($working, 2);
         }
