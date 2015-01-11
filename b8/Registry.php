@@ -10,10 +10,10 @@ if (!defined('B8_PATH')) {
 }
 
 /**
- * b8\Registry is now deprecated in favour of using the following classes:
- * @see b8\Http\Request
- * @see b8\Http\Response
- * @see b8\Config
+ * \b8\Registry is now deprecated in favour of using the following classes:
+ * @see \b8\Http\Request
+ * @see \b8\Http\Response
+ * @see \b8\Config
  * @deprecated
  */
 class Registry
@@ -24,12 +24,12 @@ class Registry
     protected static $instance;
 
     /**
-     * @var b8\Config
+     * @var \b8\Config
      */
     protected $config;
 
     /**
-     * @var b8\Http\Request
+     * @var \b8\Http\Request
      */
     protected $request;
 
