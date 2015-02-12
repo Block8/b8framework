@@ -81,9 +81,6 @@ class {@table.php_name}StoreBase extends Store
             $count = 0;
         }
 {/if}
-{ifnot counts}
-        $count = null;
-{/ifnot}
 
         $query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
         $stmt = Database::getConnection($useConnection)->prepare($query);
@@ -96,6 +93,8 @@ class {@table.php_name}StoreBase extends Store
                 return new {@parent.table.php_name}($item);
             };
             $rtn = array_map($map, $res);
+
+            {ifnot counts}$count = count($rtn);{/ifnot}
 
             return array('items' => $rtn, 'count' => $count);
         } else {
