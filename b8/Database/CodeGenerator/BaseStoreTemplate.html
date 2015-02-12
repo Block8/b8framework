@@ -64,10 +64,9 @@ class {@table.php_name}StoreBase extends Store
         }
 
 {if counts}
-        $query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name} LIMIT :limit';
+        $query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}';
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
-        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             $res    = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -77,9 +76,10 @@ class {@table.php_name}StoreBase extends Store
         }
 {/if}
 
-        $query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
+        $query = 'SELECT * FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name} LIMIT :limit';
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
+        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             $res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
