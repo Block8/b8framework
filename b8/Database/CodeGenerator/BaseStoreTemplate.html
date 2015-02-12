@@ -57,22 +57,17 @@ class {@table.php_name}StoreBase extends Store
 {/if}
 {if item.many_indexed}
 
-    public function getBy{@item.php_name}($value, $limit = null, $useConnection = 'read')
+    public function getBy{@item.php_name}($value, $limit = 1000, $useConnection = 'read')
     {
         if (is_null($value)) {
             throw new HttpException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
-        $add = '';
-
-        if ($limit) {
-            $add .= ' LIMIT ' . $limit;
-        }
-
 {if counts}
-        $query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name}' . $add;
+        $query = 'SELECT COUNT(*) AS cnt FROM `{@parent.name}` WHERE `{@item.name}` = :{@item.name} LIMIT :limit';
         $stmt = Database::getConnection($useConnection)->prepare($query);
         $stmt->bindValue(':{@item.name}', $value);
+        $stmt->bindValue(':limit', (int)$limit, \PDO::PARAM_INT);
 
         if ($stmt->execute()) {
             $res    = $stmt->fetch(\PDO::FETCH_ASSOC);
