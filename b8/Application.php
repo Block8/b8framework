@@ -5,6 +5,7 @@ namespace b8;
 use b8\Config;
 use b8\Exception\Handler;
 use b8\Exception\HttpException\NotFoundException;
+use b8\Exception\HttpException\ServerErrorException;
 use b8\Http;
 use b8\View;
 
@@ -76,6 +77,10 @@ class Application
         }
 
         $action = lcfirst($this->toPhpName($this->route['action']));
+
+        if (!$this->getController()) {
+            throw new ServerErrorException('No controller found for this request.');
+        }
 
         if (!$this->getController()->hasAction($action)) {
             throw new NotFoundException('Controller ' . $this->toPhpName(
