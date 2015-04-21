@@ -38,7 +38,7 @@ class Checkbox extends Input
         $this->checked = false;
     }
 
-    public function onPreRender(View &$view)
+    public function onPreRender(&$view)
     {
         parent::onPreRender($view);
         $view->checkedValue = $this->getCheckedValue();

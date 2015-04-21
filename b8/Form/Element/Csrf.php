@@ -15,7 +15,7 @@ class Csrf extends Hidden
         return true;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         parent::onPreRender($view);
         $csrf = md5(microtime(true));

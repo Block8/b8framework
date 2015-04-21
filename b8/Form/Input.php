@@ -119,7 +119,7 @@ class Input extends Element
         $this->error = $message;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         $view->value = $this->getValue();
         $view->error = $this->error;

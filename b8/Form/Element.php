@@ -61,6 +61,7 @@ abstract class Element
     public function setClass($class)
     {
         $this->css = $class;
+        return $this;
     }
 
     public function getContainerClass()
@@ -98,7 +99,7 @@ abstract class Element
 
         $this->onPreRender($view);
 
-        return $view->render();
+        return $view;
     }
 
     /**
@@ -134,5 +135,5 @@ abstract class Element
         return $this->viewLoader;
     }
 
-    abstract protected function onPreRender(View &$view);
+    abstract protected function onPreRender(&$view);
 }

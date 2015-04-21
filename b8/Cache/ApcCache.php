@@ -9,7 +9,7 @@ class ApcCache implements Type\Cache
     /**
      * Check if caching is enabled.
      */
-    public function isEnabled()
+    public static function isEnabled()
     {
         $rtn = false;
 
@@ -29,7 +29,7 @@ class ApcCache implements Type\Cache
      */
     public function get($key, $default = null)
     {
-        if (!$this->isEnabled()) {
+        if (!self::isEnabled()) {
             return $default;
         }
 
@@ -48,7 +48,7 @@ class ApcCache implements Type\Cache
      */
     public function set($key, $value = null, $ttl = 0)
     {
-        if (!$this->isEnabled()) {
+        if (!self::isEnabled()) {
             return false;
         }
 
@@ -60,7 +60,7 @@ class ApcCache implements Type\Cache
      */
     public function delete($key)
     {
-        if (!$this->isEnabled()) {
+        if (!self::isEnabled()) {
             return false;
         }
 
@@ -72,7 +72,7 @@ class ApcCache implements Type\Cache
      */
     public function contains($key)
     {
-        if (!$this->isEnabled()) {
+        if (!self::isEnabled()) {
             return false;
         }
 

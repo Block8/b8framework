@@ -86,6 +86,7 @@ class CodeGenerator
             $modelPath = $this->getPath($namespace) . 'Model/';
             $basePath = $modelPath . 'Base/';
             $modelFile = $modelPath . $table['php_name'] . '.php';
+            $collectionFile = $modelPath . $table['php_name'] . 'Collection.php';
             $baseFile = $basePath . $table['php_name'] . 'Base.php';
 
             if (!is_dir($basePath)) {
@@ -95,6 +96,7 @@ class CodeGenerator
             }
 
             $model = $this->processTemplate($tableName, $table, 'ModelTemplate');
+            $collection = $this->processTemplate($tableName, $table, 'ModelCollectionTemplate');
             $base = $this->processTemplate($tableName, $table, 'BaseModelTemplate');
 
             print '-- ' . $table['php_name'] . PHP_EOL;
@@ -105,6 +107,9 @@ class CodeGenerator
 
                 file_put_contents($modelFile, $model);
             }
+
+            print '-- -- Writing Collection: ' . $table['php_name'] . PHP_EOL;
+            file_put_contents($collectionFile, $collection);
 
             print '-- -- Writing base Model: ' . $table['php_name'] . PHP_EOL;
             print '-- -- -- ' . $baseFile . PHP_EOL;

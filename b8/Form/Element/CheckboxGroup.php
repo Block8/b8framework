@@ -13,7 +13,9 @@ class CheckboxGroup extends FieldSet
         $this->options = $options;
         foreach($options as $key => $value) {
             $checkbox = Checkbox::create($this->getName()."_checkbox_".$key, $value, false);
-            $checkbox->setCheckedValue(1);
+            $checkbox->setName($this->getName() . '['.$key.']');
+            $checkbox->setId($this->getName() . '_' . $key);
+            $checkbox->setCheckedValue($key);
             $this->addField($checkbox); 
         }
     }

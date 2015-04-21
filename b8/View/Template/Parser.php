@@ -191,7 +191,7 @@ class Parser
             return '';
         }
 
-        if (!is_array($working)) {
+        if (!is_array($working) && !($working instanceof \Iterator)) {
             $working = array($working);
         }
 

@@ -17,6 +17,8 @@ class View
 
     public function __construct($file, $path = null)
     {
+        var_dump('View created: ' . $file);
+
         $this->variables = new Variables($this);
 
         if (!self::exists($file, $path)) {
@@ -98,5 +100,10 @@ class View
         ob_end_clean();
 
         return $html;
+    }
+
+    public function __toString()
+    {
+        return $this->render();
     }
 }

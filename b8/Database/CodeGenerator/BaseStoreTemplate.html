@@ -15,6 +15,7 @@ use b8\Database\Query\Criteria;
 use b8\Exception\StoreException;
 use {@appNamespace}\Store;
 use {@itemNamespace}\Model\{@table.php_name};
+use {@itemNamespace}\Model\{@table.php_name}Collection;
 
 /**
  * {@table.php_name} Base Store
@@ -73,6 +74,17 @@ trait {@table.php_name}StoreBase
             throw new StoreException('Value passed to ' . __FUNCTION__ . ' cannot be null.');
         }
 
+{if table.primary_key.php_name == item.php_name}
+        // This is the primary key, so try and get from cache:
+        $cacheResult = $this->getFromCache($value);
+
+        if (!empty($cacheResult)) {
+            return $cacheResult;
+        }
+
+
+{/if}
+
         $query = new Query($this->getNamespace('{@table.php_name}').'\Model\{@table.php_name}', $useConnection);
         $query->select('*')->from('{@parent.name}')->limit(1);
         $query->where('`{@item.name}` = :{@item.name}');
@@ -80,7 +92,11 @@ trait {@table.php_name}StoreBase
 
         try {
             $query->execute();
-            return $query->fetch();
+            $result = $query->fetch();
+
+            $this->setCache($value, $result);
+
+            return $result;
         } catch (PDOException $ex) {
             throw new StoreException('Could not get {@parent.table.php_name} by {@item.php_name}', 0, $ex);
         }
@@ -139,7 +155,7 @@ trait {@table.php_name}StoreBase
 
         try {
             $query->execute();
-            return $query->fetchAll();
+            return new {@table.php_name}Collection($query->fetchAll());
         } catch (PDOException $ex) {
             throw new StoreException('Could not get {@parent.table.php_name} by {@item.php_name}', 0, $ex);
         }

@@ -12,7 +12,7 @@ class Button extends Input
         return true;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         parent::onPreRender($view);
         $view->type = 'button';

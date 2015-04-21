@@ -7,7 +7,7 @@ use b8\View;
 
 class Text extends Input
 {
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         parent::onPreRender($view);
         $view->type = 'text';

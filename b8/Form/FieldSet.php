@@ -48,7 +48,11 @@ class FieldSet extends Element
             } elseif ($field instanceof Input) {
                 $fieldName = $field->getName();
 
-                if (isset($vals[$fieldName])) {
+                if (method_exists($field, 'getMultiple') && $field->getMultiple()) {
+                    if (isset($values[$fieldName])) {
+                        $field->setValue($values[$fieldName]);
+                    }
+                } else if (isset($vals[$fieldName])) {
                     $field->setValue($vals[$fieldName]);
                 }
             }
@@ -94,7 +98,7 @@ class FieldSet extends Element
         return $rtn;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         $rendered = array();
 

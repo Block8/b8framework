@@ -13,7 +13,6 @@ use b8\Model;
 abstract class Store
 {
     protected $cacheEnabled = true;
-    protected $cacheType = Cache::TYPE_REQUEST;
     protected $modelName;
     protected $tableName;
     protected $primaryKey;
@@ -37,10 +36,8 @@ abstract class Store
             throw new StoreException('Invalid type passed to cache');
         }
 
-        if (!is_null($this->cacheType)) {
-            $cache = Cache::getCache($this->cacheType);
-            $cache->set($this->modelName . '::' . $modelId, $obj);
-        }
+        $cache = Cache::getCache();
+        $cache->set($this->modelName . '::' . $modelId, $obj);
     }
 
     protected function getFromCache($modelId)
@@ -49,12 +46,8 @@ abstract class Store
             return null;
         }
 
-        if (!is_null($this->cacheType)) {
-            $cache = Cache::getCache($this->cacheType);
-            return $cache->get($this->modelName . '::' . $modelId, null);
-        }
-
-        return null;
+        $cache = Cache::getCache();
+        return $cache->get($this->modelName . '::' . $modelId, null);
     }
 
     public function save(Model $obj, $saveAllColumns = false)

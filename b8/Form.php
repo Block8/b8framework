@@ -36,7 +36,7 @@ class Form extends FieldSet
         $this->method = $method;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         $view->action = $this->getAction();
         $view->method = $this->getMethod();
@@ -46,6 +46,6 @@ class Form extends FieldSet
 
     public function __toString()
     {
-        return $this->render();
+        return (string)$this->render();
     }
 }

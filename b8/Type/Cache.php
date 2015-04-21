@@ -4,6 +4,8 @@ namespace b8\Type;
 
 interface Cache
 {
+    public static function isEnabled();
+
     public function get($key, $default = null);
 
     public function set($key, $value = null, $ttl = 0);
@@ -11,8 +13,6 @@ interface Cache
     public function delete($key);
 
     public function contains($key);
-
-    public function isEnabled();
 
     public function __get($key);
 

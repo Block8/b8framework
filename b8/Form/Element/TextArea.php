@@ -18,7 +18,7 @@ class TextArea extends Text
         $this->rows = $rows;
     }
 
-    protected function onPreRender(View &$view)
+    protected function onPreRender(&$view)
     {
         parent::onPreRender($view);
         $view->rows = $this->getRows();

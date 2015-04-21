@@ -8,10 +8,10 @@ namespace b8;
  */
 class Cache
 {
-    const TYPE_APC = 'ApcCache';
-    const TYPE_REQUEST = 'RequestCache';
-
-    protected static $instance = array();
+    /**
+     * @var \b8\Type\Cache
+     */
+    protected static $instance;
 
     /**
      * LEGACY: Older apps will expect an APC cache in return.
@@ -20,20 +20,25 @@ class Cache
      */
     public static function getInstance()
     {
-        return self::getCache(self::TYPE_APC);
+        return self::getCache();
     }
 
     /**
-     * @param string $type
      * @return \b8\Type\Cache
      */
-    public static function getCache($type = self::TYPE_REQUEST)
+    public static function getCache()
     {
-        if (!isset(self::$instance[$type])) {
-            $class = '\\b8\\Cache\\' . $type;
-            self::$instance[$type] = new $class();
+        if (!isset(self::$instance)) {
+            $apcCache = '\\b8\\Cache\\ApcCache';
+            $requestCache = '\\b8\\Cache\\RequestCache';
+
+            if ($apcCache::isEnabled()) {
+                self::$instance = new $apcCache();
+            } else {
+                self::$instance = new $requestCache();
+            }
         }
 
-        return self::$instance[$type];
+        return self::$instance;
     }
 }
