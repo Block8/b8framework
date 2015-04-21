@@ -365,4 +365,14 @@ class Template
             $attribute->value = htmlentities($value);
         }
     }
+
+    public function getContext()
+    {
+        return $this->variableHandler;
+    }
+
+    public function setContext(VariableHandler &$handler)
+    {
+        $this->variableHandler =& $handler;
+    }
 }
