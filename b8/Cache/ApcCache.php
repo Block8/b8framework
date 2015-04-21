@@ -6,6 +6,13 @@ use b8\Type;
 
 class ApcCache implements Type\Cache
 {
+    protected $cachePrefix = '';
+
+    public function __construct()
+    {
+        $this->cachePrefix = substr(md5(dirname(__FILE__)), 0, 5);
+    }
+
     /**
      * Check if caching is enabled.
      */
@@ -34,7 +41,7 @@ class ApcCache implements Type\Cache
         }
 
         $success = false;
-        $rtn = apc_fetch($key, $success);
+        $rtn = apc_fetch($this->cachePrefix . $key, $success);
 
         if (!$success) {
             $rtn = $default;
@@ -52,7 +59,7 @@ class ApcCache implements Type\Cache
             return false;
         }
 
-        return apc_store($key, $value, $ttl);
+        return apc_store($this->cachePrefix . $key, $value, $ttl);
     }
 
     /**
@@ -64,7 +71,7 @@ class ApcCache implements Type\Cache
             return false;
         }
 
-        return apc_delete($key);
+        return apc_delete($this->cachePrefix . $key);
     }
 
     /**
@@ -76,7 +83,7 @@ class ApcCache implements Type\Cache
             return false;
         }
 
-        return apc_exists($key);
+        return apc_exists($this->cachePrefix . $key);
     }
 
     /**

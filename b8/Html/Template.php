@@ -323,10 +323,12 @@ class Template
         libxml_use_internal_errors(true);
 
         $insert = new DOMDocument();
-        $insert->loadHTML($string, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $insert->loadHTML('<octo id="octoinject">'.$string.'</octo>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
 
-        if ($insert->hasChildNodes()) {
-            foreach ($insert->childNodes as $insertNode) {
+        $inject = $insert->getElementById("octoinject");
+
+        if ($inject->hasChildNodes()) {
+            foreach ($inject->childNodes as $insertNode) {
                 $insertNode = $this->templateDocument->importNode($insertNode, true);
                 $parent->insertBefore($insertNode, $sibling);
             }
