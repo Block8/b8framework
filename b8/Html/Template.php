@@ -150,31 +150,7 @@ class Template
         }
 
         if ($node instanceof DOMElement && $node->hasAttributes()) {
-            foreach ($node->attributes as $attribute) {
-
-                if (substr($attribute->name, 0, 1) == '.') {
-                    $matches = [];
-
-                    if (preg_match('/^\(([^\}]+)\)([^\?]+)\?(.*)?/', $attribute->value, $matches)) {
-
-                        if ($this->ifCondition($matches[1])) {
-                            $node->setAttribute(substr($attribute->name, 1), $matches[2]);
-                        } else {
-                            $node->setAttribute(substr($attribute->name, 1), $matches[3]);
-                        }
-                    } else if ($this->ifCondition($attribute->value)) {
-                        $node->setAttribute(substr($attribute->name, 1), '');
-                    }
-
-                    $node->removeAttributeNode($attribute);
-                }
-
-                $value = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) {
-                    return $this->variableHandler->getVariable($key[1]);
-                }, $attribute->value);
-
-                $attribute->value = htmlentities($value);
-            }
+            $this->processAttributes($node);
         }
 
         if ($node instanceof DOMText) {
@@ -360,5 +336,49 @@ class Template
         }
 
         return '';
+    }
+
+
+    protected function processAttributes(DOMNode &$node, $skip = [])
+    {
+        foreach ($node->attributes as $attribute) {
+            if (in_array($attribute->name, $skip)) {
+                continue;
+            }
+
+            if (substr($attribute->name, 0, 1) == '.') {
+                $matches = [];
+
+                if (preg_match('/^\(([^\}]+)\)([^\?]+)\?(.*)?/', $attribute->value, $matches)) {
+
+                    if ($this->ifCondition($matches[1])) {
+                        $node->setAttribute(substr($attribute->name, 1), $matches[2]);
+                    } else {
+                        $node->setAttribute(substr($attribute->name, 1), $matches[3]);
+                    }
+                } else if ($this->ifCondition($attribute->value)) {
+                    $node->setAttribute(substr($attribute->name, 1), '');
+                }
+
+                $node->removeAttributeNode($attribute);
+                return $this->processAttributes($node);
+            }
+
+            $value = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) {
+                return $this->variableHandler->getVariable($key[1]);
+            }, $attribute->value);
+
+            $attribute->value = htmlentities($value);
+        }
+    }
+
+    public function getContext()
+    {
+        return $this->variableHandler;
+    }
+
+    public function setContext(VariableHandler &$handler)
+    {
+        $this->variableHandler =& $handler;
     }
 }
