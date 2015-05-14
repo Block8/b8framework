@@ -79,9 +79,7 @@ class Application
     public function getController()
     {
         if (empty($this->controller)) {
-            $namespace = $this->toPhpName($this->route['namespace']);
-            $controller = $this->toPhpName($this->route['controller']);
-            $controllerClass = $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
+            $controllerClass = $this->getControllerClass($this->route);
             $this->controller = $this->loadController($controllerClass);
         }
 
@@ -98,12 +96,14 @@ class Application
 
     protected function controllerExists($route)
     {
+        return class_exists($this->getControllerClass($route));
+    }
+
+    protected function getControllerClass($route)
+    {
         $namespace = $this->toPhpName($route['namespace']);
         $controller = $this->toPhpName($route['controller']);
-
-        $controllerClass = $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
-
-        return class_exists($controllerClass);
+        return $this->config->get('b8.app.namespace') . '\\' . $namespace . '\\' . $controller . 'Controller';
     }
 
     public function isValidRoute($route)
