@@ -11,7 +11,7 @@ class RequestCache implements Type\Cache
     /**
      * Check if caching is enabled.
      */
-    public function isEnabled()
+    public static function isEnabled()
     {
         return true;
     }
