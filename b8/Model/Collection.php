@@ -72,4 +72,14 @@ class Collection implements ArrayAccess, Iterator
     {
         return array_key_exists($key, $this->items);
     }
+
+    /**
+     * @param callable $filter
+     * @return static
+     */
+    public function where(callable $filter)
+    {
+        $filtered = array_filter($this->items, $filter);
+        return new static($filtered);
+    }
 }
