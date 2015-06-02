@@ -158,6 +158,12 @@ class Template
             $node->nodeValue = '';
             $replacements = [];
 
+            $content = preg_replace_callback('/\{@([a-zA-Z0-9]+)\:\s*([^\}]+)\}/', function ($values) {
+                $value = $this->variableHandler->getVariable($values[2]);
+                $this->variableHandler->set($values[1], $value);
+                return '';
+            }, $content);
+
             $content = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) use (&$replacements) {
                 $replacements[] = $this->variableHandler->getVariable($key[1]);
                 return '{!!octo.split!!}';
