@@ -80,7 +80,7 @@ abstract class Store
         $updates = array();
         $update_params = array();
         foreach ($modified as $key) {
-            $updates[] = $key . ' = :' . $key;
+            $updates[] = '`' . $key . '`' . ' = :' . $key;
             $update_params[] = array($key, $data[$key]);
         }
 
@@ -126,7 +126,7 @@ abstract class Store
         }
 
         if (count($cols)) {
-            $colString = implode(', ', $cols);
+            $colString = '`' . implode('`, `', $cols) . '`';
             $valString = implode(', ', $values);
 
             $query = 'INSERT INTO ' . $this->tableName . ' (' . $colString . ') VALUES (' . $valString . ')';
