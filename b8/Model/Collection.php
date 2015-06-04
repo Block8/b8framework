@@ -82,4 +82,10 @@ class Collection implements ArrayAccess, Iterator
         $filtered = array_filter($this->items, $filter);
         return new static($filtered);
     }
+
+    public function sort(callable $sort)
+    {
+        uasort($this->items, $sort);
+        return $this;
+    }
 }
