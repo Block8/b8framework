@@ -164,6 +164,7 @@ class VariableHandler
             'toLowerCase' => 'strtolower',
             'toUpperCase' => 'strtoupper',
             'toUcWords' => 'ucwords',
+            'toHash' => 'md5',
             'toCurrency' => function ($value) {
                 return number_format($value, 2);
             },
