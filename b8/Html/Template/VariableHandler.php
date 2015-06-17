@@ -207,7 +207,7 @@ class VariableHandler
                 if (strlen($args) && substr($args, 0, 1) == ')') {
                     $args = substr($args, 1);
                 }
-            } elseif (preg_match('/^\s*(true|false|[0-9]+|\'[^\']+\'|[a-zA-Z0-9\._-]+);?\s*/', $args, $matches)) {
+            } elseif (preg_match('/^\s*(true|false|[0-9]+|\'[^\']+\'|[a-zA-Z0-9\._-]+);?,?\s*/', $args, $matches)) {
                 $returnArgs[] = $this->getVariable($matches[1]);
                 $args = substr($args, strlen($matches[0]));
             } else {
