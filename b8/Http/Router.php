@@ -91,6 +91,11 @@ class Router
                     }
                     break;
                 default:
+                    if (substr($routePart, 0, 1) == '(' && substr($routePart, -1) == ')') {
+                        if (preg_match('/^'.$routePart.'$/', $pathPart)) {
+                            break;
+                        }
+                    }
                     if ($routePart != $pathPart) {
                         $routeMatches = false;
                     }
