@@ -62,75 +62,98 @@ class Image
 
     public function doRender($width, $height, $format = 'jpeg')
     {
+        $autoHeight = ($height == 'auto');
         $width = (int)$width;
         $height = (int)$height;
 
         $source = $this->getSource();
+
         $sourceWidth = $source->getImageWidth();
         $sourceHeight = $source->getImageHeight();
         $sourceRatio = $sourceWidth / $sourceHeight;
-        $targetRatio = $height != 'auto' ? $width / $height : $sourceRatio;
+        $targetRatio = !$autoHeight ? $width / $height : $sourceRatio;
 
-        $quad = $this->getQuadrant($sourceWidth, $sourceHeight);
+        $crop = false;
 
-        if ($sourceRatio <= $targetRatio) {
+        if ($sourceRatio < $targetRatio) {
+            $crop = true;
             $scale = $sourceWidth / $width;
-        } else {
+            $resizeWidth = $width;
+            $resizeHeight = ceil($sourceHeight / $scale);
+
+            if ($autoHeight) {
+                $height = $resizeHeight;
+            }
+
+            list($focalX, $focalY) = $this->getFocalPoints();
+
+
+            $focalPercentage = (100/$sourceHeight) * $focalY;
+
+            $top = round((($resizeHeight / 100) * $focalPercentage) - ($height / 2));
+            $bottom = round((($resizeHeight / 100) * $focalPercentage) + ($height / 2));
+            $left = 0;
+            $right = $resizeWidth;
+
+            if ($top < 0) {
+                $top = 0;
+            } else if ($bottom > $resizeHeight) {
+                $top = $resizeHeight - $height;
+            }
+        } elseif ($sourceRatio > $targetRatio) {
+            $crop = true;
             $scale = $sourceHeight / $height;
-        }
+            $resizeWidth = ceil($sourceWidth / $scale);
+            $resizeHeight = $height;
 
-        $resizeWidth = (int)($sourceWidth / $scale);
-        $resizeHeight = (int)($sourceHeight / $scale);
+            if ($autoHeight) {
+                $height = $resizeHeight;
+            }
 
-        if ($height == 'auto') {
-            $height = $resizeHeight;
+            list($focalX, $focalY) = $this->getFocalPoints();
+
+            $focalPercentage = (100/$sourceWidth) * $focalX;
+
+            $top = 0;
+            $bottom = $resizeHeight;
+            $left = (($resizeWidth / 100) * $focalPercentage) - ($width / 2);
+            $right = (($resizeWidth / 100) * $focalPercentage) + ($width / 2);
+
+            if ($left < 0) {
+                $left = 0;
+            } else if ($right > $resizeWidth) {
+                $left = $resizeWidth - $width;
+            }
+        } else {
+            $resizeWidth = $width;
+            $resizeHeight = $height;
         }
 
         $source->scaleImage($resizeWidth, $resizeHeight);
 
-        list($cropX, $cropY) = $this->getCropPosition($quad, $scale, $width, $height, $resizeWidth, $resizeHeight);
-        $source->cropImage($width, $height, $cropX, $cropY);
+        if ($crop) {
+            $source->cropImage($width, $height, $left, $top);
+        }
+
         $source->setImageFormat($format);
+
+/*
+        $draw = new \ImagickDraw();
+        $draw->setfillcolor(new \ImagickPixel('green'));
+        $draw->setfillalpha(0.5);
+        $draw->setStrokeColor(new \ImagickPixel('green'));
+        $draw->setStrokeWidth(2);
+        $draw->rectangle($left, $top, $right, $bottom);
+        $source->drawimage($draw);
+*/
+
 
         return $source->getImageBlob();
     }
 
-    protected function getCropPosition($quad, $scale, $width, $height, $resizeWidth, $resizeHeight)
+    protected function getFocalPoints()
     {
-        $quadLeft = round($quad[1][0] / $scale);
-        $quadRight = round($quad[1][1] / $scale);
-        $quadTop = round($quad[1][2] / $scale);
-        $quadBottom = round($quad[1][3] / $scale);
-
-        $centerX = round($resizeWidth / 2);
-        $centerY = round($resizeHeight / 2);
-
-
-        $halfWidth = ($resizeWidth - $width) / 2;
-        $halfHeight = ($resizeHeight - $height) / 2;
-
-        if ($quadLeft <= $centerX && $quadRight >= $centerX) {
-            $cropX = $halfWidth;
-        } elseif ($quadLeft <= $centerX && $quadRight <= $centerX) {
-            $cropX = $quadLeft;
-        } else {
-            $cropX = $quadRight;
-        }
-
-        if ($quadTop <= $centerY && $quadBottom >= $centerY) {
-            $cropY = $halfHeight;
-        } elseif ($quadTop <= $centerY && $quadBottom <= $centerY) {
-            $cropY = $quadTop;
-        } else {
-            $cropY = $quadBottom;
-        }
-
-        return array($cropX, $cropY);
-    }
-
-    protected function getQuadrant($sourceWidth, $sourceHeight)
-    {
-        $focal = array(round($sourceWidth / 2), round($sourceHeight / 2));
+        $focal = [0, 0];
 
         if (!empty($this->focalPoint)) {
             $focal = $this->focalPoint;
@@ -138,34 +161,7 @@ class Image
 
         $focalX = (int)$focal[0];
         $focalY = (int)$focal[1];
-        $quads = $this->getQuadrants($sourceWidth, $sourceHeight);
-        $useQuad = null;
 
-        foreach ($quads as $name => $l) {
-            if ($focalX >= $l[0] && $focalX <= $l[1] && $focalY >= $l[2] && $focalY <= $l[3]) {
-                $useQuad = [$name, $l];
-                break;
-            }
-        }
-
-        return $useQuad;
-    }
-
-    protected function getQuadrants($imageX, $imageY)
-    {
-        $split = 4;
-
-        $rtn = [];
-
-        $quadrantWidth = round($imageX / $split);
-        $quadrantHeight = round($imageY / $split);
-
-        for ($i = 0; $i < $split; $i++) {
-            for ($j = 0; $j < $split; $j++) {
-                $rtn[$i . 'x' . $j] = [$quadrantWidth * $i, $quadrantWidth * ($i + 1), $quadrantHeight * $j, $quadrantHeight * ($j+1)];
-            }
-        }
-
-        return $rtn;
+        return [$focalX, $focalY];
     }
 }
