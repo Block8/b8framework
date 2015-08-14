@@ -165,6 +165,20 @@ class VariableHandler
             'toUpperCase' => 'strtoupper',
             'toUcWords' => 'ucwords',
             'toHash' => 'md5',
+            'toUrl' => function ($value) {
+                $value = strtolower($value);
+                $value = preg_replace('/([^a-z0-9]+)/', '-', $value);
+
+                if (substr($value, 0, 1) == '-') {
+                    $value = substr($value, 1);
+                }
+
+                if (substr($value, -1) == '-') {
+                    $value = substr($value, 0, strlen($value) - 1);
+                }
+
+                return $value;
+            },
             'toCurrency' => function ($value) {
                 return number_format($value, 2);
             },

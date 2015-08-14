@@ -50,7 +50,7 @@ class Image
     {
         $cachePath = self::$cachePath . $this->imageId . '.' . $width . 'x' . $height . '.' . $format;
 
-        if (file_exists($cachePath) && 0) {
+        if (file_exists($cachePath)) {
             $output = file_get_contents($cachePath);
         } else {
             $output = $this->doRender($width, $height, $format);
