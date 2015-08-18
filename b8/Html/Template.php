@@ -57,7 +57,7 @@ class Template
         $this->templateName = $name;
     }
 
-    public function render()
+    public function render($internal = false)
     {
         if (empty($this->templateDocument)) {
             $this->compile();
@@ -331,7 +331,7 @@ class Template
     {
         $matches = [];
 
-        if (preg_match('/\<body\>(.*)\<\/body\>/is', $this->render(), $matches)) {
+        if (preg_match('/\<body\>(.*)\<\/body\>/is', $this->render(true), $matches)) {
             return $matches[1];
         }
 
