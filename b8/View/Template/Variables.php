@@ -143,6 +143,7 @@ class Variables
             'toUpperCase' => 'strtoupper',
             'toUcWords' => 'ucwords',
             'isNumeric' => 'is_numeric',
+            'output' => 'var_dump',
         ];
 
         if (array_key_exists($thisPart, $operations)) {

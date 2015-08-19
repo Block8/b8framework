@@ -81,7 +81,7 @@ class FieldSet extends Element
 
     public function addField(Element $field)
     {
-        $this->children[$field->getName()] = $field;
+        $this->children[$field->getId()] = $field;
         $field->setParent($this);
     }
 
