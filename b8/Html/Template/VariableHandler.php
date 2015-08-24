@@ -193,6 +193,7 @@ class VariableHandler
                 return ($value ? 'Yes' : 'No');
             },
             'output' => 'var_dump',
+            'count' => 'count',
         ];
 
         if (array_key_exists($thisPart, $operations)) {

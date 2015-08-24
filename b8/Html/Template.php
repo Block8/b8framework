@@ -293,7 +293,7 @@ class Template
             $string = (string)$string;
         }
 
-        if (!is_string($string)) {
+        if (!is_scalar($string)) {
             return;
         }
 

@@ -144,6 +144,10 @@ class Variables
             'toUcWords' => 'ucwords',
             'isNumeric' => 'is_numeric',
             'output' => 'var_dump',
+            'toJson' => 'json_encode',
+            'toCurrency' => function ($value) {
+                return number_format($value, 2);
+            },
         ];
 
         if (array_key_exists($thisPart, $operations)) {
