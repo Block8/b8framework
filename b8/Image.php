@@ -2,31 +2,34 @@
 
 namespace b8;
 
+use b8\Image\GdImage;
+
 class Image
 {
     public static $cachePath = '/tmp/';
     public static $sourcePath = './';
+    protected $focalPoint;
+    protected $imageId;
 
     /**
-     * @var \Imagick
+     * @var \b8\Image\GdImage|\Imagick $source
      */
     protected $source;
 
-    /**
-     * @var array
-     */
-    protected $focalPoint;
-
-    protected $imageId;
 
     public function __construct($imagePath)
     {
         $this->imageId = md5($imagePath);
-        $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
+
+        if (extension_loaded('imagick')) {
+            $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
+        } else {
+            $this->setSource(new GdImage(self::$sourcePath . $imagePath));
+        }
     }
 
     /**
-     * @return \Imagick
+     * @return \b8\Image\GdImage|\Imagick
      */
     public function getSource()
     {
@@ -34,9 +37,9 @@ class Image
     }
 
     /**
-     * @param \Imagick $image
+     * @param \b8\Image\GdImage|\Imagick $image
      */
-    public function setSource(\Imagick $image)
+    public function setSource($image)
     {
         $this->source = $image;
     }
