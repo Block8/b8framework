@@ -50,7 +50,11 @@ class GdImage
 
     public function scaleImage($width, $height)
     {
-        $new = imagecreatetruecolor($width, $height);
+        $new = @imagecreatetruecolor($width, $height);
+
+        if (!is_resource($new)) {
+            throw new \Exception('Could not create scaled image: ' . $width . 'x' . $height);
+        }
 
         imagecopyresampled($new, $this->resource, 0, 0, 0, 0, $width, $height, $this->getImageWidth(), $this->getImageHeight());
         imagedestroy($this->resource);
@@ -58,7 +62,7 @@ class GdImage
         $this->resource = $new;
 
         if (!is_resource($this->resource)) {
-            throw new \Exception('Could not scale image.');
+            throw new \Exception('Could not scale image to ' . $width . 'x' . $height);
         }
     }
 
