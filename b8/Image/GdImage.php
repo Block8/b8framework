@@ -50,7 +50,12 @@ class GdImage
 
     public function scaleImage($width, $height)
     {
-        $this->resource = imagescale($this->resource, $width, $height);
+        $new = imagecreatetruecolor($width, $height);
+
+        imagecopyresampled($new, $this->resource, 0, 0, 0, 0, $width, $height, $this->getImageWidth(), $this->getImageHeight());
+        imagedestroy($this->resource);
+
+        $this->resource = $new;
 
         if (!is_resource($this->resource)) {
             throw new \Exception('Could not scale image.');
@@ -59,12 +64,15 @@ class GdImage
 
     public function cropImage($width, $height, $left = 0, $top = 0)
     {
-        $this->resource = imagecrop($this->resource, [
+        $new = imagecrop($this->resource, [
             'width' => $width,
             'height' => $height,
             'x' => $left,
             'y' => $top,
         ]);
+
+        imagedestroy($this->resource);
+        $this->resource = $new;
 
         if (!is_resource($this->resource)) {
             throw new \Exception('Could not crop image.');
