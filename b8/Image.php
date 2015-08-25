@@ -6,8 +6,11 @@ use b8\Image\GdImage;
 
 class Image
 {
+    public static $forceGd = false;
+    public static $cacheEnabled = true;
     public static $cachePath = '/tmp/';
     public static $sourcePath = './';
+
     protected $focalPoint;
     protected $imageId;
 
@@ -21,7 +24,7 @@ class Image
     {
         $this->imageId = md5($imagePath);
 
-        if (extension_loaded('imagick')) {
+        if (!self::$forceGd && extension_loaded('imagick')) {
             $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
         } else {
             $this->setSource(new GdImage(self::$sourcePath . $imagePath));
@@ -53,7 +56,7 @@ class Image
     {
         $cachePath = self::$cachePath . $this->imageId . '.' . $width . 'x' . $height . '.' . $format;
 
-        if (file_exists($cachePath)) {
+        if (self::$cacheEnabled && file_exists($cachePath)) {
             $output = file_get_contents($cachePath);
         } else {
             $output = $this->doRender($width, $height, $format);

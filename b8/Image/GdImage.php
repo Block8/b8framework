@@ -51,6 +51,10 @@ class GdImage
     public function scaleImage($width, $height)
     {
         $this->resource = imagescale($this->resource, $width, $height);
+
+        if (!is_resource($this->resource)) {
+            throw new \Exception('Could not scale image.');
+        }
     }
 
     public function cropImage($width, $height, $left = 0, $top = 0)
@@ -61,6 +65,10 @@ class GdImage
             'x' => $left,
             'y' => $top,
         ]);
+
+        if (!is_resource($this->resource)) {
+            throw new \Exception('Could not crop image.');
+        }
     }
 
     public function setImageFormat($format = 'jpeg') {
