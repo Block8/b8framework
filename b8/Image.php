@@ -24,6 +24,10 @@ class Image
     {
         $this->imageId = md5($imagePath);
 
+        if (!is_dir(self::$cachePath) || !is_writeable(self::$cachePath)) {
+            self::$cacheEnabled = false;
+        }
+
         if (!self::$forceGd && extension_loaded('imagick')) {
             $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
         } else {
@@ -58,8 +62,12 @@ class Image
 
         if (self::$cacheEnabled && file_exists($cachePath)) {
             $output = file_get_contents($cachePath);
-        } else {
-            $output = $this->doRender($width, $height, $format);
+            return $output;
+        }
+
+        $output = $this->doRender($width, $height, $format);
+
+        if (self::$cacheEnabled) {
             file_put_contents($cachePath, $output);
         }
 
