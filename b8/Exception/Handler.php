@@ -92,6 +92,12 @@ class Handler
             return $rtn;
         });
 
+        if ($ex instanceof HttpException) {
+            header($ex->getHttpHeader(), true, $ex->getErrorCode());
+        } else {
+            header('HTTP/1.1 500 Internal Server Error', true, 500);
+        }
+
         die($template->render());
     }
 
@@ -99,7 +105,7 @@ class Handler
     {
         foreach ($trace as $item) {
             if (!$item['b8_file']) {
-                return [$item['file'], $item['line']];
+                return [!empty($item['file']) ? $item['file'] : '', !empty($item['line']) ? $item['line'] : ''];
             }
         }
 
