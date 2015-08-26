@@ -7,28 +7,45 @@ class GdImage
     protected $resource;
     protected $outputFormat = 'jpeg';
 
-    public function __construct($path)
+    public static function blankImage($width = 1, $height = 1)
     {
-        $extension = strrpos($path, '.');
-        $extension = substr($path, $extension + 1);
+        ob_start();
 
-        switch (strtolower($extension)) {
-            case 'jpg':
-            case 'jpeg':
-                $this->resource = imagecreatefromjpeg($path);
-                break;
+        $res = imagecreatetruecolor($width, $height);
+        imagegif($res);
 
-            case 'png':
-                $this->resource = imagecreatefrompng($path);
-                break;
+        $blob = ob_get_contents();
+        ob_end_clean();
 
-            case 'gif':
-                $this->resource = imagecreatefromgif($path);
-                break;
-        }
+        imagedestroy($res);
 
-        if (!is_resource($this->resource)) {
-            throw new \Exception('Could not load image: ' . $path);
+        return $blob;
+    }
+
+    public function __construct($path = null)
+    {
+        if (!is_null($path)) {
+            $extension = strrpos($path, '.');
+            $extension = substr($path, $extension + 1);
+
+            switch (strtolower($extension)) {
+                case 'jpg':
+                case 'jpeg':
+                    $this->resource = @imagecreatefromjpeg($path);
+                    break;
+
+                case 'png':
+                    $this->resource = @imagecreatefrompng($path);
+                    break;
+
+                case 'gif':
+                    $this->resource = @imagecreatefromgif($path);
+                    break;
+            }
+
+            if (!is_resource($this->resource)) {
+                throw new \Exception('Could not load image: ' . $path);
+            }
         }
     }
 
@@ -127,6 +144,8 @@ class GdImage
                 break;
 
             case 'png':
+                imagealphablending($this->resource, true);
+                imagesavealpha($this->resource, true);
                 imagepng($this->resource);
                 break;
         }
