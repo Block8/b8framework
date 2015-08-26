@@ -23,7 +23,6 @@ class Template extends View
 
     public function __construct($viewCode)
     {
-
         $this->variables = new Variables($this);
         $this->parser = new Parser($this, $this->variables);
         $this->viewCode = $viewCode;
@@ -39,8 +38,6 @@ class Template extends View
 
     public static function createFromFile($file, $path = null)
     {
-        var_dump('Template created:' .$file);
-
         if (!static::exists($file, $path)) {
             throw new \Exception('View file does not exist: ' . $file);
         }
@@ -51,7 +48,6 @@ class Template extends View
 
     public static function createFromString($string)
     {
-        var_dump('Template created');
         return new static($string);
     }
 
