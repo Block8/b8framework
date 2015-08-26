@@ -48,6 +48,14 @@ class GdImage
         return imagesy($this->resource);
     }
 
+    /**
+     * Polyfill for Imagick::scaleImage() - Note that we don't use GD's imagescale() function as it seems to mess
+     * with the image's colours too much.
+     *
+     * @param int $width
+     * @param int $height
+     * @throws \Exception
+     */
     public function scaleImage($width, $height)
     {
         $new = @imagecreatetruecolor($width, $height);
@@ -66,20 +74,33 @@ class GdImage
         }
     }
 
+    /**
+     * Polyfill for Imagick::cropImage() - Note that we don't use GD's imagecrop() function as older versions
+     * add weird black borders in some circumstances.
+     * @param int $width
+     * @param int $height
+     * @param int $left
+     * @param int $top
+     * @throws \Exception
+     */
     public function cropImage($width, $height, $left = 0, $top = 0)
     {
-        $new = imagecrop($this->resource, [
-            'width' => $width,
-            'height' => $height,
-            'x' => $left,
-            'y' => $top,
-        ]);
+        $new = @imagecreatetruecolor($width, $height);
 
+        if (!is_resource($new)) {
+            throw new \Exception('Could not create cropped image: ' . $width . 'x' . $height);
+        }
+
+        $sourceWidth = $width > $this->getImageWidth() ? $this->getImageWidth() : $width;
+        $sourceHeight = $height > $this->getImageHeight() ? $this->getImageHeight() : $height;
+
+        imagecopyresampled($new, $this->resource, 0, 0, $left, $top, $width, $height, $sourceWidth, $sourceHeight);
         imagedestroy($this->resource);
+
         $this->resource = $new;
 
         if (!is_resource($this->resource)) {
-            throw new \Exception('Could not crop image.');
+            throw new \Exception('Could not crop image to ' . $width . 'x' . $height);
         }
     }
 

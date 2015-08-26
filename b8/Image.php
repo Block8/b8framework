@@ -87,6 +87,10 @@ class Image
         $sourceRatio = $sourceWidth / $sourceHeight;
         $targetRatio = !$autoHeight ? $width / $height : $sourceRatio;
 
+        if ($autoHeight) {
+            $height = ceil($width * ($sourceHeight / $sourceWidth));
+        }
+
         $crop = false;
 
         if ($sourceRatio < $targetRatio) {
@@ -95,12 +99,7 @@ class Image
             $resizeWidth = $width;
             $resizeHeight = ceil($sourceHeight / $scale);
 
-            if ($autoHeight) {
-                $height = $resizeHeight;
-            }
-
             list($focalX, $focalY) = $this->getFocalPoints();
-
 
             $focalPercentage = (100/$sourceHeight) * $focalY;
 
@@ -119,10 +118,6 @@ class Image
             $scale = $sourceHeight / $height;
             $resizeWidth = ceil($sourceWidth / $scale);
             $resizeHeight = $height;
-
-            if ($autoHeight) {
-                $height = $resizeHeight;
-            }
 
             list($focalX, $focalY) = $this->getFocalPoints();
 
