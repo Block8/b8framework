@@ -18,6 +18,7 @@ class Checkbox extends Input
     public function setCheckedValue($value)
     {
         $this->checkedValue = $value;
+        return $this;
     }
 
     public function setValue($value)
@@ -36,6 +37,7 @@ class Checkbox extends Input
 
         $this->value = $value;
         $this->checked = false;
+        return $this;
     }
 
     public function onPreRender(&$view)
