@@ -84,6 +84,11 @@ class Upload
         return $this->fileInfo;
     }
 
+    public function getFileData()
+    {
+        return file_get_contents($this->upload['tmp_name']);
+    }
+
     public function copyTo($destinationFile)
     {
         $dir = dirname($destinationFile);
