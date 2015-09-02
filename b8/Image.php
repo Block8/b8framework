@@ -20,19 +20,18 @@ class Image
     protected $source;
 
 
-    public function __construct($imagePath)
+    public function __construct($imageData, $imageId = null)
     {
-        $this->imageId = md5($imagePath);
+        $this->imageId = !is_null($imageId) ? $imageId : $imageData;
 
         if (!is_dir(self::$cachePath) || !is_writeable(self::$cachePath)) {
             self::$cacheEnabled = false;
         }
 
-        if (!self::$forceGd && extension_loaded('imagick')) {
-            $this->setSource(new \Imagick(self::$sourcePath . $imagePath));
-        } else {
-            $this->setSource(new GdImage(self::$sourcePath . $imagePath));
-        }
+        $source = (!self::$forceGd && extension_loaded('imagick')) ? new \Imagick() : new GdImage();
+        $source->readImageBlob($imageData);
+
+        $this->setSource($source);
     }
 
     /**

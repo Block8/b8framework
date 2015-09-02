@@ -50,6 +50,19 @@ class GdImage
     }
 
     /**
+     * @param string $image
+     * @throws \Exception
+     */
+    public function readImageBlob($image)
+    {
+        $this->resource = @imagecreatefromstring($image);
+
+        if (!is_resource($this->resource)) {
+            throw new \Exception('Could not create image from string.');
+        }
+    }
+
+    /**
      * @return int
      */
     public function getImageWidth()
