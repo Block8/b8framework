@@ -22,7 +22,7 @@ class Image
 
     public function __construct($imageData, $imageId = null)
     {
-        $this->imageId = !is_null($imageId) ? $imageId : $imageData;
+        $this->imageId = !is_null($imageId) ? $imageId : md5($imageData);
 
         if (!is_dir(self::$cachePath) || !is_writeable(self::$cachePath)) {
             self::$cacheEnabled = false;
