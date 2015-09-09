@@ -155,31 +155,34 @@ class Template
 
         if ($node instanceof DOMText) {
             $content = $node->nodeValue;
-            $node->nodeValue = '';
-            $replacements = [];
 
-            $content = preg_replace_callback('/\{@([a-zA-Z0-9]+)\:\s*([^\}]+)\}/', function ($values) {
-                $value = $this->variableHandler->getVariable($values[2]);
-                $this->variableHandler->set($values[1], $value);
-                return '';
-            }, $content);
+            if (strpos($content, '{@') !== false) {
+                $node->nodeValue = '';
+                $replacements = [];
 
-            $content = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) use (&$replacements) {
-                $replacements[] = $this->variableHandler->getVariable($key[1]);
-                return '{!!octo.split!!}';
-            }, $content);
+                $content = preg_replace_callback('/\{@([a-zA-Z0-9]+)\:\s*([^\}]+)\}/', function ($values) {
+                    $value = $this->variableHandler->getVariable($values[2]);
+                    $this->variableHandler->set($values[1], $value);
+                    return '';
+                }, $content);
 
-            $content = explode('{!!octo.split!!}', $content);
+                $content = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) use (&$replacements) {
+                    $replacements[] = $this->variableHandler->getVariable($key[1]);
+                    return '{!!octo.split!!}';
+                }, $content);
 
-            foreach ($content as $part) {
-                if (!empty($part)) {
-                    $this->injectText($parent, $node, $part);
-                }
+                $content = explode('{!!octo.split!!}', $content);
 
-                $replacement = array_shift($replacements);
+                foreach ($content as $part) {
+                    if (!empty($part)) {
+                        $this->injectText($parent, $node, $part);
+                    }
 
-                if (!empty($replacement)) {
-                    $this->injectHtml($parent, $node, $replacement);
+                    $replacement = array_shift($replacements);
+
+                    if (!empty($replacement)) {
+                        $this->injectHtml($parent, $node, $replacement);
+                    }
                 }
             }
         }
@@ -364,11 +367,13 @@ class Template
                 return $this->processAttributes($node);
             }
 
-            $value = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) {
-                return $this->variableHandler->getVariable($key[1]);
-            }, $attribute->value);
+            if (strpos($attribute->value, '{@') !== false) {
+                $value = preg_replace_callback('/\{\@([^\}]+)\}/', function ($key) {
+                    return $this->variableHandler->getVariable($key[1]);
+                }, $attribute->value);
 
-            $attribute->value = htmlentities($value);
+                $attribute->value = htmlentities($value);
+            }
         }
     }
 

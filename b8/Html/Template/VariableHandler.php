@@ -194,6 +194,7 @@ class VariableHandler
             },
             'output' => 'var_dump',
             'count' => 'count',
+            'toInt' => 'intval',
         ];
 
         if (array_key_exists($thisPart, $operations)) {
