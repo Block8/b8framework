@@ -7,6 +7,7 @@ use b8\View;
 
 class FieldSet extends Element
 {
+    /** @var Element[] $children */
     protected $children = array();
 
     public function getValues()
@@ -118,6 +119,28 @@ class FieldSet extends Element
     public function getChild($fieldName)
     {
         return $this->children[$fieldName];
+    }
+
+    public function find($fieldName) {
+        if (!empty($this->children[$fieldName])) {
+            return $this->children[$fieldName];
+        }
+
+        foreach ($this->children as $child) {
+            if ($child->getName() == $fieldName) {
+                return $child;
+            }
+
+            if ($child instanceof FieldSet) {
+                $field = $child->find($fieldName);
+
+                if (!empty($field)) {
+                    return $field;
+                }
+            }
+        }
+
+        return null;
     }
 
     public function removeChild($fieldName)
