@@ -4,6 +4,7 @@ namespace b8\Html\Template;
 
 use b8\Config;
 use b8\Helper\KeyValue;
+use b8\Type\NumberValue;
 
 class VariableHandler
 {
@@ -114,6 +115,10 @@ class VariableHandler
 
         while (count($varPart)) {
             $thisPart = array_shift($varPart);
+
+            if (is_numeric($working)) {
+                $working = new NumberValue($working);
+            }
 
             if (is_object($working)) {
 

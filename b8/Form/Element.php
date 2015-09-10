@@ -15,6 +15,7 @@ abstract class Element
     protected $ccss;
     protected $parent;
     protected $viewLoader;
+    protected $form;
 
     public function __construct($name = null)
     {
@@ -93,6 +94,7 @@ abstract class Element
         $view->name = $this->getName();
         $view->id = $this->getId();
         $view->label = $this->getLabel();
+
         $view->css = $this->getClass();
         $view->ccss = $this->getContainerClass();
         $view->parent = $this->parent;
@@ -136,4 +138,27 @@ abstract class Element
     }
 
     abstract protected function onPreRender(&$view);
+
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @return \b8\Form\Element
+     */
+    protected function getUltimateParent()
+    {
+        $parent = $this->getParent();
+
+        if (!empty($parent)) {
+            while ($next = $parent->getParent()) {
+                if (!is_null($next)) {
+                    $parent = $next;
+                }
+            }
+        }
+
+        return $parent;
+    }
 }
