@@ -83,8 +83,18 @@ class Image
 
         $sourceWidth = $source->getImageWidth();
         $sourceHeight = $source->getImageHeight();
+
+        if ($width == 'auto' && $height == 'auto') {
+            $width = $sourceWidth;
+            $height = $sourceHeight;
+        }
+
         $sourceRatio = $sourceWidth / $sourceHeight;
         $targetRatio = !$autoHeight ? $width / $height : $sourceRatio;
+
+        if ($width == 'auto' && is_numeric($height)) {
+            $width = ceil($height * ($sourceWidth / $sourceHeight));
+        }
 
         if ($autoHeight) {
             $height = ceil($width * ($sourceHeight / $sourceWidth));
@@ -154,7 +164,6 @@ class Image
         $draw->rectangle($left, $top, $right, $bottom);
         $source->drawimage($draw);
 */
-
 
         return $source->getImageBlob();
     }
