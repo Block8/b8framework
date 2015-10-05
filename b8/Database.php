@@ -139,4 +139,11 @@ class Database extends \PDO
 	{
 		return self::$details;
 	}
+
+    public static function reset()
+    {
+        self::$connections = array('read' => null, 'write' => null);
+        self::$lastUsed = array('read' => null, 'write' => null);
+        self::$initialised = false;
+    }
 }

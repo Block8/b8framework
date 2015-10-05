@@ -168,4 +168,9 @@ class Config
             }
         }
     }
+
+    public function getArray()
+    {
+        return $this->config;
+    }
 }
