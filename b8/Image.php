@@ -8,7 +8,8 @@ class Image
 {
     public static $forceGd = false;
     public static $cacheEnabled = true;
-    public static $cachePath = '/tmp/';
+    public static $baseCachePath = '/tmp/';
+    public static $cachePath;
     public static $sourcePath = './';
 
     protected $focalPoint;
@@ -24,14 +25,28 @@ class Image
     {
         $this->imageId = !is_null($imageId) ? $imageId : md5($imageData);
 
-        if (!is_dir(self::$cachePath) || !is_writeable(self::$cachePath)) {
-            self::$cacheEnabled = false;
-        }
+        $this->prepareCache();
 
         $source = (!self::$forceGd && extension_loaded('imagick')) ? new \Imagick() : new GdImage();
         $source->readImageBlob($imageData);
 
         $this->setSource($source);
+    }
+
+    protected function prepareCache()
+    {
+        if (!self::$cacheEnabled) {
+            return;
+        }
+
+        self::$cachePath = realpath(self::$baseCachePath) . '/images/' . substr($this->imageId, 0, 1) . '/';
+
+        if (!is_dir(self::$cachePath) && !@mkdir(self::$cachePath, 0777, true)) {
+            self::$cacheEnabled = false;
+            return;
+        }
+
+        self::$cacheEnabled = true;
     }
 
     /**
@@ -155,15 +170,15 @@ class Image
 
         $source->setImageFormat($format);
 
-/*
-        $draw = new \ImagickDraw();
-        $draw->setfillcolor(new \ImagickPixel('green'));
-        $draw->setfillalpha(0.5);
-        $draw->setStrokeColor(new \ImagickPixel('green'));
-        $draw->setStrokeWidth(2);
-        $draw->rectangle($left, $top, $right, $bottom);
-        $source->drawimage($draw);
-*/
+        /*
+                $draw = new \ImagickDraw();
+                $draw->setfillcolor(new \ImagickPixel('green'));
+                $draw->setfillalpha(0.5);
+                $draw->setStrokeColor(new \ImagickPixel('green'));
+                $draw->setStrokeWidth(2);
+                $draw->rectangle($left, $top, $right, $bottom);
+                $source->drawimage($draw);
+        */
 
         return $source->getImageBlob();
     }
@@ -180,5 +195,15 @@ class Image
         $focalY = (int)$focal[1];
 
         return [$focalX, $focalY];
+    }
+
+    public function getImageWidth()
+    {
+        return $this->getSource()->getImageWidth();
+    }
+
+    public function getImageHeight()
+    {
+        return $this->getSource()->getImageHeight();
     }
 }
