@@ -4,9 +4,6 @@ namespace b8;
 
 class Database extends \PDO
 {
-    public static $queryCount = 0;
-    public static $queries = [];
-
     protected static $initialised = false;
     protected static $servers = array('read' => array(), 'write' => array());
     protected static $connections = array('read' => null, 'write' => null);
@@ -130,20 +127,5 @@ class Database extends \PDO
     public function getDetails()
     {
         return self::$details;
-    }
-
-
-    public function query($statement)
-    {
-        self::$queryCount++;
-        self::$queries[] = $statement;
-        return parent::query($statement);
-    }
-
-    public function prepare($statement, array $driverOptions = array())
-    {
-        self::$queryCount++;
-        self::$queries[] = $statement;
-        return parent::prepare($statement, $driverOptions);
     }
 }
