@@ -59,7 +59,7 @@ class Handler
         $this->friendlyTemplate = $template;
     }
 
-    public function handleException(Exception $ex)
+    public function handleException($ex)
     {
         if (ini_get('display_errors')) {
             $template = Template::createFromFile('UncaughtExceptionTemplate', B8_PATH . 'Exception/');
