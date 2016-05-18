@@ -95,6 +95,16 @@ class Request
     }
 
     /**
+     * Check whether or not a specific request parameter is set.
+     * @param $key
+     * @return bool
+     */
+    public function hasParam($key)
+    {
+        return array_key_exists($key, $this->params);
+    }
+
+    /**
      * Set or override a request parameter.
      */
     public function setParam($key, $value = null)
