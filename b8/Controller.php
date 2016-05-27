@@ -14,27 +14,27 @@ use b8\View;
 abstract class Controller
 {
     /**
-     * @var b8\Http\Request
+     * @var \b8\Http\Request
      */
     protected $request;
 
     /**
-     * @var b8\Http\Response
+     * @var \b8\Http\Response
      */
     protected $response;
 
     /**
-     * @var b8\Config
+     * @var \b8\Config
      */
     protected $config;
 
     /**
-     * @var b8\View
+     * @var \b8\View
      */
     protected $controllerView;
 
     /**
-     * @var b8\View
+     * @var \b8\View
      */
     protected $view;
 
