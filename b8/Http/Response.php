@@ -4,7 +4,7 @@ namespace b8\Http;
 
 class Response
 {
-    protected static $codes = array(
+    public static $codes = array(
         200 => 'OK',
         301 => 'Moved Permanently',
         302 => 'Moved Temporarily',
