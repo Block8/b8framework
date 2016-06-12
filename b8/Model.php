@@ -14,6 +14,7 @@ class Model
     protected $modified = array();
     protected $tableName;
     protected $cache;
+    protected $validationEnabled = true;
 
     public function __construct($initialData = array())
     {
@@ -103,8 +104,12 @@ class Model
         $this->modified[$column] = $column;
     }
 
-    public function setValues(array $values)
+    public function setValues(array $values, $validate = true)
     {
+        if (!$validate) {
+            $this->disableValidation();
+        }
+
         foreach ($values as $key => $value) {
             if (isset($this->setters[$key])) {
                 $func = $this->setters[$key];
@@ -127,6 +132,10 @@ class Model
     //----------------
     protected function validateString($name, $value)
     {
+        if (!$this->validationEnabled) {
+            return true;
+        }
+
         if (!is_string($value) && !is_null($value)) {
             throw new ValidationException($name . ' must be a string.');
         }
@@ -134,6 +143,10 @@ class Model
 
     protected function validateInt($name, &$value)
     {
+        if (!$this->validationEnabled) {
+            return true;
+        }
+
         if (is_bool($value)) {
             $value = $value ? 1 : 0;
         }
@@ -149,6 +162,10 @@ class Model
 
     protected function validateFloat($name, &$value)
     {
+        if (!$this->validationEnabled) {
+            return true;
+        }
+
         if (!is_numeric($value) && !is_null($value)) {
             throw new ValidationException($name . ' must be a float.');
         }
@@ -160,6 +177,10 @@ class Model
 
     protected function validateDate($name, &$value)
     {
+        if (!$this->validationEnabled) {
+            return true;
+        }
+        
         if (is_string($value)) {
             $value = empty($value) ? null : new \DateTime($value);
         }
@@ -174,6 +195,10 @@ class Model
 
     protected function validateNotNull($name, &$value)
     {
+        if (!$this->validationEnabled) {
+            return true;
+        }
+
         if (is_null($value)) {
             throw new ValidationException($name . ' must not be null.');
         }
@@ -195,5 +220,10 @@ class Model
             $setter = $this->setters[$key];
             return $this->{$setter}($value);
         }
+    }
+
+    public function disableValidation()
+    {
+        $this->validationEnabled = false;
     }
 }
