@@ -28,6 +28,43 @@ class Map
         $this->getRelationships();
         $this->getIndexes();
 
+        foreach ($this->tables as $name => &$def) {
+            if (count($def['columns']) == 2) {
+                $filtered = array_filter($def['columns'], function ($col) {
+                    if ($col['is_foreign_key']) {
+                        return false;
+                    }
+
+                    return  true;
+                });
+
+                if (!count($filtered)) {
+                    $this->processLinkTable($name, $def);
+                }
+            }
+        }
+
+        $this->tables = array_filter($this->tables);
+
+        foreach ($this->tables as $tableName => &$table) {
+            if (!isset($table['relationships']['toMany']) || !is_array($table['relationships']['toMany'])) {
+                continue;
+            }
+
+            foreach ($table['relationships']['toMany'] as &$rel) {
+                print 'Processing: '. $tableName . ' to ' . $rel['table'];
+
+                if (!array_key_exists($rel['table'], $this->tables)) {
+                    print ' REMOVING';
+                    $rel = null;
+                }
+
+                print PHP_EOL;
+            }
+
+            $table['relationships']['toMany'] = array_filter($table['relationships']['toMany']);
+        }
+
         return $this->tables;
     }
 
@@ -82,6 +119,8 @@ class Map
                             $phpName = $this->generateFkName($fromCol, $this->tables[$fromTable]['php_name']);
 
                             $this->tables[$fromTable]['columns'][$fromCol]['is_foreign_key'] = true;
+                            $this->tables[$fromTable]['columns'][$fromCol]['fk_to_column'] = $toCol;
+                            $this->tables[$fromTable]['columns'][$fromCol]['fk_to_table'] = $toTable;
 
                             $this->tables[$fromTable]['relationships']['toOne'][$fromCol] = array(
                                 'fk_name' => $fkName,
@@ -237,6 +276,38 @@ class Map
         }
 
         return $col;
+    }
+
+    protected function processLinkTable($name, &$def)
+    {
+        $col1 = array_shift($def['columns']);
+        $col2 = array_shift($def['columns']);
+
+        $this->tables[$col1['fk_to_table']]['relationships']['toMany'][] = [
+            'table' => $col2['fk_to_table'],
+            'table_php' => $this->generatePhpName($col2['fk_to_table']),
+            'thisCol' => $col1['fk_to_column'],
+            'fromCol' => $col2['fk_to_column'],
+            'link' => [
+                'table' => $name,
+                'column1' => $col1['name'],
+                'column2' => $col2['name'],
+            ]
+        ];
+
+        $this->tables[$col2['fk_to_table']]['relationships']['toMany'][] = [
+            'table' => $col1['fk_to_table'],
+            'table_php' => $this->generatePhpName($col1['fk_to_table']),
+            'thisCol' => $col2['fk_to_column'],
+            'fromCol' => $col1['fk_to_column'],
+            'link' => [
+                'table' => $name,
+                'column1' => $col2['name'],
+                'column2' => $col1['name'],
+            ]
+        ];
+
+        $def = null;
     }
 
     protected function generatePhpName($sqlName)

@@ -21,7 +21,7 @@ class Model
         if (method_exists($this, 'init')) {
             $this->init();
         }
-
+        
         if (is_array($initialData)) {
             $this->data = array_merge($this->data, $initialData);
         }

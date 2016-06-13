@@ -88,4 +88,15 @@ class Collection implements ArrayAccess, Iterator
         uasort($this->items, $sort);
         return $this;
     }
+
+    public function first()
+    {
+        $rtn = null;
+
+        if (array_key_exists(0, $this->items)) {
+            $rtn = $this->items[0];
+        }
+
+        return $rtn;
+    }
 }
