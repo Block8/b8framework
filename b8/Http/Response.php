@@ -48,6 +48,13 @@ class Response
 
     public function setResponseCode($code)
     {
+        $code = (int)$code;
+
+        if ($code == 301 || $code == 302) {
+            $this->disableLayout();
+            $this->setContent(null);
+        }
+
         $this->data['code'] = (int)$code;
     }
 

@@ -45,16 +45,11 @@ class Application
      * @param Config $config
      * @param Http\Request $request
      */
-    public function __construct(Config $config, Http\Request $request = null)
+    public function __construct(Config $config, Http\Request $request = null, Http\Response $response = null)
     {
         $this->config = $config;
-        $this->response = new Http\Response();
-
-        if (!is_null($request)) {
-            $this->request = $request;
-        } else {
-            $this->request = new Http\Request();
-        }
+        $this->response = is_null($response) ? new Http\Response() : $response;
+        $this->request = is_null($request) ? new Http\Request() : $request;
 
         $this->exceptionHandler = new Handler($this->config, $this->request, $this->response);
         $this->router = new Http\Router($this, $this->request, $this->config);
