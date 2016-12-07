@@ -34,11 +34,13 @@ class Response
     public function disableLayout()
     {
         $this->data['layout'] = false;
+        return $this;
     }
 
     public function enableLayout()
     {
         $this->data['layout'] = true;
+        return $this;
     }
 
     public function getData()
@@ -56,21 +58,25 @@ class Response
         }
 
         $this->data['code'] = (int)$code;
+        return $this;
     }
 
     public function setHeader($key, $val)
     {
         $this->data['headers'][$key] = $val;
+        return $this;
     }
 
     public function clearHeaders()
     {
         $this->data['headers'] = array();
+        return $this;
     }
 
     public function setContent($content)
     {
         $this->data['body'] = $content;
+        return $this;
     }
 
     public function getContent()

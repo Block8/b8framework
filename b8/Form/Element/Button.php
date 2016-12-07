@@ -7,7 +7,7 @@ use b8\View;
 
 class Button extends Input
 {
-    public function validate()
+    public function validate(&$errors = [])
     {
         return true;
     }

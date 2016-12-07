@@ -83,14 +83,16 @@ class Input extends Element
         return $this;
     }
 
-    public function validate()
+    public function validate(&$errors = [])
     {
         if ($this->getRequired() && (is_null($this->value) || $this->value == '')) {
+            $errors[] = $this->getName();
             $this->error = $this->getLabel() . ' is required.';
             return false;
         }
 
         if ($this->getPattern() && !preg_match('/' . $this->getPattern() . '/', $this->value)) {
+            $errors[] = $this->getName();
             $this->error = 'Invalid value entered.';
             return false;
         }
@@ -101,12 +103,14 @@ class Input extends Element
             try {
                 call_user_func_array($validator, array($this->value));
             } catch (\Exception $ex) {
+                $errors[] = $this->getName();
                 $this->error = $ex->getMessage();
                 return false;
             }
         }
 
         if ($this->customError) {
+            $errors[] = $this->getName();
             return false;
         }
 

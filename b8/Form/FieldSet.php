@@ -86,12 +86,12 @@ class FieldSet extends Element
         $field->setParent($this);
     }
 
-    public function validate()
+    public function validate(&$errors = [])
     {
         $rtn = true;
 
         foreach ($this->children as $child) {
-            if (!$child->validate()) {
+            if (!$child->validate($errors)) {
                 $rtn = false;
             }
         }
