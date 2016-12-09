@@ -81,6 +81,10 @@ class Response
 
     public function getContent()
     {
+        if (empty($this->data['body'])) {
+            return null;
+        }
+        
         return $this->data['body'];
     }
 
