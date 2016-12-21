@@ -14,6 +14,7 @@ class Image
 
     protected $focalPoint;
     protected $imageId;
+    protected $mime;
 
     /**
      * @var \b8\Image\GdImage|\Imagick $source
@@ -63,6 +64,7 @@ class Image
     public function setSource($image)
     {
         $this->source = $image;
+        $this->mime = $image->getImageMimeType();
     }
 
     public function setFocalPoint($focalX, $focalY)
@@ -168,17 +170,7 @@ class Image
             $source->cropImage($width, $height, $left, $top);
         }
 
-        $source->setImageFormat($format);
-
-        /*
-                $draw = new \ImagickDraw();
-                $draw->setfillcolor(new \ImagickPixel('green'));
-                $draw->setfillalpha(0.5);
-                $draw->setStrokeColor(new \ImagickPixel('green'));
-                $draw->setStrokeWidth(2);
-                $draw->rectangle($left, $top, $right, $bottom);
-                $source->drawimage($draw);
-        */
+        $this->setImageFormat($source, $format);
 
         return $source->getImageBlob();
     }
@@ -205,5 +197,35 @@ class Image
     public function getImageHeight()
     {
         return $this->getSource()->getImageHeight();
+    }
+
+    /**
+     * @param \Imagick|GdImage $source
+     * @param string $format
+     */
+    protected function setImageFormat($source, $format)
+    {
+        if ($format == 'jpg') {
+            $format = 'jpeg';
+        }
+
+        try {
+            $source->setImageFormat($format);
+
+            if ($format == 'webp' && $source instanceof \Imagick) {
+                $source->setImageAlphaChannel(\Imagick::ALPHACHANNEL_ACTIVATE);
+                $source->setBackgroundColor(new \ImagickPixel('transparent'));
+            }
+
+            $this->mime = 'image/' . $format;
+        } catch (\Exception $ex) {
+            $this->mime = 'image/jpeg';
+            $source->setImageFormat('jpeg');
+        }
+    }
+
+    public function getMime()
+    {
+        return $this->mime;
     }
 }

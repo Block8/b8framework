@@ -135,6 +135,11 @@ class GdImage
     }
 
     public function setImageFormat($format = 'jpeg') {
+        if ($format == 'webp' && !function_exists('imagewebp')) {
+            throw new \Exception('WEBP format not supported.');
+        }
+
+
         switch ($format) {
             case 'jpeg':
             case 'jpg':
@@ -143,6 +148,10 @@ class GdImage
 
             case 'png':
                 $this->outputFormat = 'png';
+                break;
+
+            case 'webp':
+                $this->outputFormat = 'webp';
                 break;
         }
     }
@@ -161,6 +170,10 @@ class GdImage
                 imagesavealpha($this->resource, true);
                 imagepng($this->resource);
                 break;
+
+            case 'webp':
+                imagewebp($this->resource);
+                break;
         }
 
         $blob = ob_get_contents();
@@ -169,5 +182,10 @@ class GdImage
         imagedestroy($this->resource);
 
         return $blob;
+    }
+
+    public function getImageMimeType()
+    {
+        return 'image/' . $this->outputFormat;
     }
 }
