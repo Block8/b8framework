@@ -91,7 +91,7 @@ class Input extends Element
             return false;
         }
 
-        if ($this->getPattern() && !preg_match('/' . $this->getPattern() . '/', $this->value)) {
+        if (!empty($this->value) && $this->getPattern() && !preg_match('/' . $this->getPattern() . '/', $this->value)) {
             $errors[] = $this->getName();
             $this->error = 'Invalid value entered.';
             return false;
@@ -107,6 +107,7 @@ class Input extends Element
                 $this->error = $ex->getMessage();
                 return false;
             }
+
         }
 
         if ($this->customError) {
