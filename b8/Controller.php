@@ -60,7 +60,7 @@ abstract class Controller
 
     /**
      * Handles an action on this controller and returns a Response object.
-     * @return b8\Http\Response
+     * @return \b8\Http\Response
      */
     public function handleAction($action, $actionParams)
     {

@@ -22,17 +22,17 @@ class Application
     protected $controller;
 
     /**
-     * @var b8\Http\Request
+     * @var \b8\Http\Request
      */
     protected $request;
 
     /**
-     * @var b8\Http\Response
+     * @var \b8\Http\Response
      */
     protected $response;
 
     /**
-     * @var b8\Config
+     * @var \b8\Config
      */
     protected $config;
 
