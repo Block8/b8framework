@@ -92,6 +92,11 @@ class Database extends \PDO
                 // Pull the next server:
                 $server = array_shift($servers);
 
+	            if (stristr($server, ':')) {
+		            list($host, $port) = explode(':', $server);
+		            $server = $host . ';port=' . $port;
+	            }
+
                 // Try to connect:
                 try {
                     $connection = new self('mysql:host=' . $server . ';dbname=' . self::$details['db'],
